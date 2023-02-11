@@ -1,0 +1,12 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/splitting/dynamic_import_issue272
+---
+---------- a.js ----------
+// a.js
+import("./b.js");
+---------- b.js ----------
+// b.js
+var b = 1;
+export { b as default };

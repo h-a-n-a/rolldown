@@ -1,0 +1,18 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/import_star/import_star_capture
+---
+---------- entry.js ----------
+// foo.js
+const foo$1 = 123;
+var ns = Object.freeze({
+    __proto__: null,
+    get foo () {
+        return foo$1;
+    }
+});
+
+// entry.js
+let foo = 234;
+console.log(ns, foo$1, foo);

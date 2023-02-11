@@ -1,0 +1,10 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+---
+---------- entry.js ----------
+// entry.js
+console.log(import("./output-path_should-contain_this-text_file.js"));
+---------- output-path_should-contain_this-text_file.js ----------
+// output-path/should-contain/this-text/file.js
+console.log('file.js');

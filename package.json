@@ -1,0 +1,19 @@
+{
+  "name": "rolldown",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r run build",
+    "build:binding": "pnpm --filter @rolldown/node-binding run build",
+    "build:binding:release": "pnpm --filter @rolldown/node-binding run build:release",
+    "test": "pnpm run --parallel test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}

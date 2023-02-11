@@ -1,0 +1,13 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/fixtures/deconflicting_variables/import_from_external
+---
+---------- a.js ----------
+// b.js
+console.log(foo$1, 'external');
+
+// a.js
+import { foo as foo$1 } from "external";
+const foo = 'non-external';
+console.log(foo);

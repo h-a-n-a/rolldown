@@ -1,0 +1,15 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/rollup/samples/export-all-from-external
+---
+---------- main.js ----------
+// path-plus.js
+function isRelative(path) {
+    return '.' === path[0];
+}
+
+// main.js
+import { dirname } from "path";
+assert.equal(dirname('foo/bar'), 'foo');
+assert.ok(isRelative('./foo'));

@@ -1,0 +1,17 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/splitting/nested_directories
+---
+---------- src_pages_page-a_page.js ----------
+// src/pages/page-a/page.js
+import { default as x } from "./src_pages_shared.js";
+console.log(x);
+---------- src_pages_page-b_page.js ----------
+// src/pages/page-b/page.js
+import { default as x } from "./src_pages_shared.js";
+console.log(-x);
+---------- src_pages_shared.js ----------
+// src/pages/shared.js
+var x = 123;
+export { x as default };

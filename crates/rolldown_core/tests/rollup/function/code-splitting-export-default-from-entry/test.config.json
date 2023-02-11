@@ -1,0 +1,6 @@
+{
+    "input": {
+        "main": "./main.js",
+        "dep": "./dep.js"
+    }
+}

@@ -1,0 +1,12 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/splitting/re_export_issue273
+---
+---------- a.js ----------
+// a.js
+const a = 1;
+export { a };
+---------- b.js ----------
+// b.js
+export { a } from "./a.js";

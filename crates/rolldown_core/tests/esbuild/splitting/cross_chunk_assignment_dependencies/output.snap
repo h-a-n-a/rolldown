@@ -1,0 +1,25 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/splitting/cross_chunk_assignment_dependencies
+---
+---------- a.js ----------
+// a.js
+import { setValue } from "./shared.js";
+setValue(123);
+---------- b.js ----------
+// b.js
+import "./shared.js";
+---------- shared.js ----------
+// shared.js
+var observer;
+var value;
+function getValue() {
+    return value;
+}
+function setValue(next) {
+    value = next;
+    observer && observer();
+}
+sideEffects(getValue);
+export { getValue, setValue };

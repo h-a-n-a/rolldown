@@ -1,0 +1,9 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/import_star/export_star_as_unused
+---
+---------- entry.js ----------
+// entry.js
+let foo = 234;
+console.log(foo);

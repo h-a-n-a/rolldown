@@ -1,0 +1,42 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/splitting/cross_chunk_assignment_dependencies_recursive
+---
+---------- a.js ----------
+// a.js
+import { setX } from "./x.js";
+setX();
+---------- b.js ----------
+// b.js
+import { setZ } from "./z.js";
+setZ();
+---------- c.js ----------
+// c.js
+import { setX2 } from "./x.js";
+import { setY2 } from "./y.js";
+import { setZ2 } from "./z.js";
+setX2();
+setY2();
+setZ2();
+---------- x.js ----------
+// x.js
+function setX(v) {}
+function setX2(v) {}
+export { setX, setX2 };
+---------- y.js ----------
+// y.js
+import { setX } from "./x.js";
+function setY(v) {}
+function setY2(v) {
+    setX(v);
+}
+export { setY, setY2 };
+---------- z.js ----------
+// z.js
+import { setY } from "./y.js";
+function setZ(v) {}
+function setZ2(v) {
+    setY(v);
+}
+export { setZ, setZ2 };

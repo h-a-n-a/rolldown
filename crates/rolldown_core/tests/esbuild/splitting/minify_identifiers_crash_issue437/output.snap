@@ -1,0 +1,20 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/samples/splitting/minify_identifiers_crash_issue437
+---
+---------- a.js ----------
+// a.js
+import { foo } from "./shared.js";
+console.log(foo);
+---------- b.js ----------
+// b.js
+import { foo } from "./shared.js";
+console.log(foo);
+---------- c.js ----------
+// c.js
+import "./shared.js";
+---------- shared.js ----------
+// shared.js
+function foo(bar) {}
+export { foo };

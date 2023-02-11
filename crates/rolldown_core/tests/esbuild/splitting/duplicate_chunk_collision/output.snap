@@ -1,0 +1,22 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+---
+---------- a.js ----------
+// a.js
+import "./ab.js";
+---------- ab.js ----------
+// ab.js
+console.log(123);
+---------- b.js ----------
+// b.js
+import "./ab.js";
+---------- c.js ----------
+// c.js
+import "./cd.js";
+---------- cd.js ----------
+// cd.js
+console.log(123);
+---------- d.js ----------
+// d.js
+import "./cd.js";

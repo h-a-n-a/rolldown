@@ -1,0 +1,17 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/rollup/samples/allows-external-modules-from-nested-module
+---
+---------- main.js ----------
+// foo.js
+var path$1 = 'a/b/c';
+var path2$1 = 'a/c/b';
+var foo = relative(path$1, path2$1);
+
+// main.js
+import { normalize, relative } from "path";
+var path = 'foo/bar/baz';
+var path2 = 'foo/baz/bar';
+assert.equal(relative(path, path2), normalize('../../baz/bar'));
+assert.equal(foo, normalize('../../c/b'));

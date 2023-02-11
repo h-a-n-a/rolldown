@@ -1,0 +1,6 @@
+{
+    "input": {
+        "a": "./a.js"
+    },
+    "publicPath": "/www/"
+}

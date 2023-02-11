@@ -1,0 +1,34 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/rollup/samples/import-namespace-from-internal-module
+---
+---------- main.js ----------
+// foo.js
+var a = 'a';
+var b = 'b';
+var foo_default = 'DEF';
+var foo = Object.freeze({
+    __proto__: null,
+    get a () {
+        return a;
+    },
+    get b () {
+        return b;
+    },
+    get default () {
+        return foo_default;
+    }
+});
+
+// main.js
+assert.equal(foo_default, 'DEF');
+assert.equal(b, 'b');
+assert.equal(a, 'a');
+var keys = [];
+for(var key in foo)keys.push(key);
+assert.deepEqual(keys.sort(), [
+    'a',
+    'b',
+    'default'
+]);

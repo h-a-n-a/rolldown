@@ -1,0 +1,13 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/rollup/samples/chunk-external-dependency-execution-order
+---
+---------- main.js ----------
+// dep.js
+executionOrder.push('dep');
+
+// main.js
+import "external-first";
+import "external-second";
+executionOrder.push('main');

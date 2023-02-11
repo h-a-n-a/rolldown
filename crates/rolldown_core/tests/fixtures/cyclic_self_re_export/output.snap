@@ -1,0 +1,9 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/fixtures/cyclic_self_re_export
+---
+---------- main.js ----------
+// main.js
+const foo = 1;
+export { foo, foo as foo2 };

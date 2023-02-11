@@ -1,0 +1,20 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/rollup/samples/export-default-as-c
+---
+---------- main.js ----------
+// baz.js
+var baz = 'BAZ';
+
+// namespace.js
+var namespace = Object.freeze({
+    __proto__: null,
+    get baz () {
+        return baz;
+    }
+});
+
+// main.js
+assert.equal(baz, 'BAZ');
+export { namespace };

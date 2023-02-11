@@ -1,0 +1,15 @@
+[package]
+name = "rolldown_common"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+swc_core = { workspace = true, features = [
+    "ecma_ast"
+] }
+hashlink = { workspace = true }
+rustc-hash = { workspace = true }
+tracing =  { workspace = true }
+ena = "0.14.0"

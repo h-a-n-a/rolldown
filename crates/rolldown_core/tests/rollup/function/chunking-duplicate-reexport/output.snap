@@ -1,0 +1,22 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/rollup/samples/chunking-duplicate-reexport
+---
+---------- chunk1.js ----------
+// chunk1.js
+export { answer } from "./lib.js";
+---------- chunk2.js ----------
+// chunk2.js
+export { answer } from "./lib.js";
+---------- lib.js ----------
+// lib.js
+const answer = 42;
+export { answer };
+---------- main.js ----------
+// main.js
+var main = Promise.all([
+    import("./chunk1.js"),
+    import("./chunk2.js")
+]);
+export { main as default };

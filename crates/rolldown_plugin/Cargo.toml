@@ -1,0 +1,12 @@
+[package]
+name = "rolldown_plugin"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rolldown_common = { path = "../rolldown_common" }
+rolldown_error = { path = "../rolldown_error" }
+anyhow = "1"
+async-trait = { workspace = true }
