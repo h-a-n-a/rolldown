@@ -31,6 +31,6 @@ pub fn to_cjs(
       ))
       .fold_with(&mut hygiene())
       .fold_with(&mut fixer::fixer(Some(comments)))
-      .fold_with(&mut inject_helpers())
+      .fold_with(&mut inject_helpers(unresolved_mark))
   })
 }
