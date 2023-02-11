@@ -1,5 +1,3 @@
-// @ts-check
-
 const ignoreTests = [
     // The giving code is not valid JavaScript.
     'rollup@function@circular-default-exports: handles circular default exports',
