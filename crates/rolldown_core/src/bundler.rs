@@ -33,7 +33,7 @@ impl Bundler {
     }
   }
 
-  pub async fn build(&mut self, output_opts: OutputOptions) -> BundleResult<Vec<Asset>> {
+  async fn build(&mut self, output_opts: OutputOptions) -> BundleResult<Vec<Asset>> {
     tracing::debug!("InputOptions {:#?}", self.input_options);
     tracing::debug!("start bundling with OutputOptions: {:#?}", output_opts);
     let mut graph = Graph::new(self.plugin_driver.clone());

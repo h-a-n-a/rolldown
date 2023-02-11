@@ -39,7 +39,7 @@ pub async fn compile_fixture(test_config_path: &Path) -> CompiledFixture {
   }
 
   let assets = bundler
-    .build(OutputOptions {
+    .generate(OutputOptions {
       // dir: Some(fixture_path.join("dist").to_string_lossy().to_string()),
       // format: InternalModuleFormat::from_str(&test_config.format).unwrap(),
       ..Default::default()

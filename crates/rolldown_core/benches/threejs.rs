@@ -12,7 +12,7 @@ async fn threejs() {
     ..Default::default()
   });
   bundler
-    .build(rolldown_core::OutputOptions {
+    .generate(rolldown_core::OutputOptions {
       ..Default::default()
     })
     .await
