@@ -1,4 +1,4 @@
-use std::sync::atomic::AtomicUsize;
+
 
 use rayon::prelude::{ParallelBridge, ParallelIterator};
 use rolldown_common::Symbol;
@@ -77,7 +77,7 @@ impl Graph {
         .filter_map(|(id, m)| m.as_norm().map(|m| (id, TreeshakeNormalModule::new(m))))
         .collect(),
       errors: Default::default(),
-      deeps: AtomicUsize::new(0),
+      warnings: Default::default(),
     };
     tracing::debug!("ctx: {:#?}", ctx);
     let used_ids = ctx

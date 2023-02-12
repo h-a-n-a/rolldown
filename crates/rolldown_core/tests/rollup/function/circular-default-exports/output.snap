@@ -1,0 +1,8 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/circular-default-exports
+---
+---------- main.js ----------
+// main.js
+export { foo as default };

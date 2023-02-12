@@ -15,6 +15,7 @@ pub enum Error {
     binding: String,
     sources: Vec<String>,
   },
+  CircularDependency(Vec<String>),
 
   // --- Custom
   /// Rolldown use this replace panic!() in the code.
@@ -79,6 +80,10 @@ impl Error {
     ))
   }
 
+  pub fn circular_dependency(circular_path: Vec<String>) -> Self {
+    Self::CircularDependency(circular_path)
+  }
+
   // --- Custom
 
   pub fn throw(msg: String) -> Self {
@@ -119,6 +124,7 @@ impl Display for Error {
         f,
         "Ambiguous external namespace resolution: {reexporting_module} re-exports {binding} from one of the external modules {sources:?}, guessing {used_module}"
       ),
+      Error::CircularDependency(path) => write!(f, "Circular dependency: {}", path.join(" -> ")),
       Error::Throw(msg) => write!(f, "Throw: {msg}"),
       Error::Panic(msg) => write!(f, "Panic: {msg}"),
       Error::Anyhow { source } => source.fmt(f),

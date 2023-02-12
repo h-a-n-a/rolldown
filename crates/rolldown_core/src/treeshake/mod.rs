@@ -1,12 +1,12 @@
 use std::sync::{
-  atomic::{AtomicBool, AtomicUsize, Ordering},
+  atomic::{AtomicBool, Ordering},
   Mutex,
 };
 
 use rayon::prelude::{IntoParallelRefIterator, ParallelBridge, ParallelIterator};
 use rolldown_common::{ImportedSpecifier, ModuleId, Symbol};
 use rustc_hash::{FxHashMap, FxHashSet};
-use swc_core::ecma::atoms::JsWord;
+use swc_core::ecma::{atoms::JsWord};
 
 use crate::{treeshake::statement_part::Include, BundleError, NormalModule};
 
@@ -17,7 +17,7 @@ mod statement_part;
 struct TreeshakeContext<'a> {
   id_to_module: FxHashMap<&'a ModuleId, TreeshakeNormalModule<'a>>,
   pub(crate) errors: Mutex<Vec<rolldown_error::Error>>,
-  pub(crate) deeps: AtomicUsize,
+  pub(crate) warnings: Mutex<Vec<rolldown_error::Error>>,
 }
 
 impl<'a> TreeshakeContext<'a> {
@@ -25,11 +25,8 @@ impl<'a> TreeshakeContext<'a> {
     self.errors.lock().unwrap().push(error);
   }
 
-  pub(crate) fn inc_and_check_deep(&self) {
-    let deep = self.deeps.fetch_add(1, Ordering::SeqCst);
-    if deep > 1000 {
-      panic!("Too deep");
-    }
+  pub(crate) fn add_warning(&self, warning: rolldown_error::Error) {
+    self.warnings.lock().unwrap().push(warning);
   }
 }
 
@@ -50,17 +47,13 @@ impl<'m> TreeshakeNormalModule<'m> {
     let imported_as_symbol_to_importee_id = module
       .linked_imports
       .iter()
-      .flat_map(|(id, import)| import.into_iter().map(move |spec| (&spec.imported_as, id)))
+      .flat_map(|(id, import)| import.iter().map(move |spec| (&spec.imported_as, id)))
       .collect();
 
     let imported_as_symbol_to_imported_specifier = module
       .linked_imports
       .iter()
-      .flat_map(|(_id, import)| {
-        import
-          .into_iter()
-          .map(move |spec| (&spec.imported_as, spec))
-      })
+      .flat_map(|(_id, import)| import.iter().map(move |spec| (&spec.imported_as, spec)))
       .collect();
 
     Self {
@@ -71,12 +64,11 @@ impl<'m> TreeshakeNormalModule<'m> {
     }
   }
 
-  fn try_define_by_declared_id(
+  fn try_define_symbol_created_by_declaration(
     &self,
     ctx: &TreeshakeContext,
     symbol: &Symbol,
   ) -> Option<FxHashSet<Symbol>> {
-    ctx.inc_and_check_deep();
     tracing::trace!(
       "try_define_by_declared_id: {:?} in {:?}",
       symbol,
@@ -90,58 +82,124 @@ impl<'m> TreeshakeNormalModule<'m> {
         parts
           .into_iter()
           .flat_map(|p| p.include(ctx, self))
-          // There declared ids aren't declared in statements, but created by
-          // create_top_level_symbol
-          .chain([symbol.clone()])
           .collect()
       })
   }
 
-  fn try_define_by_imported_alias_id(
+  fn try_define_symbol_created_by_import(
     &self,
     ctx: &TreeshakeContext,
-    id: &Symbol,
+    symbol: &Symbol,
   ) -> Option<FxHashSet<Symbol>> {
-    ctx.inc_and_check_deep();
-    let importee_id = self.imported_as_symbol_to_importee_id.get(id)?;
-    let mut included = FxHashSet::from_iter([id.clone()]);
+    // First, we need to find importee
+    let importee_id = self.imported_as_symbol_to_importee_id.get(symbol)?;
 
-    if importee_id.is_external() {
-      Some(included)
-    } else {
-      let spec = self
-        .imported_as_symbol_to_imported_specifier
-        .get(id)
-        .unwrap();
-      let importee = ctx.id_to_module.get(importee_id).unwrap();
-      included.extend(importee.define_by_exported_name(ctx, &spec.imported));
-      Some(included)
-    }
+    // Remember to include the symbol which we try to define
+    let mut included = FxHashSet::from_iter([symbol.clone()]);
+    let import_spec = self
+      .imported_as_symbol_to_imported_specifier
+      .get(symbol)
+      .expect("Must have imported specifier");
+
+    let mut maybe_the_definer = *importee_id;
+    let mut imported_symbol_name = &import_spec.imported;
+    let mut visited = vec![];
+    let (definer, symbol_owner_defined) = loop {
+      if maybe_the_definer.is_external() {
+        return Some(included);
+      }
+      if visited.contains(&(maybe_the_definer, imported_symbol_name)) {
+        ctx.add_warning(BundleError::circular_dependency(
+          visited
+            .iter()
+            .map(|(module, _)| module.to_string())
+            .collect(),
+        ));
+        return Some(included);
+      } else {
+        visited.push((maybe_the_definer, imported_symbol_name));
+      }
+
+      let exporter = ctx.id_to_module.get(&maybe_the_definer).unwrap();
+
+      let Some(founded_export_spec) = exporter.module.find_exported(imported_symbol_name) else {
+        if !exporter
+        .module
+        .external_modules_of_re_export_all
+        .is_empty() {
+          // The symbol is maybe imported from external module, just return the symbol itself
+          return Some(included);
+        } else {
+          ctx.add_error(BundleError::panic(&format!(
+            " \"{:#?}\" is not exported from module {:?}",
+            import_spec.imported, exporter.module.id
+          )));
+          return Default::default();
+        }
+      };
+
+      let is_exporter_the_owner_of_export_spec = founded_export_spec.owner == exporter.module.id;
+
+      if is_exporter_the_owner_of_export_spec {
+        // The symbol may be defined in the exporter
+        if exporter
+          .module
+          .parts
+          .find_parts_where_symbol_declared(&founded_export_spec.local_id)
+          .is_some()
+        {
+          break (exporter, &founded_export_spec.local_id);
+        } else {
+          // The exporter just import the symbol from other module
+          let import_spec = exporter
+            .imported_as_symbol_to_imported_specifier
+            .get(&founded_export_spec.local_id)
+            .expect("Must have imported specifier");
+          let importee = exporter
+            .imported_as_symbol_to_importee_id
+            .get(&founded_export_spec.local_id)
+            .expect("Must have importee");
+
+          maybe_the_definer = *importee;
+          imported_symbol_name = &import_spec.imported;
+        }
+      } else {
+        // The exporter just re-export the symbol from other module
+        maybe_the_definer = &founded_export_spec.owner;
+        imported_symbol_name = &founded_export_spec.exported_as;
+      }
+
+      // Important: there are used, so we need to add it to included
+      included.insert(founded_export_spec.local_id.clone());
+    };
+
+    included.extend(definer.define_by_top_level_symbol(ctx, symbol_owner_defined));
+
+    Some(included)
   }
 
   /// Three type of top level id
   /// 1. declared id by declaration, which stores in StatementParts
   /// 2. imported id by import declaration, which stores in linked_imports
   /// 3. included by generated namespace export, which is already linked in linked_imports
-  fn define_by_top_level_id(
+  fn define_by_top_level_symbol(
     &self,
     ctx: &TreeshakeContext,
-    top_level_id: &Symbol,
+    top_level_symbol: &Symbol,
   ) -> FxHashSet<Symbol> {
-    ctx.inc_and_check_deep();
     tracing::trace!(
       "define_by_top_level_id: {:?} in {:?}",
-      top_level_id,
+      top_level_symbol,
       self.module.id
     );
-    if let Some(res) = self.try_define_by_declared_id(ctx, top_level_id) {
+    if let Some(res) = self.try_define_symbol_created_by_declaration(ctx, top_level_symbol) {
       res
-    } else if let Some(res) = self.try_define_by_imported_alias_id(ctx, top_level_id) {
+    } else if let Some(res) = self.try_define_symbol_created_by_import(ctx, top_level_symbol) {
       res
     } else {
       ctx.add_error(BundleError::panic(&format!(
         "top_level_id: {:?} is not found in {:?}",
-        top_level_id, self.module.id
+        top_level_symbol, self.module.id
       )));
       Default::default()
     }
@@ -152,7 +210,6 @@ impl<'m> TreeshakeNormalModule<'m> {
     ctx: &TreeshakeContext,
     exported_name: &JsWord,
   ) -> FxHashSet<Symbol> {
-    ctx.inc_and_check_deep();
     tracing::trace!(
       "define_by_exported_name: {:?} in {:?}",
       exported_name,
@@ -161,13 +218,13 @@ impl<'m> TreeshakeNormalModule<'m> {
     if let Some(founded_spec) = self.module.find_exported(exported_name) {
       let is_local_export = founded_spec.owner == self.module.id;
       if is_local_export {
-        self.define_by_top_level_id(ctx, &founded_spec.local_id)
+        self.define_by_top_level_symbol(ctx, &founded_spec.local_id)
       } else {
         ctx
           .id_to_module
           .get(&founded_spec.owner)
           .unwrap()
-          .define_by_top_level_id(ctx, &founded_spec.local_id)
+          .define_by_top_level_symbol(ctx, &founded_spec.local_id)
       }
     } else if !self.module.external_modules_of_re_export_all.is_empty() {
       // The symbol is maybe imported from external module, just ignore it

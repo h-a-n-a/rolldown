@@ -1,7 +1,5 @@
 use std::fmt::Display;
 
-
-
 use swc_core::ecma::atoms as swc_atoms;
 use swc_core::ecma::atoms::JsWord;
 mod union_find;
@@ -90,7 +88,7 @@ pub struct ImportedSpecifier {
 
 /// A `ExportedSpecifier` means
 /// - A Symbol is exported from the owner.
-/// - The owner either declared the symbol or imported it from __external module__.
+/// - The owner either declared the symbol or imported it from the other module.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExportedSpecifier {
   pub exported_as: JsWord,

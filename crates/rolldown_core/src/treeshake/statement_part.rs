@@ -23,7 +23,7 @@ impl Include for StatementPart {
           self
             .referenced
             .iter()
-            .flat_map(|id| module.define_by_top_level_id(ctx, id)),
+            .flat_map(|id| module.define_by_top_level_symbol(ctx, id)),
         )
         .collect()
     } else {
