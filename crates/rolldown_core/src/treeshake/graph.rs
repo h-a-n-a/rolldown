@@ -1,5 +1,3 @@
-
-
 use rayon::prelude::{ParallelBridge, ParallelIterator};
 use rolldown_common::Symbol;
 use rustc_hash::FxHashSet;
@@ -88,6 +86,8 @@ impl Graph {
       .flatten()
       .collect::<FxHashSet<_>>();
     let errors = ctx.errors.into_inner().unwrap();
+    let warnings = ctx.warnings.into_inner().unwrap();
+    self.warnings.extend(warnings);
     if !errors.is_empty() {
       return Err(errors.into_iter().next().unwrap());
     }

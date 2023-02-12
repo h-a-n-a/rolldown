@@ -6,7 +6,7 @@ use std::sync::{
 use rayon::prelude::{IntoParallelRefIterator, ParallelBridge, ParallelIterator};
 use rolldown_common::{ImportedSpecifier, ModuleId, Symbol};
 use rustc_hash::{FxHashMap, FxHashSet};
-use swc_core::ecma::{atoms::JsWord};
+use swc_core::ecma::atoms::JsWord;
 
 use crate::{treeshake::statement_part::Include, BundleError, NormalModule};
 
@@ -64,11 +64,11 @@ impl<'m> TreeshakeNormalModule<'m> {
     }
   }
 
-  fn try_define_symbol_created_by_declaration(
+  fn define_symbol_created_by_declaration(
     &self,
     ctx: &TreeshakeContext,
     symbol: &Symbol,
-  ) -> Option<FxHashSet<Symbol>> {
+  ) -> FxHashSet<Symbol> {
     tracing::trace!(
       "try_define_by_declared_id: {:?} in {:?}",
       symbol,
@@ -84,9 +84,11 @@ impl<'m> TreeshakeNormalModule<'m> {
           .flat_map(|p| p.include(ctx, self))
           .collect()
       })
+      .expect("Must have declaration")
   }
 
-  fn try_define_symbol_created_by_import(
+  /// Return `None` if the symbol is not created by import
+  fn define_symbol_created_by_import(
     &self,
     ctx: &TreeshakeContext,
     symbol: &Symbol,
@@ -134,7 +136,8 @@ impl<'m> TreeshakeNormalModule<'m> {
             " \"{:#?}\" is not exported from module {:?}",
             import_spec.imported, exporter.module.id
           )));
-          return Default::default();
+          // At least, we could be believe that symbols in `included` are used.
+          return Some(included);
         }
       };
 
@@ -142,15 +145,10 @@ impl<'m> TreeshakeNormalModule<'m> {
 
       if is_exporter_the_owner_of_export_spec {
         // The symbol may be defined in the exporter
-        if exporter
-          .module
-          .parts
-          .find_parts_where_symbol_declared(&founded_export_spec.local_id)
-          .is_some()
-        {
+        if exporter.is_declare_the_symbol(&founded_export_spec.local_id) {
           break (exporter, &founded_export_spec.local_id);
         } else {
-          // The exporter just import the symbol from other module
+          // The symbol in exporter created by import from other module
           let import_spec = exporter
             .imported_as_symbol_to_imported_specifier
             .get(&founded_export_spec.local_id)
@@ -169,13 +167,21 @@ impl<'m> TreeshakeNormalModule<'m> {
         imported_symbol_name = &founded_export_spec.exported_as;
       }
 
-      // Important: there are used, so we need to add it to included
+      // Important: they are used, so we need to add it to included
       included.insert(founded_export_spec.local_id.clone());
     };
 
     included.extend(definer.define_by_top_level_symbol(ctx, symbol_owner_defined));
 
     Some(included)
+  }
+
+  fn is_declare_the_symbol(&self, symbol: &Symbol) -> bool {
+    self
+      .module
+      .parts
+      .find_parts_where_symbol_declared(symbol)
+      .is_some()
   }
 
   /// Three type of top level id
@@ -192,9 +198,9 @@ impl<'m> TreeshakeNormalModule<'m> {
       top_level_symbol,
       self.module.id
     );
-    if let Some(res) = self.try_define_symbol_created_by_declaration(ctx, top_level_symbol) {
-      res
-    } else if let Some(res) = self.try_define_symbol_created_by_import(ctx, top_level_symbol) {
+    if self.is_declare_the_symbol(top_level_symbol) {
+      self.define_symbol_created_by_declaration(ctx, top_level_symbol)
+    } else if let Some(res) = self.define_symbol_created_by_import(ctx, top_level_symbol) {
       res
     } else {
       ctx.add_error(BundleError::panic(&format!(
