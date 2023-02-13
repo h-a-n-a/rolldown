@@ -6,9 +6,6 @@ pub(crate) trait NapiErrorExt {
 
 impl NapiErrorExt for napi::Error {
   fn into_bundle_error(self) -> BundleError {
-    BundleError::Napi {
-      status: self.status.to_string(),
-      reason: self.reason.clone(),
-    }
+    BundleError::napi_error(self.status.to_string(), self.reason.clone())
   }
 }

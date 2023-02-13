@@ -79,10 +79,7 @@ impl ModuleTask {
     // load hook
     let code = tokio::fs::read_to_string(self.id.as_ref())
       .await
-      .map_err(|e| BundleError::ReadFileFailed {
-        filename: self.id.id().to_string(),
-        source: e,
-      })?;
+      .map_err(|e| BundleError::read_file_failed(self.id.to_string(), e))?;
 
     let code = self
       .plugin_driver
@@ -97,7 +94,7 @@ impl ModuleTask {
     let mut ast = COMPILER
       .parse_with_comments(code, self.id.as_ref(), Some(&comments))
       .map_err(|e| {
-        BundleError::ParseFailed(e.into_kind().msg().to_string(), "TODO: code".to_string())
+        BundleError::parsed_failed(e.into_kind().msg().to_string(), "TODO: code".to_string())
       })?;
 
     GLOBALS.set(&SWC_GLOBALS, || {

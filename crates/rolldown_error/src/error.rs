@@ -2,42 +2,27 @@ use std::{fmt::Display, path::Path};
 
 use sugar_path::SugarPath;
 
-pub type Result<T> = std::result::Result<T, Error>;
+use crate::ErrorKind;
 
 #[derive(Debug)]
-pub enum Error {
-  // --- Aligned with rollup
-  UnresolvedEntry(String),
-  MissingExport(String),
-  AmbiguousExternalNamespaces {
-    reexporting_module: String,
-    used_module: String,
-    binding: String,
-    sources: Vec<String>,
-  },
-  CircularDependency(Vec<String>),
-
-  // --- Custom
-  /// Rolldown use this replace panic!() in the code.
-  /// This makes Rolldown could gracefully shutdown.
-  Panic(String),
-  Throw(String),
-
-  Anyhow {
-    source: anyhow::Error,
-  },
-  Napi {
-    status: String,
-    reason: String,
-  },
-  ReadFileFailed {
-    filename: String,
-    source: std::io::Error,
-  },
-  ParseFailed(String, String),
+pub struct Error {
+  contexts: Vec<String>,
+  kind: ErrorKind,
 }
 
 impl Error {
+  fn with_kind(kind: ErrorKind) -> Self {
+    Self {
+      contexts: vec![],
+      kind,
+    }
+  }
+
+  pub fn context(mut self, context: String) -> Self {
+    self.contexts.push(context);
+    self
+  }
+
   // --- Aligned with rollup
   pub fn entry_cannot_be_external(unresolved_id: impl AsRef<Path>, cwd: impl AsRef<Path>) -> Self {
     let unresolved_id = unresolved_id.as_ref();
@@ -47,10 +32,10 @@ impl Error {
     } else {
       unresolved_id.to_path_buf()
     };
-    Self::UnresolvedEntry(format!(
+    Self::with_kind(ErrorKind::UnresolvedEntry(format!(
       "Entry module \"{}\" cannot be external.",
       id.display()
-    ))
+    )))
   }
 
   pub fn ambiguous_external_namespaces(
@@ -59,52 +44,64 @@ impl Error {
     used_module: String,
     sources: Vec<String>,
   ) -> Self {
-    Self::AmbiguousExternalNamespaces {
+    Self::with_kind(ErrorKind::AmbiguousExternalNamespaces {
       reexporting_module,
       used_module,
       binding,
       sources,
-    }
+    })
   }
 
   pub fn unresolved_entry(unresolved_id: impl AsRef<Path>) -> Self {
-    Self::UnresolvedEntry(format!(
+    Self::with_kind(ErrorKind::UnresolvedEntry(format!(
       "Could not resolve entry module \"{}\".",
       unresolved_id.as_ref().display()
-    ))
+    )))
   }
 
   pub fn missing_export(missing_exported_name: &str, importer: &str, importee: &str) -> Self {
-    Self::MissingExport(format!(
+    Self::with_kind(ErrorKind::MissingExport(format!(
       r#""{missing_exported_name}" is not exported by "{importee}", imported by "{importer}"."#,
-    ))
+    )))
   }
 
   pub fn circular_dependency(circular_path: Vec<String>) -> Self {
-    Self::CircularDependency(circular_path)
+    Self::with_kind(ErrorKind::CircularDependency(circular_path))
   }
 
   // --- Custom
 
+  pub fn parsed_failed(reason: String, code: String) -> Self {
+    Self::with_kind(ErrorKind::ParseFailed(reason, code))
+  }
+
+  pub fn napi_error(status: String, reason: String) -> Self {
+    Self::with_kind(ErrorKind::Napi { status, reason })
+  }
+
+  pub fn read_file_failed(filename: String, source: std::io::Error) -> Self {
+    Self::with_kind(ErrorKind::ReadFileFailed { filename, source })
+  }
+
   pub fn throw(msg: String) -> Self {
-    Self::Throw(msg)
+    Self::with_kind(ErrorKind::Throw(msg))
   }
   pub fn panic(msg: &str) -> Self {
-    Self::Panic(msg.to_string())
+    Self::with_kind(ErrorKind::Panic(msg.to_string()))
   }
 }
 
 impl std::convert::From<anyhow::Error> for Error {
   fn from(value: anyhow::Error) -> Self {
-    Self::Anyhow { source: value }
+    Self::with_kind(ErrorKind::Anyhow { source: value })
   }
 }
 
 impl std::error::Error for Error {
   fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-    match self {
-      Error::Anyhow { source, .. } => Some(source.as_ref()),
-      Error::ReadFileFailed { source, .. } => Some(source),
+    match &self.kind {
+      ErrorKind::Anyhow { source, .. } => Some(source.as_ref()),
+      ErrorKind::ReadFileFailed { source, .. } => Some(source),
       _ => None,
     }
   }
@@ -112,10 +109,14 @@ impl std::error::Error for Error {
 
 impl Display for Error {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      Error::UnresolvedEntry(msg) => msg.fmt(f),
-      Error::MissingExport(msg) => msg.fmt(f),
-      Error::AmbiguousExternalNamespaces {
+    for ctx in self.contexts.iter().rev() {
+      writeln!(f, "{}: {}", ansi_term::Color::Yellow.paint("context"), ctx)?;
+    }
+
+    match &self.kind {
+      ErrorKind::UnresolvedEntry(msg) => msg.fmt(f),
+      ErrorKind::MissingExport(msg) => msg.fmt(f),
+      ErrorKind::AmbiguousExternalNamespaces {
         binding,
         reexporting_module,
         used_module,
@@ -124,15 +125,15 @@ impl Display for Error {
         f,
         "Ambiguous external namespace resolution: {reexporting_module} re-exports {binding} from one of the external modules {sources:?}, guessing {used_module}"
       ),
-      Error::CircularDependency(path) => write!(f, "Circular dependency: {}", path.join(" -> ")),
-      Error::Throw(msg) => write!(f, "Throw: {msg}"),
-      Error::Panic(msg) => write!(f, "Panic: {msg}"),
-      Error::Anyhow { source } => source.fmt(f),
-      Error::Napi { status, reason } => write!(f, "Napi Error: {status} - {reason}"),
-      Error::ReadFileFailed { source, filename } => {
+      ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.join(" -> ")),
+      ErrorKind::Throw(msg) => write!(f, "Throw: {msg}"),
+      ErrorKind::Panic(msg) => write!(f, "Panic: {msg}"),
+      ErrorKind::Anyhow { source } => source.fmt(f),
+      ErrorKind::Napi { status, reason } => write!(f, "Napi Error: {status} - {reason}"),
+      ErrorKind::ReadFileFailed { source, filename } => {
         write!(f, "Read file failed: [{filename}] {source}")
       }
-      Error::ParseFailed(reason, code) => write!(f, "Parse failed: {reason} - {code:#}"),
+      ErrorKind::ParseFailed(reason, code) => write!(f, "Parse failed: {reason} - {code:#}"),
     }
   }
 }
