@@ -39,14 +39,11 @@ impl Bundler {
     let mut graph = Graph::new(self.plugin_driver.clone());
     graph.build(&self.input_options).await?;
     tracing::trace!("graph: {:#?}", graph);
-    // TODO: we should emit these error as wanning rather than stop the bundling
+    // TODO: Better warning handling
     if !graph.warnings.is_empty() {
-      return Err(
-        std::mem::take(&mut graph.warnings)
-          .into_iter()
-          .next()
-          .unwrap(),
-      );
+      graph.warnings.iter().for_each(|w| {
+        println!("{w}");
+      });
     }
     let mut bundle = Bundle::new(&self.input_options, &output_opts, &mut graph);
     let assets = bundle.generate()?;
