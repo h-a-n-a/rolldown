@@ -1487,14 +1487,14 @@ checksum = "d3bf6b372449361333ac1f498b7edae4dd5e70dccd7c0c2a7c7bce8f05ede648"
 
 [[package]]
 name = "rolldown_ast_template"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "swc_core",
 ]
 
 [[package]]
 name = "rolldown_common"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "ena",
  "hashlink",
@@ -1505,7 +1505,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_compiler"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "rolldown_error",
@@ -1515,7 +1515,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_core"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "criterion",
  "derivative",
@@ -1548,7 +1548,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_error"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "ansi_term",
  "anyhow",
@@ -1557,7 +1557,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_node_binding"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "async-trait",
  "derivative",
@@ -1576,7 +1576,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_plugin"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1586,7 +1586,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_resolver"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "rolldown_error",
  "sugar_path",
@@ -1594,18 +1594,18 @@ dependencies = [
 
 [[package]]
 name = "rolldown_runtime_helpers"
-version = "0.1.0"
+version = "0.0.1"
 
 [[package]]
 name = "rolldown_swc_utils"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "swc_core",
 ]
 
 [[package]]
 name = "rolldown_swc_visitors"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "hashlink",
  "rolldown_common",
@@ -1618,7 +1618,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_test_utils"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "futures",
  "rolldown_core",
@@ -1628,7 +1628,7 @@ dependencies = [
 
 [[package]]
 name = "rolldown_tracing"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "tracing",
  "tracing-subscriber",

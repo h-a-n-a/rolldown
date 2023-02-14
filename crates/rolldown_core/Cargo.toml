@@ -1,20 +1,22 @@
 [package]
 name = "rolldown_core"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+license = "MIT"
+description = "rolldown_core"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rolldown_common = { path = "../rolldown_common" }
-rolldown_swc_visitors = { path = "../rolldown_swc_visitors" }
-rolldown_compiler = { path = "../rolldown_compiler" }
-rolldown_resolver = { path = "../rolldown_resolver" }
-rolldown_error = { path = "../rolldown_error" }
-rolldown_runtime_helpers = { path = "../rolldown_runtime_helpers" }
-rolldown_ast_template = { path = "../rolldown_ast_template" }
-rolldown_plugin = { path = "../rolldown_plugin" }
-rolldown_tracing = { path = "../rolldown_tracing" }
+rolldown_common = { version = "0.0.1", path = "../rolldown_common" }
+rolldown_swc_visitors = { version = "0.0.1", path = "../rolldown_swc_visitors" }
+rolldown_compiler = { version = "0.0.1", path = "../rolldown_compiler" }
+rolldown_resolver = { version = "0.0.1", path = "../rolldown_resolver" }
+rolldown_error = { version = "0.0.1", path = "../rolldown_error" }
+rolldown_runtime_helpers = { version = "0.0.1", path = "../rolldown_runtime_helpers" }
+rolldown_ast_template = { version = "0.0.1", path = "../rolldown_ast_template" }
+rolldown_plugin = { version = "0.0.1", path = "../rolldown_plugin" }
+rolldown_tracing = { version = "0.0.1", path = "../rolldown_tracing" }
 tokio = { workspace = true, features = ["full"] }
 swc_core = { workspace = true, features = [
     "ecma_ast",
@@ -31,8 +33,8 @@ tracing = { workspace = true }
 itertools = { workspace = true }
 rustc-hash = { workspace = true }
 rayon = { workspace = true }
-futures = {  workspace = true }
-phf = { workspace = true , features = ["macros"] }
+futures = { workspace = true }
+phf = { workspace = true, features = ["macros"] }
 regex = "1.5.4"
 
 [dev_dependencies]
