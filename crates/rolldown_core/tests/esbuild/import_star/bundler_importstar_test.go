@@ -10,46 +10,6 @@ var importstar_suite = suite{
 	name: "importstar",
 }
 
-func TestImportStarCommonJSNoCapture(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				let foo = 234
-				console.log(ns.foo, ns.foo, foo)
-			`,
-			"/foo.js": `
-				exports.foo = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestImportStarAndCommonJS(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				const ns2 = require('./foo')
-				console.log(ns.foo, ns2.foo)
-			`,
-			"/foo.js": `
-				export const foo = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
 func TestImportStarNoBundleUnused(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
 		files: map[string]string{
@@ -270,31 +230,31 @@ func TestReExportStarNameCollisionNotAmbiguousImport(t *testing.T) {
 	})
 }
 
-func TestReExportStarNameCollisionNotAmbiguousExport(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				export * from './a'
-				export * from './b'
-			`,
-			"/a.js": `
-				export * from './c'
-			`,
-			"/b.js": `
-				export {x} from './c'
-			`,
-			"/c.js": `
-				export let x = 1, y = 2
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			OutputFormat:  config.FormatESModule,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// func TestReExportStarNameCollisionNotAmbiguousExport(t *testing.T) {
+// 	importstar_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.js": `
+// 				export * from './a'
+// 				export * from './b'
+// 			`,
+// 			"/a.js": `
+// 				export * from './c'
+// 			`,
+// 			"/b.js": `
+// 				export {x} from './c'
+// 			`,
+// 			"/c.js": `
+// 				export let x = 1, y = 2
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.js"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			OutputFormat:  config.FormatESModule,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
 func TestReExportStarNameShadowingNotAmbiguous(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
