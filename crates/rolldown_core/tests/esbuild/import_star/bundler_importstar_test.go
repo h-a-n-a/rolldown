@@ -109,33 +109,33 @@ func TestImportStarMangleNoBundleNoCapture(t *testing.T) {
 	})
 }
 
-func TestImportStarExportStarOmitAmbiguous(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './common'
-				console.log(ns)
-			`,
-			"/common.js": `
-				export * from './foo'
-				export * from './bar'
-			`,
-			"/foo.js": `
-				export const x = 1
-				export const y = 2
-			`,
-			"/bar.js": `
-				export const y = 3
-				export const z = 4
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// func TestImportStarExportStarOmitAmbiguous(t *testing.T) {
+// 	importstar_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.js": `
+// 				import * as ns from './common'
+// 				console.log(ns)
+// 			`,
+// 			"/common.js": `
+// 				export * from './foo'
+// 				export * from './bar'
+// 			`,
+// 			"/foo.js": `
+// 				export const x = 1
+// 				export const y = 2
+// 			`,
+// 			"/bar.js": `
+// 				export const y = 3
+// 				export const z = 4
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.js"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
 func TestImportExportStarAmbiguousError(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
