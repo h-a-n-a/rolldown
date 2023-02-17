@@ -1,6 +1,6 @@
-use std::path::Path;
+use std::{path::Path, str::FromStr};
 
-use rolldown_core::{Asset, Bundler, OutputOptions};
+use rolldown_core::{Asset, Bundler, InternalModuleFormat, OutputOptions};
 use rolldown_test_utils::TestConfig;
 
 pub struct CompiledFixture {
@@ -41,7 +41,8 @@ pub async fn compile_fixture(test_config_path: &Path) -> CompiledFixture {
   let assets = bundler
     .generate(OutputOptions {
       // dir: Some(fixture_path.join("dist").to_string_lossy().to_string()),
-      // format: InternalModuleFormat::from_str(&test_config.format).unwrap(),
+      format: InternalModuleFormat::from_str(&test_config.format)
+        .unwrap_or(InternalModuleFormat::Esm),
       ..Default::default()
     })
     .await

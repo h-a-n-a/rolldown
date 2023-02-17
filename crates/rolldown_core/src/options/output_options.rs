@@ -1,4 +1,4 @@
-
+use std::str::FromStr;
 
 use derivative::Derivative;
 
@@ -22,14 +22,14 @@ impl InternalModuleFormat {
   }
 }
 
-impl TryFrom<&str> for InternalModuleFormat {
-  type Error = String;
+impl FromStr for InternalModuleFormat {
+  type Err = String;
 
-  fn try_from(value: &str) -> Result<Self, Self::Error> {
+  fn from_str(value: &str) -> Result<Self, Self::Err> {
     match value {
       "esm" => Ok(InternalModuleFormat::Esm),
       "cjs" => Ok(InternalModuleFormat::Cjs),
-      _ => Err(format!("Invalid module format: {}", value)),
+      _ => Err(format!("Invalid module format: {value}")),
     }
   }
 }

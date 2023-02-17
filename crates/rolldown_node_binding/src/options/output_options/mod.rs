@@ -1,9 +1,7 @@
-
-
-
+use std::str::FromStr;
 
 use napi_derive::*;
-
+use rolldown_core::InternalModuleFormat;
 use serde::Deserialize;
 
 #[napi(object)]
@@ -74,7 +72,7 @@ pub fn resolve_output_options(opts: OutputOptions) -> napi::Result<rolldown_core
 
   opts
     .format
-    .map(|format| defaults.format = format.as_str().try_into().unwrap());
+    .map(|format| defaults.format = InternalModuleFormat::from_str(format.as_str()).unwrap());
 
   defaults.dir = opts.dir;
 

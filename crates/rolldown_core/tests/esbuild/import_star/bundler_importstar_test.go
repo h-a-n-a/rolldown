@@ -870,26 +870,26 @@ func TestReExportStarAsExternalIIFE(t *testing.T) {
 	})
 }
 
-func TestReExportStarAsExternalCommonJS(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				export * as out from "foo"
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			OutputFormat:  config.FormatCommonJS,
-			AbsOutputFile: "/out.js",
-			ExternalSettings: config.ExternalSettings{
-				PreResolve: config.ExternalMatchers{Exact: map[string]bool{
-					"foo": true,
-				}},
-			},
-		},
-	})
-}
+// func Testre_export_star_as_external_common_js(t *testing.T) {
+// 	importstar_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.js": `
+// 				export * as out from "foo"
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.js"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			OutputFormat:  config.FormatCommonJS,
+// 			AbsOutputFile: "/out.js",
+// 			ExternalSettings: config.ExternalSettings{
+// 				PreResolve: config.ExternalMatchers{Exact: map[string]bool{
+// 					"foo": true,
+// 				}},
+// 			},
+// 		},
+// 	})
+// }
 
 func TestReExportStarAsIIFENoBundle(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{

@@ -1,0 +1,7 @@
+{
+    "input": {
+        "entry": "./entry.js"
+    },
+    "format": "cjs",
+    "external": ["foo"]
+}
