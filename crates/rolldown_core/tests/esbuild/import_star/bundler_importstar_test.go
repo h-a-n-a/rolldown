@@ -63,22 +63,22 @@ func TestExportSelfIIFEWithName(t *testing.T) {
 // 	})
 // }
 
-func TestExportSelfCommonJS(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				export const foo = 123
-				export * from './entry'
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			OutputFormat:  config.FormatCommonJS,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// func Testexport_self_common_js(t *testing.T) {
+// 	importstar_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.js": `
+// 				export const foo = 123
+// 				export * from './entry'
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.js"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			OutputFormat:  config.FormatCommonJS,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
 func TestExportSelfCommonJSMinified(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
