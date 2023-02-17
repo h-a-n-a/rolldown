@@ -1,12 +1,11 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/rollup/samples/code-splitting-export-default-from-entry
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/code-splitting-export-default-from-entry
 ---
 ---------- dep.js ----------
 // dep.js
 var value = 42;
 export { value as default };
 ---------- main.js ----------
-// main.js
 export { default as value } from "./dep.js";

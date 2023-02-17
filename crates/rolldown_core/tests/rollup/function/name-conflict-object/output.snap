@@ -1,11 +1,12 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/rollup/samples/name-conflict-object
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/name-conflict-object
 ---
 ---------- main.js ----------
-// main.js
 import * as foo from "external";
+
+// main.js
 const Object$1 = null;
 var main = 'bar';
 export { Object$1 as Object, main as default, foo };

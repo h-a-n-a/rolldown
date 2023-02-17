@@ -1,15 +1,17 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
+expression: res.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/fixtures/handle_import_from_indirect_re_export_in_deps
 ---
 ---------- a.js ----------
-// a.js
 import { a as a1 } from "./shared.js";
+
+// a.js
 console.log(a1);
 ---------- b.js ----------
-// b.js
 import { b as b1 } from "./shared.js";
+
+// b.js
 console.log(b1);
 ---------- shared.js ----------
 // shared.js

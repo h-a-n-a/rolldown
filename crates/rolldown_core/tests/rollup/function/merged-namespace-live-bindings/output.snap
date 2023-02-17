@@ -4,6 +4,7 @@ expression: res.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/rollup/function/merged-namespace-live-bindings
 ---
 ---------- main.js ----------
+import * as external from "external";
 function _mergeNamespaces(n, m) {
 	m.forEach(function (e) {
 		e && typeof e !== 'string' && !Array.isArray(e) && Object.keys(e).forEach(function (k) {
@@ -36,7 +37,6 @@ var ns = _mergeNamespaces({
 ]);
 
 // main.js
-import * as external from "external";
 const checkNamespace = (ns$1)=>{
     assert.strictEqual(ns$1.internal, 'original', 'internal');
     ns$1.updateInternal();

@@ -1,8 +1,7 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
+expression: res.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/fixtures/re_export_all_from_external
 ---
 ---------- a.js ----------
-// a.js
 export * from "external";
