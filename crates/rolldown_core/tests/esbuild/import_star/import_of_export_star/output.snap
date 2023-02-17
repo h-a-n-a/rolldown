@@ -1,0 +1,15 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/import_of_export_star
+---
+---------- entry.js ----------
+// bar.js
+statement();
+statement();
+statement();
+statement();
+const bar = 123;
+
+// entry.js
+console.log(bar);
