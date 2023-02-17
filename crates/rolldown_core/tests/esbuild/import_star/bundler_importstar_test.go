@@ -10,105 +10,6 @@ var importstar_suite = suite{
 	name: "importstar",
 }
 
-func TestImportStarNoBundleUnused(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				let foo = 234
-				console.log(foo)
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestImportStarNoBundleCapture(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				let foo = 234
-				console.log(ns, ns.foo, foo)
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestImportStarNoBundleNoCapture(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				let foo = 234
-				console.log(ns.foo, ns.foo, foo)
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestImportStarMangleNoBundleUnused(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				let foo = 234
-				console.log(foo)
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			MinifySyntax:  true,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestImportStarMangleNoBundleCapture(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				let foo = 234
-				console.log(ns, ns.foo, foo)
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			MinifySyntax:  true,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestImportStarMangleNoBundleNoCapture(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				let foo = 234
-				console.log(ns.foo, ns.foo, foo)
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			MinifySyntax:  true,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
 
 func TestExportSelfIIFE(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
@@ -145,22 +46,22 @@ func TestExportSelfIIFEWithName(t *testing.T) {
 	})
 }
 
-func TestExportSelfES6(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				export const foo = 123
-				export * from './entry'
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			OutputFormat:  config.FormatESModule,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// func Testexport_self_es6(t *testing.T) {
+// 	importstar_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.js": `
+// 				export const foo = 123
+// 				export * from './entry'
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.js"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			OutputFormat:  config.FormatESModule,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
 func TestExportSelfCommonJS(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{

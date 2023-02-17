@@ -339,6 +339,11 @@ impl Graph {
         importee_of_being_re_exported_all
           .iter()
           .for_each(|importee_id| {
+            // It seems meaningless to re-export all from itself
+            if importee_id == importer_id {
+              return;
+            }
+
             let [importer, importee] = self
               .module_by_id
               .get_many_mut([importer_id, importee_id])
