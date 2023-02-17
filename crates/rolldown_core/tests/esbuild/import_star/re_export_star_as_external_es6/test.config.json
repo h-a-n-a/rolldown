@@ -1,0 +1,6 @@
+{
+    "input": {
+        "entry": "./entry.js"
+    },
+    "external": ["foo"]
+}

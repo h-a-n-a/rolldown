@@ -870,27 +870,6 @@ func TestReExportStarAsExternalIIFE(t *testing.T) {
 	})
 }
 
-func TestReExportStarAsExternalES6(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				export * as out from "foo"
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			OutputFormat:  config.FormatESModule,
-			AbsOutputFile: "/out.js",
-			ExternalSettings: config.ExternalSettings{
-				PreResolve: config.ExternalMatchers{Exact: map[string]bool{
-					"foo": true,
-				}},
-			},
-		},
-	})
-}
-
 func TestReExportStarAsExternalCommonJS(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
 		files: map[string]string{
