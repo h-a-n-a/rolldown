@@ -74,7 +74,8 @@ impl Chunk {
     input_options: &InputOptions,
     output_options: &OutputOptions,
   ) -> BundleResult<String> {
-    let runtime_code = self.runtime_helpers.generate_helpers().join("\n");
+    let mut runtime_code = self.runtime_helpers.generate_helpers().join("\n");
+    runtime_code.push('\n');
 
     let before_code = self
       .before_module_items

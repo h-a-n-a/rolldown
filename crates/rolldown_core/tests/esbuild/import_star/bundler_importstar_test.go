@@ -1180,32 +1180,32 @@ entry-nope.js: WARNING: Import "nope" will always be undefined because the file 
 	})
 }
 
-// Failure case due to a bug in https://github.com/evanw/esbuild/pull/2059
-func TestReExportStarEntryPointAndInnerFile(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				export * from 'a'
-				import * as inner from './inner.js'
-				export { inner }
-			`,
-			"/inner.js": `
-				export * from 'b'
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:         config.ModeBundle,
-			AbsOutputDir: "/out",
-			OutputFormat: config.FormatCommonJS,
-			ExternalSettings: config.ExternalSettings{
-				PreResolve: config.ExternalMatchers{
-					Exact: map[string]bool{
-						"a": true,
-						"b": true,
-					},
-				},
-			},
-		},
-	})
-}
+// // Failure case due to a bug in https://github.com/evanw/esbuild/pull/2059
+// func Testre_export_star_entry_point_and_inner_file(t *testing.T) {
+// 	importstar_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.js": `
+// 				export * from 'a'
+// 				import * as inner from './inner.js'
+// 				export { inner }
+// 			`,
+// 			"/inner.js": `
+// 				export * from 'b'
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.js"},
+// 		options: config.Options{
+// 			Mode:         config.ModeBundle,
+// 			AbsOutputDir: "/out",
+// 			OutputFormat: config.FormatCommonJS,
+// 			ExternalSettings: config.ExternalSettings{
+// 				PreResolve: config.ExternalMatchers{
+// 					Exact: map[string]bool{
+// 						"a": true,
+// 						"b": true,
+// 					},
+// 				},
+// 			},
+// 		},
+// 	})
+// }
