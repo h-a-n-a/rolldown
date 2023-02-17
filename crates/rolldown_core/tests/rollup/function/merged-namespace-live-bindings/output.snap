@@ -1,7 +1,7 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/rollup/samples/merged-namespace-live-bindings
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/merged-namespace-live-bindings
 ---
 ---------- main.js ----------
 function _mergeNamespaces(n, m) {
@@ -17,7 +17,8 @@ function _mergeNamespaces(n, m) {
 		});
 	});
 	return Object.freeze(n);
-}// internal.js
+}
+// internal.js
 let internal = 'original';
 const updateInternal = ()=>internal = 'updated';
 

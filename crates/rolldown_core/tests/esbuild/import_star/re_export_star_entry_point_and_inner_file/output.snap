@@ -1,6 +1,5 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-assertion_line: 71
 expression: res.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_entry_point_and_inner_file
 ---
