@@ -1,16 +1,18 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/esbuild/samples/splitting/assign_to_local
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/splitting/assign_to_local
 ---
 ---------- a.js ----------
-// a.js
 import { foo, setFoo } from "./shared.js";
+
+// a.js
 setFoo(123);
 console.log(foo);
 ---------- b.js ----------
-// b.js
 import { foo } from "./shared.js";
+
+// b.js
 console.log(foo);
 ---------- shared.js ----------
 // shared.js

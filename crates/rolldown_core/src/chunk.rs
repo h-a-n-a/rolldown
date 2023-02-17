@@ -13,6 +13,7 @@ use swc_core::{
     ast::{self, Id, Ident},
     atoms::{js_word, JsWord},
     utils::{quote_ident, quote_str},
+    visit::VisitMutWith,
   },
 };
 
@@ -264,6 +265,43 @@ impl Chunk {
       modules
     };
 
+    {
+      // Finalize module items in chunk
+      let finalize_ctx = FinalizeContext {
+        chunk_filename_by_id: ctx.chunk_filename_by_id,
+        // Since there's no dynamic import expressions to rewrite, we can use empty set.
+        resolved_ids: &Default::default(),
+        // No scoped names to rewrite
+        declared_scoped_names: &Default::default(),
+        unresolved_ctxt: ctx.unresolved_ctxt,
+        top_level_ctxt_set: &top_level_ctxt_set,
+      };
+
+      self
+        .before_module_items
+        .visit_mut_with(&mut rolldown_swc_visitors::finalizer(
+          &id_to_name,
+          ctx.split_point_id_to_chunk_id,
+          finalize_ctx,
+        ));
+      let finalize_ctx = FinalizeContext {
+        chunk_filename_by_id: ctx.chunk_filename_by_id,
+        // Since there's no dynamic import expressions to rewrite, we can use empty set.
+        resolved_ids: &Default::default(),
+        // No scoped names to rewrite
+        declared_scoped_names: &Default::default(),
+        unresolved_ctxt: ctx.unresolved_ctxt,
+        top_level_ctxt_set: &top_level_ctxt_set,
+      };
+      self
+        .after_module_items
+        .visit_mut_with(&mut rolldown_swc_visitors::finalizer(
+          &id_to_name,
+          ctx.split_point_id_to_chunk_id,
+          finalize_ctx,
+        ));
+    }
+
     ordered_modules
       .into_par_iter()
       .filter_map(|m| m.as_norm_mut())
@@ -272,17 +310,15 @@ impl Chunk {
           chunk_filename_by_id: ctx.chunk_filename_by_id,
           resolved_ids: &m.resolved_module_ids,
           declared_scoped_names: &declared_scoped_names,
-          top_level_ctxt: m.top_level_ctxt,
           unresolved_ctxt: ctx.unresolved_ctxt,
           top_level_ctxt_set: &top_level_ctxt_set,
         };
 
-        rolldown_swc_visitors::finalize(
-          &mut m.ast,
+        m.ast.visit_mut_with(&mut rolldown_swc_visitors::finalizer(
           &id_to_name,
           ctx.split_point_id_to_chunk_id,
           finalize_ctx,
-        )
+        ));
       });
   }
 
@@ -377,7 +413,8 @@ impl Chunk {
         }
       });
 
-    let mut module_items = depended_modules
+    // imports and re-exports
+    let module_items = depended_modules
       .par_iter()
       .flat_map(|chunk_dep_id| {
         let mut imported = false;
@@ -429,12 +466,19 @@ impl Chunk {
                   .into_values()
                   .sorted_by_key(|spec| &spec.imported)
                   .map(|spec| {
-                    ast::ImportSpecifier::Named(ast::ImportNamedSpecifier {
-                      local: Ident::from(spec.imported_as.clone().to_id()),
-                      imported: Some(quote_ident!(spec.imported.clone()).into()),
-                      span: Default::default(),
-                      is_type_only: false,
-                    })
+                    if spec.imported == js_word!("default") {
+                      ast::ImportSpecifier::Default(ast::ImportDefaultSpecifier {
+                        local: spec.imported_as.clone().to_id().into(),
+                        span: Default::default(),
+                      })
+                    } else {
+                      ast::ImportSpecifier::Named(ast::ImportNamedSpecifier {
+                        local: Ident::from(spec.imported_as.clone().to_id()),
+                        imported: Some(quote_ident!(spec.imported.clone()).into()),
+                        span: Default::default(),
+                        is_type_only: false,
+                      })
+                    }
                   })
                   .collect(),
                 ..ast::ImportDecl::dummy()
@@ -498,15 +542,7 @@ impl Chunk {
       })
       .collect::<Vec<_>>();
 
-    let entry_module = ctx
-      .modules
-      .get_mut(&self.entry)
-      .unwrap()
-      .as_norm_mut()
-      .unwrap();
-
-    module_items.append(&mut entry_module.ast.body);
-    entry_module.ast.body = module_items;
+    self.before_module_items = module_items;
 
     if !exports_in_scope.is_empty() {
       let exports = rolldown_ast_template::build_exports_stmt(
@@ -515,7 +551,7 @@ impl Chunk {
           .map(|(exported_name, spec)| (exported_name.clone(), spec.local_id.clone().to_id()))
           .collect(),
       );
-      entry_module.ast.body.push(exports);
+      self.after_module_items.push(exports);
     }
   }
 }

@@ -1,15 +1,17 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/esbuild/samples/splitting/shared_es6_into_es6
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/splitting/shared_es6_into_es6
 ---
 ---------- a.js ----------
-// a.js
 import { foo } from "./shared.js";
+
+// a.js
 console.log(foo);
 ---------- b.js ----------
-// b.js
 import { foo } from "./shared.js";
+
+// b.js
 console.log(foo);
 ---------- shared.js ----------
 // shared.js

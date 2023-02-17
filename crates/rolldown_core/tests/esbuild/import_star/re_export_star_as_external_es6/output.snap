@@ -4,6 +4,6 @@ expression: res.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_as_external_es6
 ---
 ---------- entry.js ----------
-// entry.js
 import * as out from "foo";
+
 export { out };

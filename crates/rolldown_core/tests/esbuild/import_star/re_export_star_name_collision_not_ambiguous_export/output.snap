@@ -6,6 +6,4 @@ input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_name_c
 ---------- entry.js ----------
 // c.js
 let x = 1, y = 2;
-
-// entry.js
 export { x, y };

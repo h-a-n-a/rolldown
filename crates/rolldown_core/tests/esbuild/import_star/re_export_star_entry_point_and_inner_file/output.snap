@@ -4,6 +4,9 @@ expression: res.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_entry_point_and_inner_file
 ---
 ---------- entry.js ----------
+export * from "a";
+
+import * as b from "b";
 function _mergeNamespaces(n, m) {
 	m.forEach(function (e) {
 		e && typeof e !== 'string' && !Array.isArray(e) && Object.keys(e).forEach(function (k) {
@@ -24,8 +27,4 @@ var inner = _mergeNamespaces({
 }, [
     b
 ]);
-
-// entry.js
-export * from "a";
-import * as b from "b";
 export { inner };

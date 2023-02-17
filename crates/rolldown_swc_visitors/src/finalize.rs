@@ -37,26 +37,23 @@ impl IdentType {
 
 #[derive(Debug, Clone)]
 pub struct FinalizeContext<'me> {
+  /// Used to rewrite dynamic import
   pub resolved_ids: &'me HashMap<JsWord, ModuleId>,
-  // All declared scoped names in the chunk
+  /// All declared scoped names in this chunk
   pub declared_scoped_names: &'me HashSet<JsWord>,
-  pub top_level_ctxt: SyntaxContext,
   pub unresolved_ctxt: SyntaxContext,
+  /// Used to rewrite dynamic import
   pub chunk_filename_by_id: &'me HashMap<ChunkId, String>,
-
-  // All top_level_ctxt of modules belong to the same chunk
+  // All top_level_ctxt of modules belong to this chunk
   pub top_level_ctxt_set: &'me HashSet<SyntaxContext>,
 }
 
-pub fn finalize(
-  ast: &mut ast::Module,
-  rename_map: &HashMap<Id, JsWord>,
-  split_point_id_to_chunk_id: &HashMap<ModuleId, ChunkId>,
-  ctx: FinalizeContext,
-) {
-  let mut v = Finalizer::new(rename_map, split_point_id_to_chunk_id, ctx);
-
-  ast.visit_mut_with(&mut v);
+pub fn finalizer<'a>(
+  rename_map: &'a HashMap<Id, JsWord>,
+  split_point_id_to_chunk_id: &'a HashMap<ModuleId, ChunkId>,
+  ctx: FinalizeContext<'a>,
+) -> impl VisitMut + 'a {
+  Finalizer::new(rename_map, split_point_id_to_chunk_id, ctx)
 }
 
 #[derive(Debug)]
