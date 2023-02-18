@@ -107,6 +107,7 @@ impl Chunk {
       let comments = SingleThreadedComments::default();
       let mut program = COMPILER
         .parse_with_comments(code.clone(), &filename, Some(&comments))
+        .1
         .map_err(|_| {
           BundleError::panic(&format!(
             "Failed to parse generated code \n{}\n for {}",

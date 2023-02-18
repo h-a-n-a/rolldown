@@ -1553,6 +1553,7 @@ dependencies = [
  "ansi_term",
  "anyhow",
  "sugar_path",
+ "swc_core",
 ]
 
 [[package]]

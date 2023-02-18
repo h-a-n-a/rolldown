@@ -8,7 +8,7 @@ use swc_common::{
   FileName, SourceMap,
 };
 use swc_core::{
-  common as swc_common,
+  common::{self as swc_common, SourceFile},
   ecma::{
     ast, codegen as swc_ecma_codegen,
     parser::{self as swc_ecma_parser, PResult},
@@ -90,7 +90,11 @@ impl Compiler {
     String::from_utf8(output).map_err(Into::into)
   }
 
-  pub fn parse(&self, source_code: String, filename: &str) -> PResult<ast::Module> {
+  pub fn parse(
+    &self,
+    source_code: String,
+    filename: &str,
+  ) -> (Arc<SourceFile>, PResult<ast::Module>) {
     self.parse_with_comments(source_code, filename, None)
   }
 
@@ -99,7 +103,7 @@ impl Compiler {
     source_code: String,
     filename: &str,
     comments: Option<&dyn Comments>,
-  ) -> PResult<ast::Module> {
+  ) -> (Arc<SourceFile>, PResult<ast::Module>) {
     let handler = Handler::with_tty_emitter(ColorConfig::Auto, true, false, Some(self.cm.clone()));
     let p = filename.as_path();
     let fm = self
@@ -127,7 +131,7 @@ impl Compiler {
       e.into_diagnostic(&handler).emit();
     });
     // To be clear, rolldown will always assume the input is a module
-    parser.parse_module()
+    (fm.clone(), parser.parse_module())
   }
 }
 

@@ -91,11 +91,8 @@ impl ModuleTask {
     tracing::debug!("transformed");
 
     let comments = SwcComments::default();
-    let mut ast = COMPILER
-      .parse_with_comments(code, self.id.as_ref(), Some(&comments))
-      .map_err(|e| {
-        BundleError::parsed_failed(e.into_kind().msg().to_string(), "TODO: code".to_string())
-      })?;
+    let (fm, ast) = COMPILER.parse_with_comments(code, self.id.as_ref(), Some(&comments));
+    let mut ast = ast.map_err(|e| BundleError::parse_js_failed(fm, e))?;
 
     GLOBALS.set(&SWC_GLOBALS, || {
       rolldown_swc_visitors::resolve(&mut ast, self.unresolved_mark, self.top_level_mark);

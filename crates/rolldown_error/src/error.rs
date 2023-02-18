@@ -1,6 +1,7 @@
-use std::{fmt::Display, path::Path};
+use std::{fmt::Display, path::Path, sync::Arc};
 
 use sugar_path::SugarPath;
+use swc_core::common::SourceFile;
 
 use crate::ErrorKind;
 
@@ -52,6 +53,8 @@ impl Error {
     })
   }
 
+  // align with rollup
+
   pub fn unresolved_entry(unresolved_id: impl AsRef<Path>) -> Self {
     Self::with_kind(ErrorKind::UnresolvedEntry(format!(
       "Could not resolve entry module \"{}\".",
@@ -69,11 +72,19 @@ impl Error {
     Self::with_kind(ErrorKind::CircularDependency(circular_path))
   }
 
-  // --- Custom
+  // --- rolldown special
 
-  pub fn parsed_failed(reason: String, code: String) -> Self {
-    Self::with_kind(ErrorKind::ParseFailed(reason, code))
+  pub fn parse_js_failed(
+    fm: Arc<SourceFile>,
+    source: swc_core::ecma::parser::error::Error,
+  ) -> Self {
+    Self::with_kind(ErrorKind::ParseJsFailed {
+      source_file: fm,
+      source,
+    })
   }
+
+  // --- TODO: we should remove following errors
 
   pub fn napi_error(status: String, reason: String) -> Self {
     Self::with_kind(ErrorKind::Napi { status, reason })
@@ -113,27 +124,6 @@ impl Display for Error {
       writeln!(f, "{}: {}", ansi_term::Color::Yellow.paint("context"), ctx)?;
     }
 
-    match &self.kind {
-      ErrorKind::UnresolvedEntry(msg) => msg.fmt(f),
-      ErrorKind::MissingExport(msg) => msg.fmt(f),
-      ErrorKind::AmbiguousExternalNamespaces {
-        binding,
-        reexporting_module,
-        used_module,
-        sources,
-      } => write!(
-        f,
-        "Ambiguous external namespace resolution: {reexporting_module} re-exports {binding} from one of the external modules {sources:?}, guessing {used_module}"
-      ),
-      ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.join(" -> ")),
-      ErrorKind::Throw(msg) => write!(f, "Throw: {msg}"),
-      ErrorKind::Panic(msg) => write!(f, "Panic: {msg}"),
-      ErrorKind::Anyhow { source } => source.fmt(f),
-      ErrorKind::Napi { status, reason } => write!(f, "Napi Error: {status} - {reason}"),
-      ErrorKind::ReadFileFailed { source, filename } => {
-        write!(f, "Read file failed: [{filename}] {source}")
-      }
-      ErrorKind::ParseFailed(reason, code) => write!(f, "Parse failed: {reason} - {code:#}"),
-    }
+    self.kind.fmt(f)
   }
 }

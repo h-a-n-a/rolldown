@@ -9,5 +9,6 @@ description = "rolldown_error"
 
 [dependencies]
 sugar_path = { workspace = true }
+swc_core = { workspace = true, features = ["ecma_parser"] }
 anyhow = "1.0.66"
 ansi_term = "0.12.1"
