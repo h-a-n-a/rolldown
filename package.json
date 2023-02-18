@@ -8,7 +8,9 @@
     "build": "pnpm -r run build",
     "build:binding": "pnpm --filter @rolldown/node-binding run build",
     "build:binding:release": "pnpm --filter @rolldown/node-binding run build:release",
-    "test": "pnpm run --parallel test"
+    "test": "pnpm --filter=!rollup-tests run --parallel test",
+    "test:rs": "cargo test",
+    "test:ci": "pnpm test && pnpm test:rs"
   },
   "keywords": [],
   "author": "",
