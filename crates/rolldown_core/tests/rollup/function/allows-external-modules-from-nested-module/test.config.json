@@ -1,3 +1,5 @@
 {
-    "external": ["path"]
+    "input": {
+        "external": ["path"]
+    }
 }

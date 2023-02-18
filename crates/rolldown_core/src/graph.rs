@@ -3,7 +3,7 @@ use std::sync::Arc;
 use derivative::Derivative;
 use itertools::Itertools;
 use rayon::prelude::{ParallelBridge, ParallelIterator};
-use rolldown_common::{ExportedSpecifier, ImportedSpecifier, ModuleId, Symbol, UnionFind};
+use rolldown_common::{ExportedSpecifier, ImportedSpecifier, ModuleId, Symbol, UnionFind, CWD};
 use rolldown_resolver::Resolver;
 use rustc_hash::FxHashSet as HashSet;
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -168,7 +168,7 @@ impl Graph {
     order_modules.sort_unstable_by_key(|id| self.module_by_id[id].exec_order());
 
     self.link_exports(&order_modules)?;
-    self.link_imports(&order_modules);
+    self.link_imports(&order_modules)?;
 
     Ok(())
   }
@@ -425,169 +425,171 @@ impl Graph {
   /// two things
   /// 1. Union symbol
   /// 2. Generate real ImportedSpecifier for each import and add to `linked_imports`
-  fn link_imports(&mut self, order_modules: &[ModuleId]) {
-    order_modules.iter().for_each(|importer_id| {
-      if importer_id.is_external() {
-        return;
-      }
+  fn link_imports(&mut self, order_modules: &[ModuleId]) -> BundleResult<()> {
+    order_modules
+      .iter()
+      .filter(|importer_id| !importer_id.is_external())
+      .try_for_each(|importer_id| -> BundleResult<()> {
+        tracing::trace!("link_imports for importer {}", importer_id);
+        let importee_and_specifiers = Self::fetch_normal_module(&self.module_by_id, importer_id)
+          .imports
+          .clone()
+          .into_iter()
+          .collect::<Vec<_>>();
 
-      tracing::trace!("link_imports for importer {}", importer_id);
-      let importee_and_specifiers = Self::fetch_normal_module(&self.module_by_id, importer_id)
-        .imports
-        .clone()
-        .into_iter()
-        .collect::<Vec<_>>();
+        importee_and_specifiers.into_iter().try_for_each(
+          |(importee_id, specs)| -> BundleResult<()> {
+            tracing::trace!("link_imports for importee {}", importee_id);
+            if importer_id == &importee_id {
+              // Handle self import
+              let importee = Self::fetch_normal_module_mut(&mut self.module_by_id, &importee_id);
 
-      importee_and_specifiers
-        .into_iter()
-        .for_each(|(importee_id, specs)| {
-          tracing::trace!("link_imports for importee {}", importee_id);
-          if importer_id == &importee_id {
-            // Handle self import
-            let importee = Self::fetch_normal_module_mut(&mut self.module_by_id, &importee_id);
-
-            for imported_spec in specs {
-              if &imported_spec.imported == "*" {
-                importee.mark_namespace_id_referenced();
-              }
-              importee.suggest_name(&imported_spec.imported, imported_spec.imported_as.name());
-
-              if let Some(exported_spec) = importee.find_exported(&imported_spec.imported).cloned()
-              {
-                self
-                  .uf
-                  .union(&imported_spec.imported_as, &exported_spec.local_id);
-
-                // The importee is also the importer
-                importee
-                  .linked_imports
-                  .entry(exported_spec.owner.clone())
-                  .or_default()
-                  .insert(ImportedSpecifier {
-                    imported_as: imported_spec.imported_as.clone(),
-                    imported: exported_spec.exported_as.clone(),
-                  });
-              } else {
-                self.warnings.push(BundleError::missing_export(
-                  &imported_spec.imported,
-                  importer_id.as_ref(),
-                  importee_id.as_ref(),
-                ));
-              }
-            }
-            return;
-          }
-          let [importer, importee] = self
-            .module_by_id
-            .get_many_mut([importer_id, &importee_id])
-            .unwrap();
-          let importer = importer.expect_norm_mut();
-
-          for imported_spec in specs {
-            match importee {
-              NormOrExt::Normal(importee) => {
+              for imported_spec in specs {
                 if &imported_spec.imported == "*" {
                   importee.mark_namespace_id_referenced();
                 }
                 importee.suggest_name(&imported_spec.imported, imported_spec.imported_as.name());
+
                 if let Some(exported_spec) =
                   importee.find_exported(&imported_spec.imported).cloned()
                 {
-                  tracing::trace!(
-                    "union alias:{:?}, original:{:?}",
-                    imported_spec.imported_as,
-                    exported_spec
-                  );
                   self
                     .uf
                     .union(&imported_spec.imported_as, &exported_spec.local_id);
 
-                  importer
+                  // The importee is also the importer
+                  importee
                     .linked_imports
-                    // Redirect to the owner of the exported symbol
                     .entry(exported_spec.owner.clone())
                     .or_default()
                     .insert(ImportedSpecifier {
                       imported_as: imported_spec.imported_as.clone(),
                       imported: exported_spec.exported_as.clone(),
                     });
-                } else if let Some(first_external_id) = importee
-                  .external_modules_of_re_export_all
-                  .iter()
-                  .next()
-                  .cloned()
-                {
-                  if importee.external_modules_of_re_export_all.len() > 1 {
-                    self
-                      .warnings
-                      .push(BundleError::ambiguous_external_namespaces(
-                        imported_spec.imported_as.name().to_string(),
-                        importer_id.to_string(),
-                        first_external_id.to_string(),
-                        importee
-                          .external_modules_of_re_export_all
-                          .iter()
-                          .map(|id| id.to_string())
-                          .collect_vec(),
-                      ))
-                  }
-
-                  let symbol_in_importee =
-                    importee.create_top_level_symbol(imported_spec.imported_as.name());
-                  importee
-                    .linked_imports
-                    .entry(first_external_id.clone())
-                    .or_default()
-                    .insert(ImportedSpecifier {
-                      imported: imported_spec.imported.clone(),
-                      imported_as: symbol_in_importee.clone(),
-                    });
-
-                  importee.add_to_linked_exports(
-                    imported_spec.imported.clone(),
-                    ExportedSpecifier {
-                      exported_as: imported_spec.imported.clone(),
-                      local_id: symbol_in_importee.clone(),
-                      owner: importee_id.clone(),
-                    },
-                  );
-                  importer
-                    .linked_imports
-                    .entry(importee_id.clone())
-                    .or_default()
-                    .insert(ImportedSpecifier {
-                      imported: imported_spec.imported.clone(),
-                      imported_as: imported_spec.imported_as.clone(),
-                    });
-
-                  self
-                    .uf
-                    .union(&imported_spec.imported_as, &symbol_in_importee);
                 } else {
-                  self.warnings.push(BundleError::missing_export(
+                  return Err(BundleError::missing_export(
                     &imported_spec.imported,
                     importer_id.as_ref(),
                     importee_id.as_ref(),
                   ));
-                };
+                }
               }
-              NormOrExt::External(importee) => {
-                importer
-                  .linked_imports
-                  .entry(importee_id.clone())
-                  .or_default()
-                  .insert(imported_spec.clone());
-                let exported_symbol_of_importee =
-                  importee.find_exported_symbol(&imported_spec.imported);
+              return Ok(());
+            }
+            let [importer, importee] = self
+              .module_by_id
+              .get_many_mut([importer_id, &importee_id])
+              .unwrap();
+            let importer = importer.expect_norm_mut();
 
-                self
-                  .uf
-                  .union(&imported_spec.imported_as, exported_symbol_of_importee);
+            for imported_spec in specs {
+              match importee {
+                NormOrExt::Normal(importee) => {
+                  if &imported_spec.imported == "*" {
+                    importee.mark_namespace_id_referenced();
+                  }
+                  importee.suggest_name(&imported_spec.imported, imported_spec.imported_as.name());
+                  if let Some(exported_spec) =
+                    importee.find_exported(&imported_spec.imported).cloned()
+                  {
+                    tracing::trace!(
+                      "union alias:{:?}, original:{:?}",
+                      imported_spec.imported_as,
+                      exported_spec
+                    );
+                    self
+                      .uf
+                      .union(&imported_spec.imported_as, &exported_spec.local_id);
+
+                    importer
+                      .linked_imports
+                      // Redirect to the owner of the exported symbol
+                      .entry(exported_spec.owner.clone())
+                      .or_default()
+                      .insert(ImportedSpecifier {
+                        imported_as: imported_spec.imported_as.clone(),
+                        imported: exported_spec.exported_as.clone(),
+                      });
+                  } else if let Some(first_external_id) = importee
+                    .external_modules_of_re_export_all
+                    .iter()
+                    .next()
+                    .cloned()
+                  {
+                    if importee.external_modules_of_re_export_all.len() > 1 {
+                      self
+                        .warnings
+                        .push(BundleError::ambiguous_external_namespaces(
+                          imported_spec.imported_as.name().to_string(),
+                          importer_id.to_string(),
+                          first_external_id.to_string(),
+                          importee
+                            .external_modules_of_re_export_all
+                            .iter()
+                            .map(|id| id.to_string())
+                            .collect_vec(),
+                        ))
+                    }
+
+                    let symbol_in_importee =
+                      importee.create_top_level_symbol(imported_spec.imported_as.name());
+                    importee
+                      .linked_imports
+                      .entry(first_external_id.clone())
+                      .or_default()
+                      .insert(ImportedSpecifier {
+                        imported: imported_spec.imported.clone(),
+                        imported_as: symbol_in_importee.clone(),
+                      });
+
+                    importee.add_to_linked_exports(
+                      imported_spec.imported.clone(),
+                      ExportedSpecifier {
+                        exported_as: imported_spec.imported.clone(),
+                        local_id: symbol_in_importee.clone(),
+                        owner: importee_id.clone(),
+                      },
+                    );
+                    importer
+                      .linked_imports
+                      .entry(importee_id.clone())
+                      .or_default()
+                      .insert(ImportedSpecifier {
+                        imported: imported_spec.imported.clone(),
+                        imported_as: imported_spec.imported_as.clone(),
+                      });
+
+                    self
+                      .uf
+                      .union(&imported_spec.imported_as, &symbol_in_importee);
+                  } else {
+                    return Err(BundleError::missing_export(
+                      &imported_spec.imported,
+                      importer_id.as_ref(),
+                      importee_id.as_ref(),
+                    ));
+                  };
+                }
+                NormOrExt::External(importee) => {
+                  importer
+                    .linked_imports
+                    .entry(importee_id.clone())
+                    .or_default()
+                    .insert(imported_spec.clone());
+                  let exported_symbol_of_importee =
+                    importee.find_exported_symbol(&imported_spec.imported);
+
+                  self
+                    .uf
+                    .union(&imported_spec.imported_as, exported_symbol_of_importee);
+                }
               }
             }
-          }
-        });
-    });
+
+            Ok(())
+          },
+        )
+      })
   }
 
   /// In the function, we will:
@@ -615,8 +617,7 @@ impl Graph {
       .await?;
 
     self.sort_modules();
-
-    self.link()?;
+    CWD.set(&input_opts.cwd, || self.link())?;
     tracing::debug!("link done, graph: {:#?}", self);
     self.patch();
 

@@ -1,6 +1,10 @@
 {
     "input": {
-        "entry": "./entry.js"
+        "input": {
+            "main": "./entry.js"
+        }
     },
-    "format": "cjs"
+    "output": {
+        "format": "cjs"
+    }
 }

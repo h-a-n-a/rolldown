@@ -1,3 +1,5 @@
 {
-    "external": ["external-first", "external-second"]
+    "input": {
+        "external": ["external-first", "external-second"]
+    }
 }

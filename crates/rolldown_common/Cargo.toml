@@ -16,3 +16,4 @@ hashlink = { workspace = true }
 rustc-hash = { workspace = true }
 tracing =  { workspace = true }
 ena = "0.14.0"
+scoped-tls = "1.0"

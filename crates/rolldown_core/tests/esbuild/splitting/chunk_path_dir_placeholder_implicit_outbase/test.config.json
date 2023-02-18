@@ -1,6 +1,0 @@
-{
-    "input": {
-        "entry": "./entry.js"
-    },
-    "publicPath": "/www/"
-}

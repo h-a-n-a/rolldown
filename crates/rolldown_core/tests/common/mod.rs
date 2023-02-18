@@ -1,17 +1,18 @@
 use std::{path::Path, str::FromStr};
 
-use rolldown_core::{Asset, Bundler, InternalModuleFormat, OutputOptions};
-use rolldown_test_utils::TestConfig;
+use rolldown_core::{Asset, BundleResult, Bundler, InternalModuleFormat, OutputOptions};
+use rolldown_test_utils::tester::Tester;
 
 pub struct CompiledFixture {
+  pub tester: Tester,
   pub bundler: Bundler,
-  pub assets: Vec<Asset>,
+  pub output: BundleResult<Vec<Asset>>,
   pub name: String,
 }
 
 impl CompiledFixture {
   pub fn output_friendly_to_snapshot(&self) -> String {
-    let mut assets = self.assets.iter().collect::<Vec<_>>();
+    let mut assets = self.output.as_ref().unwrap().iter().collect::<Vec<_>>();
     assets.sort_by_key(|c| &c.filename);
     assets
       .iter()
@@ -29,24 +30,21 @@ impl CompiledFixture {
 pub async fn compile_fixture(test_config_path: &Path) -> CompiledFixture {
   let fixture_path = test_config_path.parent().unwrap();
 
-  let test_config: TestConfig = TestConfig::from_config_path(test_config_path);
+  let tester = Tester::from_config_path(test_config_path);
 
-  let mut bundler =
-    Bundler::new(test_config.input_options(fixture_path.to_string_lossy().to_string()));
+  let mut bundler = Bundler::new(tester.input_options(fixture_path.to_path_buf()));
 
   if fixture_path.join("dist").is_dir() {
     std::fs::remove_dir_all(fixture_path.join("dist")).unwrap();
   }
 
-  let assets = bundler
+  let output = bundler
     .generate(OutputOptions {
       // dir: Some(fixture_path.join("dist").to_string_lossy().to_string()),
-      format: InternalModuleFormat::from_str(&test_config.format)
-        .unwrap_or(InternalModuleFormat::Esm),
+      format: InternalModuleFormat::from_str(&tester.config.output.format).unwrap(),
       ..Default::default()
     })
-    .await
-    .unwrap();
+    .await;
   let fixture_name = fixture_path
     .file_name()
     .unwrap()
@@ -54,22 +52,34 @@ pub async fn compile_fixture(test_config_path: &Path) -> CompiledFixture {
     .to_string();
 
   CompiledFixture {
+    tester,
     bundler,
-    assets,
+    output,
     name: fixture_name,
   }
 }
 
 pub fn snapshot(test_config_path: &Path) {
+  // Configure insta to use the test config path as the snapshot path
   let fixture_folder = test_config_path.parent().unwrap();
   let mut settings = insta::Settings::clone_current();
   settings.set_snapshot_path(fixture_folder);
   settings.set_prepend_module_to_snapshot(false);
   settings.set_input_file(fixture_folder);
   tokio::runtime::Runtime::new().unwrap().block_on(async {
-    let res = crate::common::compile_fixture(test_config_path).await;
+    let compiled = crate::common::compile_fixture(test_config_path).await;
+
+    // If the test config has an expected error, assert that the error matches
+    if let Some(expected_error) = compiled.tester.config.expected_error {
+      let error = compiled.output.unwrap_err();
+      assert_eq!(error.kind.code(), expected_error.code);
+      assert_eq!(error.kind.to_string(), expected_error.message);
+      return;
+    }
+
+    // Otherwise, assert that the output matches the snapshot
     settings.bind(|| {
-      insta::assert_snapshot!("output", res.output_friendly_to_snapshot());
+      insta::assert_snapshot!("output", compiled.output_friendly_to_snapshot());
     });
   });
 }

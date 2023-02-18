@@ -203,10 +203,13 @@ impl<'m> TreeshakeNormalModule<'m> {
     } else if let Some(res) = self.define_symbol_created_by_import(ctx, top_level_symbol) {
       res
     } else {
-      ctx.add_error(BundleError::panic(&format!(
-        "top_level_id: {:?} is not found in {:?}",
-        top_level_symbol, self.module.id
-      )));
+      ctx.add_error(
+        BundleError::panic(&format!(
+          "top_level_id: {:?} is not found in {:?}",
+          top_level_symbol, self.module.id
+        ))
+        .context("Treeshake".to_string()),
+      );
       Default::default()
     }
   }

@@ -68,6 +68,7 @@ pub fn resolve_input_options(
         .unwrap_or_else(|| std::env::current_dir().unwrap()),
       treeshake: opts.treeshake.unwrap_or(true),
       is_external,
+      ..Default::default()
     },
     plugins,
   ))

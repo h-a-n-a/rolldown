@@ -8,6 +8,7 @@ description = "rolldown_error"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+rolldown_common = { path = "../rolldown_common" }
 sugar_path = { workspace = true }
 swc_core = { workspace = true, features = ["ecma_parser"] }
 anyhow = "1.0.66"

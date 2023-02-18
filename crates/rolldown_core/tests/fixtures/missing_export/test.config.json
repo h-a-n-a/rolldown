@@ -1,0 +1,6 @@
+{
+    "expectedError": {
+        "code": "MISSING_EXPORT",
+        "message": "Missing export: \"foo\" is not exported by \"noop.js\", imported by \"main.js\"."
+    }
+}

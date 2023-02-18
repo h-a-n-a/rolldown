@@ -1,6 +1,8 @@
 {
     "input": {
-        "entry": "./entry.js"
-    },
-    "external": ["a", "b"]
+        "input": {
+            "main": "./entry.js"
+        },
+        "external": ["a", "b"]
+    }
 }

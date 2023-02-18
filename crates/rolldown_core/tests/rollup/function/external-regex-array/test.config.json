@@ -1,3 +1,5 @@
 {
-    "external": ["external", "other"]
+    "input": {
+        "external": ["external", "other"]
+    }
 }

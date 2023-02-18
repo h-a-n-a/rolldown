@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use futures::future::join_all;
-use rolldown_common::{ExportedSpecifier, ModuleId};
+use rolldown_common::{ExportedSpecifier, ModuleId, CWD};
 use rolldown_plugin::ResolveArgs;
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
@@ -75,10 +75,9 @@ impl<'a> ModuleLoader<'a> {
         };
 
       if id.is_external() {
-        return Err(BundleError::entry_cannot_be_external(
-          id.as_ref(),
-          input_opts.cwd.as_path(),
-        ));
+        return CWD.set(&input_opts.cwd, || {
+          Err(BundleError::entry_cannot_be_external(id.as_ref()))
+        });
       }
       BundleResult::Ok(id)
     }))
@@ -99,10 +98,9 @@ impl<'a> ModuleLoader<'a> {
       .try_for_each(|entry| -> BundleResult<()> {
         let id = entry?;
         if id.is_external() {
-          return Err(BundleError::entry_cannot_be_external(
-            id.as_ref(),
-            self.input_options.cwd.as_path(),
-          ));
+          return CWD.set(&input_opts.cwd, || {
+            Err(BundleError::entry_cannot_be_external(id.as_ref()))
+          });
         }
         self.loaded_modules.insert(id.clone());
         self.graph.entries.push(id.clone());

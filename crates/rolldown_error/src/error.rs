@@ -1,5 +1,6 @@
 use std::{fmt::Display, path::Path, sync::Arc};
 
+use rolldown_common::CWD;
 use sugar_path::SugarPath;
 use swc_core::common::SourceFile;
 
@@ -8,7 +9,7 @@ use crate::ErrorKind;
 #[derive(Debug)]
 pub struct Error {
   contexts: Vec<String>,
-  kind: ErrorKind,
+  pub kind: ErrorKind,
 }
 
 impl Error {
@@ -25,18 +26,19 @@ impl Error {
   }
 
   // --- Aligned with rollup
-  pub fn entry_cannot_be_external(unresolved_id: impl AsRef<Path>, cwd: impl AsRef<Path>) -> Self {
-    let unresolved_id = unresolved_id.as_ref();
-    let cwd = cwd.as_ref();
-    let id = if unresolved_id.is_absolute() {
-      unresolved_id.relative(cwd)
-    } else {
-      unresolved_id.to_path_buf()
-    };
-    Self::with_kind(ErrorKind::UnresolvedEntry(format!(
-      "Entry module \"{}\" cannot be external.",
-      id.display()
-    )))
+  pub fn entry_cannot_be_external(unresolved_id: impl AsRef<Path>) -> Self {
+    CWD.with(|cwd| {
+      let unresolved_id = unresolved_id.as_ref();
+      let id = if unresolved_id.is_absolute() {
+        unresolved_id.relative(cwd)
+      } else {
+        unresolved_id.to_path_buf()
+      };
+      Self::with_kind(ErrorKind::UnresolvedEntry(format!(
+        "Entry module \"{}\" cannot be external.",
+        id.display()
+      )))
+    })
   }
 
   pub fn ambiguous_external_namespaces(
@@ -62,10 +64,20 @@ impl Error {
     )))
   }
 
-  pub fn missing_export(missing_exported_name: &str, importer: &str, importee: &str) -> Self {
-    Self::with_kind(ErrorKind::MissingExport(format!(
-      r#""{missing_exported_name}" is not exported by "{importee}", imported by "{importer}"."#,
-    )))
+  pub fn missing_export(
+    missing_exported_name: &str,
+    importer: impl AsRef<Path>,
+    importee: impl AsRef<Path>,
+  ) -> Self {
+    CWD.with(|cwd| {
+      let importer = importer.as_ref().relative(cwd);
+      let importee = importee.as_ref().relative(cwd);
+      Self::with_kind(ErrorKind::MissingExport(format!(
+        r#""{missing_exported_name}" is not exported by "{}", imported by "{}"."#,
+        importee.display(),
+        importer.display()
+      )))
+    })
   }
 
   pub fn circular_dependency(circular_path: Vec<String>) -> Self {

@@ -20,7 +20,7 @@ async fn threejs() {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-  c.bench_function("threejs", |b| b.iter(|| threejs()));
+  c.bench_function("threejs", |b| b.iter(|| threejs));
 }
 
 criterion_group!(benches, criterion_benchmark);

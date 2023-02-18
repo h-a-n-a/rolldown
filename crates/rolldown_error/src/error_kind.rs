@@ -15,6 +15,12 @@ pub enum ErrorKind {
   },
   CircularDependency(Vec<String>),
 
+  // --- Rolldown specific
+  ParseJsFailed {
+    source_file: Arc<SourceFile>,
+    source: swc_core::ecma::parser::error::Error,
+  },
+
   // --- Custom
   /// Rolldown use this replace panic!() in the code.
   /// This makes Rolldown could gracefully shutdown.
@@ -31,11 +37,6 @@ pub enum ErrorKind {
   ReadFileFailed {
     filename: String,
     source: std::io::Error,
-  },
-  ParseFailedOld(String, String),
-  ParseJsFailed {
-    source_file: Arc<SourceFile>,
-    source: swc_core::ecma::parser::error::Error,
   },
 }
 
@@ -61,10 +62,29 @@ impl Display for ErrorKind {
       ErrorKind::ReadFileFailed { filename, source } => {
         write!(f, "Read file failed: {} {}", filename, source)
       }
-      ErrorKind::ParseFailedOld(code, msg) => write!(f, "Parse failed: {} {}", code, msg),
       ErrorKind::ParseJsFailed { source_file, .. } => {
         write!(f, "Parse failed: {}", source_file.name )
       }
+    }
+  }
+}
+
+impl ErrorKind {
+  pub fn code(&self) -> &'static str {
+    match self {
+      ErrorKind::UnresolvedEntry(_) => todo!(),
+      ErrorKind::MissingExport(_) => "MISSING_EXPORT",
+      ErrorKind::AmbiguousExternalNamespaces { .. } => todo!(),
+      ErrorKind::CircularDependency(_) => "CIRCULAR_DEPENDENCY",
+      ErrorKind::Panic(_) => todo!(),
+      ErrorKind::Throw(_) => todo!(),
+      ErrorKind::Anyhow { source } => todo!(),
+      ErrorKind::Napi { status, reason } => todo!(),
+      ErrorKind::ReadFileFailed { filename, source } => todo!(),
+      ErrorKind::ParseJsFailed {
+        source_file,
+        source,
+      } => todo!(),
     }
   }
 }

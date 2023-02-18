@@ -1,5 +1,7 @@
 {
     "input": {
-        "entry": "./entry.js"
+        "input": {
+            "main": "./entry.js"
+        }
     }
 }

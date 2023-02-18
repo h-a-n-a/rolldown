@@ -1,42 +1,49 @@
 {
-    "[rust]": {
-        "editor.formatOnSave": true
-    },
-    "rust-analyzer.checkOnSave.command": "clippy",
-    "cSpell.words": [
-        "arraify",
-        "bindgen",
-        "Callbackified",
-        "callbackify",
-        "codegen",
-        "Conflicter",
-        "conflictless",
-        "ctxt",
-        "dashmap",
-        "deconflict",
-        "deconflicting",
-        "elems",
-        "esbuild",
-        "Finalizer",
-        "hashbrown",
-        "hashlink",
-        "importee",
-        "insta",
-        "Itertools",
-        "minifier",
-        "napi",
-        "nocapture",
-        "pnpm",
-        "proto",
-        "Renamer",
-        "rolldown",
-        "Rollup",
-        "rustc",
-        "Swatinem",
-        "Threadsafe",
-        "threejs",
-        "treeshake",
-        "tsfn",
-        "unioned"
-    ]
+  "[rust]": {
+    "editor.formatOnSave": true
+  },
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "json.schemas": [
+    {
+      "fileMatch": ["test.config.json"],
+      // Point to the options schema of rspack.
+      "url": "./crates/rolldown_test_utils/test.config.scheme.json"
+    }
+  ],
+  "cSpell.words": [
+    "arraify",
+    "bindgen",
+    "Callbackified",
+    "callbackify",
+    "codegen",
+    "Conflicter",
+    "conflictless",
+    "ctxt",
+    "dashmap",
+    "deconflict",
+    "deconflicting",
+    "elems",
+    "esbuild",
+    "Finalizer",
+    "hashbrown",
+    "hashlink",
+    "importee",
+    "insta",
+    "Itertools",
+    "minifier",
+    "napi",
+    "nocapture",
+    "pnpm",
+    "proto",
+    "Renamer",
+    "rolldown",
+    "Rollup",
+    "rustc",
+    "Swatinem",
+    "Threadsafe",
+    "threejs",
+    "treeshake",
+    "tsfn",
+    "unioned"
+  ]
 }
