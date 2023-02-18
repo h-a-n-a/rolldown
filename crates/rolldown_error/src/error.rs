@@ -65,18 +65,23 @@ impl Error {
   }
 
   pub fn missing_export(
-    missing_exported_name: &str,
+    missing_export: &str,
     importer: impl AsRef<Path>,
     importee: impl AsRef<Path>,
   ) -> Self {
     CWD.with(|cwd| {
       let importer = importer.as_ref().relative(cwd);
       let importee = importee.as_ref().relative(cwd);
-      Self::with_kind(ErrorKind::MissingExport(format!(
-        r#""{missing_exported_name}" is not exported by "{}", imported by "{}"."#,
-        importee.display(),
-        importer.display()
-      )))
+      Self::with_kind(ErrorKind::MissingExport {
+        importer,
+        importee,
+        missing_export: missing_export.to_string(),
+      })
+      // Self::with_kind(ErrorKind::MissingExport(format!(
+      //   r#""{missing_exported_name}" is not exported by "{}", imported by "{}"."#,
+      //   importee.display(),
+      //   importer.display()
+      // )))
     })
   }
 

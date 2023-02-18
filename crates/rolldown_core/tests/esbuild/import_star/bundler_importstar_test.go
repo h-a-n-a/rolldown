@@ -83,28 +83,6 @@ func TestImportExportOtherAsNamespaceCommonJS(t *testing.T) {
 	})
 }
 
-func TestNamespaceImportMissingES6(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				console.log(ns, ns.foo)
-			`,
-			"/foo.js": `
-				export const x = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-		debugLogs: true,
-		expectedCompileLog: `entry.js: DEBUG: Import "foo" will always be undefined because there is no matching export in "foo.js"
-`,
-	})
-}
-
 func TestExportOtherCommonJS(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
 		files: map[string]string{

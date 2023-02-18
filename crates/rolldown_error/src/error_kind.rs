@@ -1,4 +1,4 @@
-use std::{fmt::Display, sync::Arc};
+use std::{fmt::Display, path::PathBuf, sync::Arc};
 
 use swc_core::common::SourceFile;
 
@@ -6,7 +6,11 @@ use swc_core::common::SourceFile;
 pub enum ErrorKind {
   // --- Aligned with rollup
   UnresolvedEntry(String),
-  MissingExport(String),
+  MissingExport {
+    importer: PathBuf,
+    importee: PathBuf,
+    missing_export: String,
+  },
   AmbiguousExternalNamespaces {
     reexporting_module: String,
     used_module: String,
@@ -44,7 +48,10 @@ impl Display for ErrorKind {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
       ErrorKind::UnresolvedEntry(entry) => write!(f, "Unresolved entry: {entry}"),
-      ErrorKind::MissingExport(name) => write!(f, "Missing export: {name}"),
+      ErrorKind::MissingExport { missing_export, importee, importer } => write!(f, 
+        r#""{missing_export}" is not exported by "{}", imported by "{}"."#,
+        importee.display(),
+        importer.display()),
       ErrorKind::AmbiguousExternalNamespaces {
         binding,
         reexporting_module,
@@ -73,7 +80,7 @@ impl ErrorKind {
   pub fn code(&self) -> &'static str {
     match self {
       ErrorKind::UnresolvedEntry(_) => todo!(),
-      ErrorKind::MissingExport(_) => "MISSING_EXPORT",
+      ErrorKind::MissingExport { .. } => "MISSING_EXPORT",
       ErrorKind::AmbiguousExternalNamespaces { .. } => todo!(),
       ErrorKind::CircularDependency(_) => "CIRCULAR_DEPENDENCY",
       ErrorKind::Panic(_) => todo!(),
