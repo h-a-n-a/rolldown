@@ -4,10 +4,9 @@ use std::path::PathBuf;
 
 use testing_macros::fixture;
 mod common;
-
-use crate::common::snapshot;
+use common::run_test;
 
 #[fixture("./tests/esbuild/**/test.config.json")]
 fn test(path: PathBuf) {
-  snapshot(&path)
+  run_test(&path)
 }

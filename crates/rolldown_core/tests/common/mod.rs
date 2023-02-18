@@ -59,27 +59,31 @@ pub async fn compile_fixture(test_config_path: &Path) -> CompiledFixture {
   }
 }
 
-pub fn snapshot(test_config_path: &Path) {
+pub fn run_test(test_config_path: &Path) {
+  // compile the fixture folder
+  let compiled_fx = tokio::runtime::Runtime::new()
+    .unwrap()
+    .block_on(crate::common::compile_fixture(test_config_path));
+
+  // If the test config has an expected error, assert that the error matches
+  if let Some(expected_error) = compiled_fx.tester.config.expected_error {
+    let error = compiled_fx
+      .output
+      .expect_err("Expected error but got success");
+    assert_eq!(error.kind.code(), expected_error.code);
+    assert_eq!(error.kind.to_string(), expected_error.message);
+    return;
+  }
+
+  // Otherwise, assert that the output matches the snapshot
+
   // Configure insta to use the test config path as the snapshot path
   let fixture_folder = test_config_path.parent().unwrap();
   let mut settings = insta::Settings::clone_current();
   settings.set_snapshot_path(fixture_folder);
   settings.set_prepend_module_to_snapshot(false);
   settings.set_input_file(fixture_folder);
-  tokio::runtime::Runtime::new().unwrap().block_on(async {
-    let compiled = crate::common::compile_fixture(test_config_path).await;
-
-    // If the test config has an expected error, assert that the error matches
-    if let Some(expected_error) = compiled.tester.config.expected_error {
-      let error = compiled.output.unwrap_err();
-      assert_eq!(error.kind.code(), expected_error.code);
-      assert_eq!(error.kind.to_string(), expected_error.message);
-      return;
-    }
-
-    // Otherwise, assert that the output matches the snapshot
-    settings.bind(|| {
-      insta::assert_snapshot!("output", compiled.output_friendly_to_snapshot());
-    });
+  settings.bind(|| {
+    insta::assert_snapshot!("output", compiled_fx.output_friendly_to_snapshot());
   });
 }

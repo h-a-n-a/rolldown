@@ -87,7 +87,7 @@ impl<'a> ModuleLoader<'a> {
 
   pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BundleResult<()> {
     if input_opts.input.is_empty() {
-      Err(format_err!("You must supply options.input to rolldown"))?;
+      return Err(format_err!("You must supply options.input to rolldown").into());
     }
 
     let resolved_entries = self.resolve_entries(input_opts).await;

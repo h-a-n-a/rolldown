@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
-use common::snapshot;
 use testing_macros::fixture;
 
 mod common;
+use common::run_test;
 
 #[fixture("./tests/fixtures/**/test.config.json")]
 fn test(path: PathBuf) {
-  snapshot(&path)
+  run_test(&path)
 }
