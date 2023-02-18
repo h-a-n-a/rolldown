@@ -132,7 +132,7 @@ impl<'m> TreeshakeNormalModule<'m> {
           // The symbol is maybe imported from external module, just return the symbol itself
           return Some(included);
         } else {
-          ctx.add_error(BundleError::panic(&format!(
+          ctx.add_error(BundleError::panic(format!(
             " \"{:#?}\" is not exported from module {:?}",
             import_spec.imported, exporter.module.id
           )));
@@ -204,7 +204,7 @@ impl<'m> TreeshakeNormalModule<'m> {
       res
     } else {
       ctx.add_error(
-        BundleError::panic(&format!(
+        BundleError::panic(format!(
           "top_level_id: {:?} is not found in {:?}",
           top_level_symbol, self.module.id
         ))
@@ -239,7 +239,7 @@ impl<'m> TreeshakeNormalModule<'m> {
       // The symbol is maybe imported from external module, just ignore it
       Default::default()
     } else {
-      ctx.add_error(BundleError::panic(&format!(
+      ctx.add_error(BundleError::panic(format!(
         " \"{:#?}\" is not exported from module {:?}",
         exported_name, self.module.id
       )));

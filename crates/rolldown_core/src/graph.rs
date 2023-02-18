@@ -235,7 +235,7 @@ impl Graph {
                     let original_spec = importee
                       .find_exported(&spec.imported)
                       .ok_or_else(|| {
-                        BundleError::panic(&format!("original_id not found: {spec:?}"))
+                        BundleError::panic(format!("original_id not found: {spec:?}"))
                       })?
                       .clone();
                     importer.add_to_linked_exports(spec.exported_as, original_spec);

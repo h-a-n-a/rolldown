@@ -34,10 +34,7 @@ impl Error {
       } else {
         unresolved_id.to_path_buf()
       };
-      Self::with_kind(ErrorKind::UnresolvedEntry(format!(
-        "Entry module \"{}\" cannot be external.",
-        id.display()
-      )))
+      Self::with_kind(ErrorKind::ExternalEntry { id })
     })
   }
 
@@ -55,13 +52,10 @@ impl Error {
     })
   }
 
-  // align with rollup
-
   pub fn unresolved_entry(unresolved_id: impl AsRef<Path>) -> Self {
-    Self::with_kind(ErrorKind::UnresolvedEntry(format!(
-      "Could not resolve entry module \"{}\".",
-      unresolved_id.as_ref().display()
-    )))
+    Self::with_kind(ErrorKind::UnresolvedEntry {
+      unresolved_id: unresolved_id.as_ref().to_path_buf(),
+    })
   }
 
   pub fn missing_export(
@@ -77,11 +71,6 @@ impl Error {
         importee,
         missing_export: missing_export.to_string(),
       })
-      // Self::with_kind(ErrorKind::MissingExport(format!(
-      //   r#""{missing_exported_name}" is not exported by "{}", imported by "{}"."#,
-      //   importee.display(),
-      //   importer.display()
-      // )))
     })
   }
 
@@ -111,24 +100,21 @@ impl Error {
     Self::with_kind(ErrorKind::ReadFileFailed { filename, source })
   }
 
-  pub fn throw(msg: String) -> Self {
-    Self::with_kind(ErrorKind::Throw(msg))
-  }
-  pub fn panic(msg: &str) -> Self {
-    Self::with_kind(ErrorKind::Panic(msg.to_string()))
+  pub fn panic(msg: String) -> Self {
+    anyhow::format_err!(msg).into()
   }
 }
 
 impl std::convert::From<anyhow::Error> for Error {
   fn from(value: anyhow::Error) -> Self {
-    Self::with_kind(ErrorKind::Anyhow { source: value })
+    Self::with_kind(ErrorKind::Panic { source: value })
   }
 }
 
 impl std::error::Error for Error {
   fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
     match &self.kind {
-      ErrorKind::Anyhow { source, .. } => Some(source.as_ref()),
+      ErrorKind::Panic { source, .. } => Some(source.as_ref()),
       ErrorKind::ReadFileFailed { source, .. } => Some(source),
       _ => None,
     }

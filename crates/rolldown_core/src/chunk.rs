@@ -109,7 +109,7 @@ impl Chunk {
         .parse_with_comments(code.clone(), &filename, Some(&comments))
         .1
         .map_err(|_| {
-          BundleError::panic(&format!(
+          BundleError::panic(format!(
             "Failed to parse generated code \n{}\n for {}",
             code, &self.entry
           ))

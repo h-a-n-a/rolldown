@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use futures::future::join_all;
 use rolldown_common::{ExportedSpecifier, ModuleId, CWD};
+use rolldown_error::format_err;
 use rolldown_plugin::ResolveArgs;
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
@@ -86,9 +87,7 @@ impl<'a> ModuleLoader<'a> {
 
   pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BundleResult<()> {
     if input_opts.input.is_empty() {
-      return Err(BundleError::throw(
-        "You must supply options.input to rolldown".to_string(),
-      ));
+      Err(format_err!("You must supply options.input to rolldown"))?;
     }
 
     let resolved_entries = self.resolve_entries(input_opts).await;
