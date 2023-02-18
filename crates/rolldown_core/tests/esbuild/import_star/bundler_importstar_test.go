@@ -102,7 +102,7 @@ func TestExportOtherCommonJS(t *testing.T) {
 	})
 }
 
-func TestExportOtherNestedCommonJS(t *testing.T) {
+func TestEXPORT_OTHER_NESTED_COMMON_JS(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
 		files: map[string]string{
 			"/entry.js": `
@@ -121,28 +121,6 @@ func TestExportOtherNestedCommonJS(t *testing.T) {
 			OutputFormat:  config.FormatCommonJS,
 			AbsOutputFile: "/out.js",
 		},
-	})
-}
-
-func TestNamespaceImportUnusedMissingES6(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				console.log(ns.foo)
-			`,
-			"/foo.js": `
-				export const x = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-		debugLogs: true,
-		expectedCompileLog: `entry.js: DEBUG: Import "foo" will always be undefined because there is no matching export in "foo.js"
-`,
 	})
 }
 
