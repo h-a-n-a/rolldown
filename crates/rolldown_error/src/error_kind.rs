@@ -38,7 +38,7 @@ pub enum ErrorKind {
   /// This error is also used to emulate plain error `throw`ed by rollup.
   /// For `throw new Error("Errored")` in js, you can use `ErrorKind::anyhow(anyhow::format_err!("Errored"))`
   /// 
-  /// We also use this to replace panic!() in the code for graceful shutdown.
+  /// We also use this to replace `panic!()` in the code for graceful shutdown.
   /// But this is not recommended.
   Panic {
     source: anyhow::Error,
@@ -49,10 +49,6 @@ pub enum ErrorKind {
   Napi {
     status: String,
     reason: String,
-  },
-  ReadFileFailed {
-    filename: String,
-    source: std::io::Error,
   },
 }
 
@@ -79,9 +75,6 @@ impl Display for ErrorKind {
       // Rolldown specific
       ErrorKind::Panic { source } => source.fmt(f),
       ErrorKind::Napi { status, reason } => write!(f, "Napi error: {} {}", status, reason),
-      ErrorKind::ReadFileFailed { filename, source } => {
-        write!(f, "Read file failed: {} {}", filename, source)
-      }
       ErrorKind::ParseJsFailed { source_file, .. } => {
         write!(f, "Parse failed: {}", source_file.name )
       }
@@ -101,7 +94,6 @@ impl ErrorKind {
       // Rolldown specific
       ErrorKind::Panic { .. } => error_code::PANIC,
       ErrorKind::Napi { status, reason } => todo!(),
-      ErrorKind::ReadFileFailed { filename, source } => todo!(),
       ErrorKind::ParseJsFailed {
         source_file,
         source,

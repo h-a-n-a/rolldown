@@ -96,10 +96,6 @@ impl Error {
     Self::with_kind(ErrorKind::Napi { status, reason })
   }
 
-  pub fn read_file_failed(filename: String, source: std::io::Error) -> Self {
-    Self::with_kind(ErrorKind::ReadFileFailed { filename, source })
-  }
-
   pub fn panic(msg: String) -> Self {
     anyhow::format_err!(msg).into()
   }
@@ -115,7 +111,6 @@ impl std::error::Error for Error {
   fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
     match &self.kind {
       ErrorKind::Panic { source, .. } => Some(source.as_ref()),
-      ErrorKind::ReadFileFailed { source, .. } => Some(source),
       _ => None,
     }
   }

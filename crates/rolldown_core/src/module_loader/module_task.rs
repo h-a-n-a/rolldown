@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use derivative::Derivative;
 use futures::future::join_all;
 use rolldown_common::ModuleId;
@@ -79,7 +81,8 @@ impl ModuleTask {
     // load hook
     let code = tokio::fs::read_to_string(self.id.as_ref())
       .await
-      .map_err(|e| BundleError::read_file_failed(self.id.to_string(), e))?;
+      .map_err(rolldown_error::anyhow::Error::from)
+      .map_err(|e| e.context(format!("Read file: {}", self.id.as_ref())))?;
 
     let code = self
       .plugin_driver
