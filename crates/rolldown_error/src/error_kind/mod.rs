@@ -2,7 +2,7 @@ use std::{fmt::Display, path::PathBuf, sync::Arc};
 
 use swc_core::common::SourceFile;
 
-use crate::error_code;
+pub mod error_code;
 
 #[derive(Debug)]
 pub enum ErrorKind {
