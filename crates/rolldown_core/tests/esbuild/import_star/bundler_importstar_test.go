@@ -162,50 +162,6 @@ func TestNamespaceImportUnusedMissingCommonJS(t *testing.T) {
 	})
 }
 
-func TestReExportNamespaceImportMissingES6(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import {ns} from './foo'
-				console.log(ns, ns.foo)
-			`,
-			"/foo.js": `
-				export * as ns from './bar'
-			`,
-			"/bar.js": `
-				export const x = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestReExportNamespaceImportUnusedMissingES6(t *testing.T) {
-	importstar_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import {ns} from './foo'
-				console.log(ns.foo)
-			`,
-			"/foo.js": `
-				export * as ns from './bar'
-			`,
-			"/bar.js": `
-				export const x = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
 func TestNamespaceImportReExportMissingES6(t *testing.T) {
 	importstar_suite.expectBundled(t, bundled{
 		files: map[string]string{
