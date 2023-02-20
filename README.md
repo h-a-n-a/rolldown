@@ -4,7 +4,7 @@
 
 Fast JavaScript bundler in Rust with Rollup-compatible API.
 
-# Status
+## Status
 
 Currently we are targeting to pass the [function tests](https://github.com/rollup/rollup/tree/master/test/function) of Rollup.
 
