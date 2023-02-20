@@ -4,6 +4,21 @@
 
 Fast JavaScript bundler in Rust with Rollup-compatible API.
 
+# Status
+
+Currently we are targeting to pass the [function tests](https://github.com/rollup/rollup/tree/master/test/function) of Rollup.
+
+┌────────────┬────────┐
+│  (index)   │ Values │
+├────────────┼────────┤
+│   total    │  870   │
+│   failed   │   5    │
+│ skipFailed │  423   │
+│  ignored   │   4    │
+│  skipped   │   0    │
+│   passed   │  438   │
+└────────────┴────────┘
+
 ## Authors
 
 - Yinan Long ([Brooooooklyn](https://github.com/Brooooooklyn))
