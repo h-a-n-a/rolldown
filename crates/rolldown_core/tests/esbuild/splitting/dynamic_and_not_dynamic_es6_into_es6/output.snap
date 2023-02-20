@@ -1,0 +1,14 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/splitting/dynamic_and_not_dynamic_es6_into_es6
+---
+---------- entry.js ----------
+import { bar as a } from "./foo.js";
+
+// entry.js
+import("./foo.js").then(({ bar: b  })=>console.log(a, b));
+---------- foo.js ----------
+// foo.js
+let bar = 123;
+export { bar };

@@ -1,0 +1,8 @@
+{
+  "input": {
+    "input": {
+      "a": "./a.js"
+    },
+    "external": ["external"]
+  }
+}

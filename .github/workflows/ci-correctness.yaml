@@ -1,0 +1,31 @@
+name: Correctness
+
+on:
+  push:
+    branches:
+      - next
+  pull_request:
+    types: ["opened", "reopened", "synchronize"]
+
+jobs:
+  cargo-test:
+    name: Cargo test
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: true
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          override: true
+      - name: Configure cache
+        uses: Swatinem/rust-cache@v1
+      - name: Build
+        run: |
+          cargo test --all --no-run -- --nocapture
+      - name: Test
+        run: |
+          cargo test --all -- --nocapture

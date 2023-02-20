@@ -1,0 +1,19 @@
+{
+  "name": "@rolldown/core-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest --run"
+  },
+  "dependencies": {
+    "@rolldown/core": "workspace:*",
+    "@swc-node/jest": "^1.5.7",
+    "globby": "11.1.0",
+    "vitest": "^0.28.4"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

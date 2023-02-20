@@ -1,0 +1,48 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/merged-namespace-live-bindings
+---
+---------- main.js ----------
+import * as external from "external";
+function _mergeNamespaces(n, m) {
+	m.forEach(function (e) {
+		e && typeof e !== 'string' && !Array.isArray(e) && Object.keys(e).forEach(function (k) {
+			if (k !== 'default' && !(k in n)) {
+				var d = Object.getOwnPropertyDescriptor(e, k);
+				Object.defineProperty(n, k, d.get ? d : {
+					enumerable: true,
+					get: function () { return e[k]; }
+				});
+			}
+		});
+	});
+	return Object.freeze(n);
+}
+// internal.js
+let internal = 'original';
+const updateInternal = ()=>internal = 'updated';
+
+// reexport.js
+var ns = _mergeNamespaces({
+    __proto__: null,
+    get internal () {
+        return internal;
+    },
+    get updateInternal () {
+        return updateInternal;
+    }
+}, [
+    external
+]);
+
+// main.js
+const checkNamespace = (ns$1)=>{
+    assert.strictEqual(ns$1.internal, 'original', 'internal');
+    ns$1.updateInternal();
+    assert.strictEqual(ns$1.internal, 'updated', 'internal');
+    assert.strictEqual(ns$1.external, 'original', 'external');
+    ns$1.updateExternal();
+    assert.strictEqual(ns$1.external, 'updated', 'external');
+};
+checkNamespace(ns);

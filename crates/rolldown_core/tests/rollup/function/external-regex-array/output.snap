@@ -1,0 +1,13 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/external-regex-array
+---
+---------- main.js ----------
+import ext from "external";
+
+import other from "other";
+
+// main.js
+assert.equal(ext, 42);
+assert.equal(other, 17);

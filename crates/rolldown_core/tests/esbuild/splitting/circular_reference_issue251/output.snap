@@ -1,0 +1,17 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/splitting/circular_reference_issue251
+---
+---------- a.js ----------
+export { q } from "./b.js";
+
+// a.js
+var p = 5;
+export { p };
+---------- b.js ----------
+export { p } from "./a.js";
+
+// b.js
+var q = 6;
+export { q };

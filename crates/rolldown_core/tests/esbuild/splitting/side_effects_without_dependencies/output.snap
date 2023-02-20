@@ -1,0 +1,21 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/splitting/side_effects_without_dependencies
+---
+---------- a.js ----------
+import { a } from "./shared.js";
+
+// a.js
+console.log(a);
+---------- b.js ----------
+import { b } from "./shared.js";
+
+// b.js
+console.log(b);
+---------- shared.js ----------
+// shared.js
+let a = 1;
+let b = 2;
+console.log('side effect');
+export { a, b };

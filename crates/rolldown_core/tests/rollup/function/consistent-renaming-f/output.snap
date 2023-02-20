@@ -1,0 +1,17 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/consistent-renaming-f
+---
+---------- main.js ----------
+// bar.js
+function foo() {
+    return 'consistent';
+}
+
+// main.js
+function test(foo$1) {
+    assert.equal(foo$1, 1);
+    return foo();
+}
+assert.equal(test(1), 'consistent');

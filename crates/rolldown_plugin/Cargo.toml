@@ -1,0 +1,14 @@
+[package]
+name = "rolldown_plugin"
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+description = "rolldown_plugin"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rolldown_common = { version = "0.0.1", path = "../rolldown_common" }
+rolldown_error = { version = "0.0.1", path = "../rolldown_error" }
+anyhow = "1"
+async-trait = { workspace = true }

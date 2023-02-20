@@ -1,0 +1,17 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_namespace_import_unused_missing_es6
+---
+---------- main.js ----------
+// bar.js
+const x = 123;
+var ns = Object.freeze({
+    __proto__: null,
+    get x () {
+        return x;
+    }
+});
+
+// main.js
+console.log(ns.foo);

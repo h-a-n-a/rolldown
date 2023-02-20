@@ -1,0 +1,19 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/splitting/shared_es6_into_es6
+---
+---------- a.js ----------
+import { foo } from "./shared.js";
+
+// a.js
+console.log(foo);
+---------- b.js ----------
+import { foo } from "./shared.js";
+
+// b.js
+console.log(foo);
+---------- shared.js ----------
+// shared.js
+let foo = 123;
+export { foo };

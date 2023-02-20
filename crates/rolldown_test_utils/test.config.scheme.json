@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TestConfig",
+  "type": "object",
+  "properties": {
+    "expectedError": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ExpectedError"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input": {
+      "$ref": "#/definitions/InputOptions"
+    },
+    "output": {
+      "$ref": "#/definitions/OutputOptions"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ExpectedError": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InputOptions": {
+      "type": "object",
+      "properties": {
+        "external": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "input": {
+          "default": {
+            "main": "./entry.js"
+          },
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "treeshake": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OutputOptions": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "default": "esm",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

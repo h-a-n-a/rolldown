@@ -1,0 +1,8 @@
+{
+  "input": {
+    "input": {
+      "a": "./src/pages/page-a/page.js",
+      "b": "./src/pages/page-b/page.js"
+    }
+  }
+}

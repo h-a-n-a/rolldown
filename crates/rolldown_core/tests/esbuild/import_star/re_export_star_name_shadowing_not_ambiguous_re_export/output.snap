@@ -1,0 +1,25 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_name_shadowing_not_ambiguous_re_export
+---
+---------- entry.js ----------
+// bar.js
+const bar = 123;
+var bar_ns = Object.freeze({
+    __proto__: null,
+    get bar () {
+        return bar;
+    }
+});
+
+// foo.js
+var foo_ns = Object.freeze({
+    __proto__: null,
+    get bar_ns () {
+        return bar_ns;
+    }
+});
+
+// entry.js
+console.log(foo_ns);

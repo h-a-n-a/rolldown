@@ -1,0 +1,5 @@
+packages:
+  # all packages in subdirs of packages/
+  - 'crates/rolldown_node_binding'
+  - 'packages/*'
+  - 'packages/core/tests'

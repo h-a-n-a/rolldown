@@ -1,0 +1,25 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/import_star_export_star_omit_ambiguous
+---
+---------- entry.js ----------
+// foo.js
+const x = 1;
+
+// bar.js
+const z = 4;
+
+// common.js
+var ns = Object.freeze({
+    __proto__: null,
+    get x () {
+        return x;
+    },
+    get z () {
+        return z;
+    }
+});
+
+// entry.js
+console.log(ns);

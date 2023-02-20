@@ -1,0 +1,11 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.content_for_snapshot()
+input_file: crates/rolldown_core/tests/rollup/samples/can-import-self-treeshake
+---
+---------- main.js ----------
+// lib.js
+const run = ()=>4;
+
+// main.js
+run();

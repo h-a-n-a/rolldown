@@ -1,0 +1,17 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/import_of_export_star_of_import
+---
+---------- entry.js ----------
+// baz.js
+const value = 123;
+
+// foo.js
+statement();
+statement();
+statement();
+statement();
+
+// entry.js
+console.log(value);

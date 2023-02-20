@@ -1,0 +1,21 @@
+{
+  "name": "@rolldown/core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@rolldown/node-binding": "workspace:*"
+  },
+  "devDependencies": {
+    "type-fest": "^3.0.0",
+    "@types/node": "^18.7.23",
+    "rollup": "^3.10.1"
+  }
+}

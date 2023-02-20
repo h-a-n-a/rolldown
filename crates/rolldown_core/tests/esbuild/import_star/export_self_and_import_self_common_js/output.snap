@@ -1,0 +1,25 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: res.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/export_self_and_import_self_common_js
+---
+---------- entry.js ----------
+// entry.js
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "foo", {
+    enumerable: true,
+    get: function() {
+        return foo;
+    }
+});
+const foo = 123;
+console.log(x);
+var x = Object.freeze({
+    __proto__: null,
+    get foo () {
+        return foo;
+    }
+});

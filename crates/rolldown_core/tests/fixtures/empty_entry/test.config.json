@@ -1,0 +1,9 @@
+{
+  "input": {
+    "input": {}
+  },
+  "expectedError": {
+    "code": "PANIC",
+    "message": "You must supply options.input to rolldown"
+  }
+}
