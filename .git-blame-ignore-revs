@@ -1,0 +1,25 @@
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# After running the above, commits listed in this file will be
+# ignored by git blame. The blame will be shifted to the person
+# who edited the line(s) before the ignored commit.
+#
+# To disable this ignorance for a command, run as follows
+# git blame --ignore-revs-file="" <other options>
+#
+# Changes that belong here:
+# - Massive comment, doxy-sections, or spelling corrections.
+# - Clang-format, PEP8 or other automated changes which are *strictly* "no functional change".
+# - Several commits should be added to this list at once, because adding
+#   one extra commit (to edit this file) after every cleanup is noisy.
+# - No clang-tidy changes.
+#
+# Note:
+# - The comment above the SHA should be the first line of the commit.
+# - It is fine to pack together similar commits if they have the same explanatory comment.
+# - Use only 40 character git SHAs; not smaller ones, not prefixed with rB.
+#
+# https://git-scm.com/docs/git-blame/2.23.0
+
+# cargo clippy fix, Cargo fmt and prettier format
+61f9539b24c3c4ab92d80b1389b7d657640e262f

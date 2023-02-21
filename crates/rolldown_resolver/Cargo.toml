@@ -1,12 +1,12 @@
 [package]
-name = "rolldown_resolver"
-version = "0.0.1"
-edition = "2021"
-license = "MIT"
 description = "rolldown_resolver"
+edition     = "2021"
+license     = "MIT"
+name        = "rolldown_resolver"
+version     = "0.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rolldown_error ={ version = "0.0.1", path = "../rolldown_error" }
-sugar_path = { workspace = true }
+rolldown_error = { version = "0.0.1", path = "../rolldown_error" }
+sugar_path     = { workspace = true }

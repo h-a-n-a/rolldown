@@ -32,12 +32,11 @@ pub enum ErrorKind {
     source: swc_core::ecma::parser::error::Error,
   },
 
-  
   /// This error means that rolldown panics because unrecoverable error happens.
-  /// 
+  ///
   /// This error is also used to emulate plain error `throw`ed by rollup.
   /// For `throw new Error("Errored")` in js, you can use `ErrorKind::anyhow(anyhow::format_err!("Errored"))`
-  /// 
+  ///
   /// We also use this to replace `panic!()` in the code for graceful shutdown.
   /// But this is not recommended.
   Panic {
@@ -45,7 +44,6 @@ pub enum ErrorKind {
   },
 
   // --- Custom
-
   Napi {
     status: String,
     reason: String,
@@ -58,10 +56,12 @@ impl Display for ErrorKind {
       // Aligned with rollup
       ErrorKind::UnresolvedEntry { unresolved_id } => write!(f, "Could not resolve entry module \"{}\"", unresolved_id.display()),
       ErrorKind::ExternalEntry { id } => write!(f, "Entry module \"{}\" cannot be external.", id.display()),
-      ErrorKind::MissingExport { missing_export, importee, importer } => write!(f, 
+      ErrorKind::MissingExport { missing_export, importee, importer } => write!(
+        f,
         r#""{missing_export}" is not exported by "{}", imported by "{}"."#,
         importee.display(),
-        importer.display()),
+        importer.display(),
+      ),
       ErrorKind::AmbiguousExternalNamespaces {
         binding,
         reexporting_module,
@@ -93,10 +93,13 @@ impl ErrorKind {
       ErrorKind::CircularDependency(_) => error_code::CIRCULAR_DEPENDENCY,
       // Rolldown specific
       ErrorKind::Panic { .. } => error_code::PANIC,
-      ErrorKind::Napi { status, reason } => todo!(),
+      ErrorKind::Napi {
+        status: _,
+        reason: _,
+      } => todo!(),
       ErrorKind::ParseJsFailed {
-        source_file,
-        source,
+        source_file: _,
+        source: _,
       } => todo!(),
     }
   }

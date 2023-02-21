@@ -2,38 +2,38 @@
 members = ["./crates/*"]
 
 [profile.dev]
+debug       = 2
 incremental = true
-debug = 2
 
 [profile.release]
 codegen-units = 1
-debug = false
-lto = true
-opt-level = 3
-incremental = true
+debug         = false
+incremental   = true
+lto           = true
+opt-level     = 3
 
 
 [workspace.dependencies]
-swc_core = { version = "0.59.26" }
-tokio = { version = "1.24.1" }
+anyhow            = "1.0.66"
+async-trait       = "0.1.62"
+dashmap           = "5.4.0"
+derivative        = "2.2.0"
+futures           = "0.3.25"
+hashbrown         = { version = "0.13.2", features = ["rayon"] }
+hashlink          = "0.8.1"
+insta             = "1.21.0"
+itertools         = "0.10.5"
+napi              = { version = "2" }
+once_cell         = "1.16.0"
+phf               = { version = "0.11.1", features = ["macros"] }
+rayon             = "1.6.0"
+rustc-hash        = "1.1.0"
+serde             = { version = "1.0.147", features = ["derive"] }
+serde_json        = "1.0.87"
+sugar_path        = "0.0.11"
+swc_core          = { version = "0.59.26" }
 swc_node_comments = "0.16.27"
-testing = { version = "0.31.29" }
-derivative = "2.2.0"
-hashbrown = { version = "0.13.2", features = ["rayon"] }
-hashlink = "0.8.1"
-tracing = "0.1.37"
-sugar_path = "0.0.11"
-anyhow = "1.0.66"
-dashmap = "5.4.0"
-once_cell = "1.16.0"
-testing_macros = "0.2.7"
-insta = "1.21.0"
-itertools = "0.10.5"
-rustc-hash = "1.1.0"
-rayon = "1.6.0"
-async-trait = "0.1.62"
-futures = "0.3.25"
-serde = { version = "1.0.147", features = ["derive"] }
-serde_json = "1.0.87"
-phf = { version = "0.11.1", features = ["macros"] }
-napi = { version = "2" }
+testing           = { version = "0.31.29" }
+testing_macros    = "0.2.7"
+tokio             = { version = "1.24.1" }
+tracing           = "0.1.37"

@@ -1,9 +1,7 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use rolldown_common::ModuleId;
-use rolldown_plugin::{
-  BuildPlugin, Context, ResolveArgs, ResolveOutput, TransformArgs,
-};
+use rolldown_plugin::{BuildPlugin, Context, ResolveArgs, ResolveOutput, TransformArgs};
 use tokio::sync::RwLock;
 
 use crate::BundleResult;

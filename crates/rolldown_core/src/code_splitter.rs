@@ -17,15 +17,17 @@ pub fn uri_to_chunk_name(root: &str, uri: &str) -> String {
     .unwrap_or("")
     .to_string();
   relatived.set_extension("");
-  let name = relatived
-    .components()
-    .filter(|com| matches!(com, Component::Normal(_)))
-    .filter_map(|seg| seg.as_os_str().to_str())
-    .intersperse("_")
-    .fold(String::new(), |mut acc, seg| {
-      acc.push_str(seg);
-      acc
-    });
+  let name = itertools::Itertools::intersperse(
+    relatived
+      .components()
+      .filter(|com| matches!(com, Component::Normal(_)))
+      .filter_map(|seg| seg.as_os_str().to_str()),
+    "_",
+  )
+  .fold(String::new(), |mut acc, seg| {
+    acc.push_str(seg);
+    acc
+  });
   // name.push('_');
   // name.push_str(&ext);
   name
@@ -76,11 +78,13 @@ impl<'me> CodeSplitter<'me> {
 }
 
 #[derive(Debug, Clone)]
+#[allow(unused)]
 enum QueueAction {
   Enter,
 }
 
 #[derive(Debug, Clone)]
+#[allow(unused)]
 struct QueueItem {
   pub action: QueueAction,
   pub module_id: JsWord,

@@ -1,9 +1,9 @@
 [package]
-name = "rolldown_swc_utils"
-version = "0.0.1"
-edition = "2021"
-license = "MIT"
 description = "rolldown_swc_utils"
+edition     = "2021"
+license     = "MIT"
+name        = "rolldown_swc_utils"
+version     = "0.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

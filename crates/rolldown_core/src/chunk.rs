@@ -161,11 +161,9 @@ impl Chunk {
       let root_id = uf
         .find_root_par(&id)
         .unwrap_or_else(|| panic!("Failed to find root of {:?}", id));
-      let final_name = root_id_to_name
-        .entry(root_id.clone().to_id())
-        .or_insert_with(|| {
-          create_conflictless_name(suggest_name.unwrap_or_else(|| id.name().clone()))
-        });
+      let final_name = root_id_to_name.entry(root_id.to_id()).or_insert_with(|| {
+        create_conflictless_name(suggest_name.unwrap_or_else(|| id.name().clone()))
+      });
 
       debug_assert!(
         Ident::verify_symbol(final_name).is_ok(),
@@ -438,7 +436,7 @@ impl Chunk {
         };
         if let Some(specifiers) = imports_map.get(chunk_dep_id) {
           let mut specifiers = specifiers
-            .into_iter()
+            .iter()
             .map(|spec| (&spec.imported, spec))
             .collect::<FxHashMap<_, _>>();
 
@@ -494,7 +492,7 @@ impl Chunk {
               src: Some(src.clone()),
               span: Default::default(),
               specifiers: specifiers
-                .into_iter()
+                .iter()
                 .sorted_by_key(|(exported_name, _)| *exported_name)
                 .map(|(exported_name, spec_id)| {
                   if exported_name == &"*" {

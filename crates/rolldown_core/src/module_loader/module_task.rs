@@ -1,5 +1,3 @@
-
-
 use derivative::Derivative;
 use futures::future::join_all;
 use rolldown_common::ModuleId;
@@ -42,7 +40,7 @@ impl ModuleTask {
       if is_external {
         None
       } else {
-        let id = resolve_id(
+        resolve_id(
           resolver,
           ResolveArgs {
             importer: Some(importer),
@@ -50,8 +48,7 @@ impl ModuleTask {
           },
           plugin_driver,
         )
-        .await?;
-        id
+        .await?
       }
     };
 

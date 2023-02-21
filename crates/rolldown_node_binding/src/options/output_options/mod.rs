@@ -66,13 +66,17 @@ pub fn resolve_output_options(opts: OutputOptions) -> napi::Result<rolldown_core
     .entry_file_names
     .inspect(|entry_file_names| defaults.entry_file_names = entry_file_names.clone().into());
 
-  opts
-    .chunk_file_names
-    .map(|chunk_file_names| defaults.chunk_file_names = chunk_file_names.into());
-
-  opts
-    .format
-    .map(|format| defaults.format = InternalModuleFormat::from_str(format.as_str()).unwrap());
+  if let Some(chunk_file_names) = opts.chunk_file_names {
+    defaults.chunk_file_names = chunk_file_names.into()
+  }
+  if let Some(format) = opts.format {
+    defaults.format = InternalModuleFormat::from_str(format.as_str()).map_err(|err| {
+      napi::Error::new(
+        napi::Status::InvalidArg,
+        format!("Invalid module format {}", err),
+      )
+    })?;
+  }
 
   defaults.dir = opts.dir;
 

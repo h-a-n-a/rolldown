@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@jridgewell/sourcemap-codec": "^1.4.14",
     "@rolldown/core": "workspace:*",

@@ -74,7 +74,7 @@ pub fn make_legal(value: &str) -> String {
     value.to_string()
   };
 
-  if &ret != &value {
+  if ret != value {
     tracing::warn!("illegal identifier: {}, replaced with {}", value, ret);
   }
 

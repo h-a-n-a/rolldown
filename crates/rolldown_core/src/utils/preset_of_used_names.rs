@@ -1,4 +1,3 @@
-
 use swc_core::ecma::atoms::{js_word, JsWord};
 
 use crate::InternalModuleFormat;

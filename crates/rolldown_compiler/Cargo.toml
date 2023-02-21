@@ -1,22 +1,22 @@
 [package]
-name = "rolldown_compiler"
-version = "0.0.1"
-edition = "2021"
-license = "MIT"
 description = "rolldown_compiler"
+edition     = "2021"
+license     = "MIT"
+name        = "rolldown_compiler"
+version     = "0.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rolldown_error = { version = "0.0.1" , path = "../rolldown_error" }
-swc_core = { workspace = true, features = [
-    "common",
-    "common_tty",
-    "common_concurrent",
-    "ecma_parser",
-    "ecma_ast",
-    "ecma_codegen",
-    "ecma_visit",
-] }
 anyhow = { workspace = true }
+rolldown_error = { version = "0.0.1", path = "../rolldown_error" }
 sugar_path = { workspace = true }
+swc_core = { workspace = true, features = [
+  "common",
+  "common_tty",
+  "common_concurrent",
+  "ecma_parser",
+  "ecma_ast",
+  "ecma_codegen",
+  "ecma_visit",
+] }

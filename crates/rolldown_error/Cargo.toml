@@ -1,15 +1,15 @@
 [package]
-name = "rolldown_error"
-version = "0.0.1"
-edition = "2021"
-license = "MIT"
 description = "rolldown_error"
+edition     = "2021"
+license     = "MIT"
+name        = "rolldown_error"
+version     = "0.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ansi_term       = "0.12.1"
+anyhow          = "1.0.66"
 rolldown_common = { path = "../rolldown_common" }
-sugar_path = { workspace = true }
-swc_core = { workspace = true, features = ["ecma_parser"] }
-anyhow = "1.0.66"
-ansi_term = "0.12.1"
+sugar_path      = { workspace = true }
+swc_core        = { workspace = true, features = ["ecma_parser"] }

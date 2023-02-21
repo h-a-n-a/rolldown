@@ -1,8 +1,8 @@
 [package]
-name = "rolldown_node_binding"
-version = "0.0.1"
 edition = "2021"
 license = "MIT"
+name    = "rolldown_node_binding"
+version = "0.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,22 +10,19 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-rolldown_core = { path = "../rolldown_core" }
-rolldown_plugin = { path = "../rolldown_plugin" }
+async-trait      = { workspace = true }
+derivative       = { workspace = true }
+futures          = { workspace = true }
+itertools        = { workspace = true }
+napi             = { version = "2.11.1", features = ["full"] }
+napi-derive      = { version = "2.11.0" }
+rolldown_core    = { path = "../rolldown_core" }
+rolldown_plugin  = { path = "../rolldown_plugin" }
 rolldown_tracing = { path = "../rolldown_tracing" }
-async-trait = { workspace = true }
-tracing = { workspace = true }
-rustc-hash = { workspace = true }
-derivative = { workspace = true }
-futures = { workspace = true }
-itertools = { workspace = true }
-serde = { version = "1", features = ["derive"] }
-napi              = { version = "2.11.1", features = ["full"]}
-napi-derive       = { version = "2.11.0" }
+rustc-hash       = { workspace = true }
+serde            = { version = "1", features = ["derive"] }
+tracing          = { workspace = true }
 
 
 [build-dependencies]
-napi-build = "2.0.1"
-
-[profile.release]
-lto = true
+napi-build = "2"

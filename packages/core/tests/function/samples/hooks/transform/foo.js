@@ -1,1 +1,1 @@
-export default MAGIC_NUMBER;
+export default MAGIC_NUMBER

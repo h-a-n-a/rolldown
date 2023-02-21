@@ -1,19 +1,16 @@
 [package]
-name = "rolldown_common"
-version = "0.0.1"
-edition = "2021"
-license = "MIT"
 description = "rolldown_common"
+edition     = "2021"
+license     = "MIT"
+name        = "rolldown_common"
+version     = "0.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-swc_core = { workspace = true, features = [
-    "ecma_ast",
-    "common"
-] }
-hashlink = { workspace = true }
+ena        = "0.14.0"
+hashlink   = { workspace = true }
 rustc-hash = { workspace = true }
-tracing =  { workspace = true }
-ena = "0.14.0"
 scoped-tls = "1.0"
+swc_core   = { workspace = true, features = ["ecma_ast", "common"] }
+tracing    = { workspace = true }

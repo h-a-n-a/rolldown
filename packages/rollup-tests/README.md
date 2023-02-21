@@ -15,5 +15,3 @@ The script will run the tests and skip the tests in `rollup-tests/failed-tests.j
 The script will run the tests and collected failed tests to `rollup-tests/failed-tests.json`.
 
 If a test is already in `rollup-tests/failed-tests.json`, it will be skipped.
-
-

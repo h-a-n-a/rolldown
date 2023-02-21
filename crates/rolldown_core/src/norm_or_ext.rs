@@ -1,9 +1,8 @@
 use std::collections::HashSet;
 
-
 use rolldown_common::ModuleId;
 use rolldown_runtime_helpers::RuntimeHelpers;
-use swc_core::{common::SyntaxContext};
+use swc_core::common::SyntaxContext;
 
 use crate::{external_module::ExternalModule, normal_module::NormalModule};
 
@@ -55,12 +54,15 @@ impl NormOrExt {
       _ => None,
     }
   }
+
   pub fn as_norm_mut(&mut self) -> Option<&mut NormalModule> {
     match self {
       NormOrExt::Normal(m) => Some(m),
       _ => None,
     }
   }
+
+  #[allow(unused)]
   pub fn as_ext(&self) -> Option<&ExternalModule> {
     match self {
       NormOrExt::External(m) => Some(m),
@@ -68,6 +70,7 @@ impl NormOrExt {
     }
   }
 
+  #[allow(unused)]
   pub fn as_ext_mut(&mut self) -> Option<&mut ExternalModule> {
     match self {
       NormOrExt::External(m) => Some(m),
@@ -76,23 +79,27 @@ impl NormOrExt {
   }
 
   pub fn expect_norm(&self) -> &NormalModule {
-    match self {
-      NormOrExt::Normal(m) => m,
-      _ => panic!("Expected NormalModule, Got ExternalModule({})", self.id()),
+    if let NormOrExt::Normal(m) = self {
+      m
+    } else {
+      panic!("Expected NormalModule, Got ExternalModule({})", self.id())
     }
   }
 
   pub fn expect_norm_mut(&mut self) -> &mut NormalModule {
-    match self {
-      NormOrExt::Normal(m) => m,
-      _ => panic!("Expected NormalModule, Got ExternalModule({})", self.id()),
+    if let NormOrExt::Normal(m) = self {
+      m
+    } else {
+      panic!("Expected NormalModule, Got ExternalModule({})", self.id())
     }
   }
 
+  #[allow(unused)]
   pub fn expect_ext(&self) -> &ExternalModule {
-    match self {
-      NormOrExt::External(m) => m,
-      _ => panic!("expected ExternalModule"),
+    if let NormOrExt::External(m) = self {
+      m
+    } else {
+      panic!("expected ExternalModule")
     }
   }
 

@@ -1,7 +1,7 @@
 use std::sync::atomic::AtomicBool;
 
 use ast::{CallExpr, Callee, ExportSpecifier, Expr, Id, Ident, Lit, ModuleDecl, ModuleItem, Stmt};
-use hashlink::{LinkedHashSet};
+use hashlink::LinkedHashSet;
 use rolldown_common::{ExportedSpecifier, ImportedSpecifier, Symbol};
 use rolldown_common::{ModuleId, ReExportedSpecifier};
 use rolldown_swc_utils::{ExportNamedSpecifierExt, ImportNamedSpecifierExt, ModuleExportNameExt};
@@ -242,12 +242,9 @@ impl Scanner {
           });
         } else {
           node.specifiers.iter().for_each(|specifier| {
-            match specifier {
-              ExportSpecifier::Named(s) => {
-                // export { name }
-                self.add_local_export(s.exported_as_name().clone(), s.local_ident().to_id().into());
-              }
-              _ => {}
+            if let ExportSpecifier::Named(s) = specifier {
+              // export { name }
+              self.add_local_export(s.exported_as_name().clone(), s.local_ident().to_id().into());
             };
           });
         }
@@ -352,12 +349,12 @@ impl Scanner {
         },
         ModuleDecl::ExportDefaultDecl(node) => match &node.decl {
           ast::DefaultDecl::Class(cls) => {
-            if let ident = cls.ident.as_ref().unwrap() {
+            if let Some(ident) = cls.ident.as_ref() {
               self.add_declared_id(ident.to_id().into())
             }
           }
           ast::DefaultDecl::Fn(func) => {
-            if let ident = func.ident.as_ref().unwrap() {
+            if let Some(ident) = func.ident.as_ref() {
               self.add_declared_id(ident.to_id().into())
             } else {
               self.add_declared_id(self.facade_default_symbol())
@@ -378,11 +375,12 @@ impl Scanner {
         if info.is_used_dynamically {
           self.add_imported_specifier(info.source.clone(), imported_namespace_id, "*".into());
         }
-        if let used_member_name = info.used_member_name {
-          used_member_name.into_iter().for_each(|(name, member_id)| {
+        info
+          .used_member_name
+          .into_iter()
+          .for_each(|(name, member_id)| {
             self.add_imported_specifier(info.source.clone(), member_id, name);
           });
-        }
       });
   }
 

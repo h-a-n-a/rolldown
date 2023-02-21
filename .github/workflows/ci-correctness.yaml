@@ -1,28 +1,69 @@
 name: Correctness
 
+env:
+  RUST_BACKTRACE: 1
+  RUST_TOOLCHAIN: nightly-2023-02-21
+
 on:
   push:
     branches:
       - main
   pull_request:
-    types: ["opened", "reopened", "synchronize"]
+    types: ['opened', 'reopened', 'synchronize']
 
 jobs:
+  format:
+    name: Format Check
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: clippy, rustfmt
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: format-check
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+      - name: 'Install dependencies'
+        run: yarn install
+      - name: Check
+        run: |
+          cargo fmt -- --check
+          yarn format:check
+          cargo clippy --all --all-features
+
   cargo-test:
     name: Cargo test
-    runs-on: "ubuntu-latest"
-    strategy:
-      fail-fast: true
+    runs-on: 'ubuntu-latest'
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          override: true
-      - name: Configure cache
-        uses: Swatinem/rust-cache@v1
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: cargo-test
       - name: Build
         run: |
           cargo test --all --no-run -- --nocapture
