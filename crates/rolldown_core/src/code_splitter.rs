@@ -126,13 +126,14 @@ struct QueueItem {
 // }
 
 impl<'me> CodeSplitter<'me> {
-  pub fn analyze_entries(&mut self, mut entries: Vec<ModuleId>, _is_entry_chunk: bool) {
+  pub fn analyze_entries(&mut self, mut entries: Vec<ModuleId>, is_entry_chunk: bool) {
     while let Some(entry) = entries.pop() {
       tracing::trace!("Analyzing entry: {}", entry);
       let _exec_order = self.graph.module_by_id[&entry].exec_order();
       let chunk = Chunk::new(
         uri_to_chunk_name(&self.opts.cwd.to_string_lossy(), entry.as_ref()),
         entry.clone(),
+        is_entry_chunk,
       );
       self
         .split_point_module_to_chunk

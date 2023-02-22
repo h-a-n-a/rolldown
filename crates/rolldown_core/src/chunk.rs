@@ -32,10 +32,11 @@ pub struct Chunk {
   pub(crate) before_module_items: Vec<ast::ModuleItem>,
   pub(crate) after_module_items: Vec<ast::ModuleItem>,
   pub(crate) runtime_helpers: RuntimeHelpers,
+  pub(crate) is_user_defined_entry: bool,
 }
 
 impl Chunk {
-  pub fn new(id: impl Into<ChunkId>, entry: ModuleId) -> Self {
+  pub fn new(id: impl Into<ChunkId>, entry: ModuleId, is_user_defined_entry: bool) -> Self {
     Self {
       export_mode: ExportMode::Named,
       id: id.into(),
@@ -45,6 +46,7 @@ impl Chunk {
       after_module_items: Default::default(),
       filename: None,
       runtime_helpers: Default::default(),
+      is_user_defined_entry,
     }
   }
 
@@ -122,7 +124,7 @@ impl Chunk {
           program,
           Mark::new(),
           &comments,
-          self.export_mode.is_default(),
+          self.export_mode.is_default() && self.is_user_defined_entry,
         )
       });
 
@@ -554,7 +556,9 @@ impl Chunk {
 
     self.before_module_items = module_items;
 
-    self.validate_export_mode(ctx.output_options, &exports_in_scope)?;
+    if self.is_user_defined_entry {
+      self.validate_export_mode(ctx.output_options, &exports_in_scope)?;
+    }
 
     if !exports_in_scope.is_empty() {
       let exports = rolldown_ast_template::build_exports_stmt(
