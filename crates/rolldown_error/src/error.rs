@@ -78,6 +78,25 @@ impl Error {
     Self::with_kind(ErrorKind::CircularDependency(circular_path))
   }
 
+  pub fn invalid_export_option_value(value: String) -> Self {
+    Self::with_kind(ErrorKind::InvalidExportOptionValue(value))
+  }
+
+  pub fn incompatible_export_option_value(
+    option_value: &'static str,
+    exported_keys: Vec<String>,
+    entry_module: impl AsRef<Path>,
+  ) -> Self {
+    CWD.with(|cwd| {
+      let entry_module = entry_module.as_ref().relative(cwd);
+      Self::with_kind(ErrorKind::IncompatibleExportOptionValue {
+        option_value,
+        exported_keys,
+        entry_module,
+      })
+    })
+  }
+
   // --- rolldown special
 
   pub fn parse_js_failed(

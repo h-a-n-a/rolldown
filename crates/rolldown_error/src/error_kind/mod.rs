@@ -2,6 +2,8 @@ use std::{fmt::Display, path::PathBuf, sync::Arc};
 
 use swc_core::common::SourceFile;
 
+use crate::utils::format_quoted_strings;
+
 pub mod error_code;
 
 #[derive(Debug)]
@@ -25,6 +27,12 @@ pub enum ErrorKind {
     sources: Vec<String>,
   },
   CircularDependency(Vec<String>),
+  InvalidExportOptionValue(String),
+  IncompatibleExportOptionValue {
+    option_value: &'static str,
+    exported_keys: Vec<String>,
+    entry_module: PathBuf,
+  },
 
   // --- Rolldown specific
   ParseJsFailed {
@@ -72,6 +80,12 @@ impl Display for ErrorKind {
         "Ambiguous external namespace resolution: {reexporting_module} re-exports {binding} from one of the external modules {sources:?}, guessing {used_module}"
       ),
       ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.join(" -> ")),
+      ErrorKind::InvalidExportOptionValue(value) =>  write!(f, r#""output.exports" must be "default", "named", "none", "auto", or left unspecified (defaults to "auto"), received "{value}"."#),
+      ErrorKind::IncompatibleExportOptionValue { option_value, exported_keys, entry_module } => {
+        let mut exported_keys = exported_keys.iter().collect::<Vec<_>>();
+        exported_keys.sort();
+        write!(f, r#""{option_value}" was specified for "output.exports", but entry module "{}" has the following exports: {}"#, entry_module.display(), format_quoted_strings(&exported_keys))
+      }
       // Rolldown specific
       ErrorKind::Panic { source } => source.fmt(f),
       ErrorKind::Napi { status, reason } => write!(f, "Napi error: {} {}", status, reason),
@@ -91,6 +105,8 @@ impl ErrorKind {
       ErrorKind::MissingExport { .. } => error_code::MISSING_EXPORT,
       ErrorKind::AmbiguousExternalNamespaces { .. } => error_code::AMBIGUOUS_EXTERNAL_NAMESPACES,
       ErrorKind::CircularDependency(_) => error_code::CIRCULAR_DEPENDENCY,
+      ErrorKind::InvalidExportOptionValue(_) => error_code::INVALID_EXPORT_OPTION,
+      ErrorKind::IncompatibleExportOptionValue { .. } => error_code::INVALID_EXPORT_OPTION,
       // Rolldown specific
       ErrorKind::Panic { .. } => error_code::PANIC,
       ErrorKind::Napi {

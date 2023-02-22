@@ -50,7 +50,7 @@
         },
         "input": {
           "default": {
-            "main": "./entry.js"
+            "main": "./main.js"
           },
           "type": "object",
           "additionalProperties": {
@@ -67,6 +67,10 @@
     "OutputOptions": {
       "type": "object",
       "properties": {
+        "exportMode": {
+          "default": "auto",
+          "type": "string"
+        },
         "format": {
           "default": "esm",
           "type": "string"

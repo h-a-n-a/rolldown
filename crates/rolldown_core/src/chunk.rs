@@ -18,12 +18,13 @@ use swc_core::{
 };
 
 use crate::{
-  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BundleError, BundleResult, Graph,
-  InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions, SplitPointIdToChunkId,
-  COMPILER,
+  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BundleError, BundleResult, ExportMode,
+  Graph, InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions,
+  SplitPointIdToChunkId, COMPILER,
 };
 
 pub struct Chunk {
+  pub(crate) export_mode: ExportMode,
   pub(crate) id: ChunkId,
   pub(crate) filename: Option<String>,
   pub(crate) entry: ModuleId,
@@ -36,6 +37,7 @@ pub struct Chunk {
 impl Chunk {
   pub fn new(id: impl Into<ChunkId>, entry: ModuleId) -> Self {
     Self {
+      export_mode: ExportMode::Named,
       id: id.into(),
       modules: Default::default(),
       entry,
@@ -116,7 +118,12 @@ impl Chunk {
         })?;
 
       program = GLOBALS.set(&Default::default(), || {
-        rolldown_swc_visitors::to_cjs(program, Mark::new(), &comments)
+        rolldown_swc_visitors::to_cjs(
+          program,
+          Mark::new(),
+          &comments,
+          self.export_mode.is_default(),
+        )
       });
 
       code = COMPILER.print(&program, Some(&comments)).unwrap()
@@ -235,8 +242,8 @@ impl Chunk {
     id_to_name
   }
 
-  pub(crate) fn finalize(&mut self, mut ctx: FinalizeBundleContext) {
-    self.generate_cross_chunk_links(&mut ctx);
+  pub(crate) fn finalize(&mut self, mut ctx: FinalizeBundleContext) -> BundleResult<()> {
+    self.generate_cross_chunk_links(&mut ctx)?;
     let ordered_modules = {
       let mut modules = ctx.modules.values_mut().collect::<Vec<_>>();
       modules.sort_by_key(|m| m.exec_order());
@@ -319,6 +326,7 @@ impl Chunk {
           finalize_ctx,
         ));
       });
+    Ok(())
   }
 
   /// We only care about modules out of the chunk.
@@ -352,7 +360,10 @@ impl Chunk {
 
   /// For generating correct exports in the chunk, we only need to care about the `linked_exports` in
   /// entry module. In linking phase, all needed exports are merged to `linked_exports` of entry module.
-  pub(crate) fn generate_cross_chunk_links(&mut self, ctx: &mut FinalizeBundleContext) {
+  pub(crate) fn generate_cross_chunk_links(
+    &mut self,
+    ctx: &mut FinalizeBundleContext,
+  ) -> BundleResult<()> {
     let ordered_modules = {
       let mut modules = ctx.modules.values().collect::<Vec<_>>();
       modules.sort_by_key(|m| m.exec_order());
@@ -543,6 +554,8 @@ impl Chunk {
 
     self.before_module_items = module_items;
 
+    self.validate_export_mode(ctx.output_options, &exports_in_scope)?;
+
     if !exports_in_scope.is_empty() {
       let exports = rolldown_ast_template::build_exports_stmt(
         exports_in_scope
@@ -552,6 +565,53 @@ impl Chunk {
       );
       self.after_module_items.push(exports);
     }
+    Ok(())
+  }
+
+  fn validate_export_mode(
+    &mut self,
+    output_options: &OutputOptions,
+    exports: &FxHashMap<JsWord, ExportedSpecifier>,
+  ) -> BundleResult<()> {
+    // validate export mode
+    if output_options.format.is_cjs() {
+      match output_options.export_mode {
+        ExportMode::Default => {
+          if !exports.contains_key(&js_word!("default")) || exports.len() != 1 {
+            return Err(BundleError::incompatible_export_option_value(
+              "default",
+              exports.keys().map(|s| s.to_string()).collect(),
+              self.entry.as_ref(),
+            ));
+          }
+        }
+        ExportMode::None => {
+          if !exports.is_empty() {
+            return Err(BundleError::incompatible_export_option_value(
+              "none",
+              exports.keys().map(|s| s.to_string()).collect(),
+              self.entry.as_ref(),
+            ));
+          }
+        }
+        ExportMode::Auto => {
+          if exports.is_empty() {
+            self.export_mode = ExportMode::None;
+          } else if exports.len() == 1 && exports.contains_key(&js_word!("default")) {
+            self.export_mode = ExportMode::Default;
+          } else {
+            if !output_options.format.is_es() && exports.contains_key(&js_word!("default")) {
+              // TODO: warn about MIXED_EXPORTS
+            }
+            self.export_mode = ExportMode::Named;
+          }
+        }
+        ExportMode::Named => {
+          // Don't need to do anything
+        }
+      }
+    };
+    Ok(())
   }
 }
 

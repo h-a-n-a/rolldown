@@ -1,0 +1,19 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/fixtures/export_mode/default_mode_default_export
+---
+---------- main.js ----------
+// main.js
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "default", {
+    enumerable: true,
+    get: function() {
+        return main;
+    }
+});
+var main = 'hello world';
+module.exports = exports.default;

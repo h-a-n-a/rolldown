@@ -2,6 +2,9 @@ use std::str::FromStr;
 
 use derivative::Derivative;
 
+mod export_mode;
+pub use export_mode::*;
+
 use self::file_name::FileNameTemplate;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -41,6 +44,7 @@ pub struct OutputOptions {
   pub chunk_file_names: FileNameTemplate,
   pub dir: Option<String>,
   pub format: InternalModuleFormat,
+  pub export_mode: ExportMode,
 }
 
 impl Default for OutputOptions {
@@ -50,6 +54,7 @@ impl Default for OutputOptions {
       chunk_file_names: FileNameTemplate::from("[name]-[hash].js".to_string()),
       dir: None,
       format: InternalModuleFormat::Esm,
+      export_mode: ExportMode::Auto,
     }
   }
 }

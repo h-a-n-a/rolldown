@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test:update": "UPDATE_FAILED=1 pnpm run test",
+    "test:update": "UPDATE_FAILED=1 yarn test",
     "test:quick": "mocha -b test/test.js",
     "test": "mocha --file ./src/intercept-test.js test/test.js"
   },

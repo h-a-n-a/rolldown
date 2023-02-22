@@ -1,4 +1,5 @@
 use rayon::prelude::*;
+use rolldown_common::CWD;
 use rustc_hash::FxHashMap as HashMap;
 
 use crate::{
@@ -29,7 +30,10 @@ impl<'a> Bundle<'a> {
   }
 
   pub fn generate(&mut self) -> BundleResult<Vec<Asset>> {
-    let chunks = self.generate_chunks()?;
+    let mut chunks = self.generate_chunks()?;
+    chunks.iter_mut().for_each(|c| {
+      c.export_mode = self.output_options.export_mode;
+    });
     let mut chunk_by_id = chunks
       .into_iter()
       .map(|c| (c.id.clone(), c))
@@ -67,19 +71,20 @@ impl<'a> Bundle<'a> {
       })
       .collect::<Vec<_>>();
 
-    chunk_and_modules
-      .into_iter()
-      .par_bridge()
-      .for_each(|(chunk, module_mut_ref_by_id)| {
-        chunk.finalize(FinalizeBundleContext {
-          modules: module_mut_ref_by_id,
-          uf: &self.graph.uf,
-          output_options: self.output_options,
-          split_point_id_to_chunk_id: &self.split_point_id_to_chunk_id,
-          chunk_filename_by_id: &chunk_filename_by_id,
-          unresolved_ctxt: self.graph.unresolved_ctxt,
-        });
-      });
+    chunk_and_modules.into_iter().par_bridge().try_for_each(
+      |(chunk, module_mut_ref_by_id)| -> BundleResult<()> {
+        CWD.set(&self.input_options.cwd, || {
+          chunk.finalize(FinalizeBundleContext {
+            modules: module_mut_ref_by_id,
+            uf: &self.graph.uf,
+            output_options: self.output_options,
+            split_point_id_to_chunk_id: &self.split_point_id_to_chunk_id,
+            chunk_filename_by_id: &chunk_filename_by_id,
+            unresolved_ctxt: self.graph.unresolved_ctxt,
+          })
+        })
+      },
+    )?;
 
     let chunks = chunk_by_id
       .values()

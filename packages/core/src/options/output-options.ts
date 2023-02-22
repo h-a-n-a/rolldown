@@ -107,7 +107,6 @@ export interface OutputOptions extends RollupOutputOptions {
   chunkFileNames?: never
   entryFileNames?: never
   esModule?: never
-  exports?: never
   footer?: never
   freeze?: never
   generatedCode?: never
@@ -144,7 +143,7 @@ function normalizeFormat(
 export function normalizeOutputOptions(
   opts: OutputOptions,
 ): BindingOutputOptions {
-  const { dir, format, ...rest } = opts
+  const { dir, format, exports, ...rest } = opts
   // Make sure all fields of RollupInputOptions are handled.
   // @ts-expect-error
   const _empty: never = undefined as unknown as NonNullable<
@@ -153,5 +152,6 @@ export function normalizeOutputOptions(
   return {
     dir: dir,
     format: normalizeFormat(format),
+    exports,
   }
 }

@@ -27,6 +27,7 @@ export interface OutputOptions {
   entryFileNames?: string
   chunkFileNames?: string
   dir?: string
+  exports?: 'default' | 'named' | 'none' | 'auto'
   format?: 'esm' | 'cjs'
 }
 export interface OutputChunk {

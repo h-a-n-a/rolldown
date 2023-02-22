@@ -22,7 +22,8 @@ pub struct OutputOptions {
   pub dir: Option<String>,
   // pub entry_file_names: String, // | ((chunkInfo: PreRenderedChunk) => string)
   // esModule: boolean;
-  // exports: 'default' | 'named' | 'none' | 'auto';
+  #[napi(ts_type = "'default' | 'named' | 'none' | 'auto'")]
+  pub exports: Option<String>,
   // extend: boolean;
   // externalLiveBindings: boolean;
   // footer: () => string | Promise<string>;
