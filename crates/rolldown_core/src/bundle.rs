@@ -30,10 +30,7 @@ impl<'a> Bundle<'a> {
   }
 
   pub fn generate(&mut self) -> UnaryBuildResult<Vec<Asset>> {
-    let mut chunks = self.generate_chunks()?;
-    chunks.iter_mut().for_each(|c| {
-      c.export_mode = self.output_options.export_mode;
-    });
+    let chunks = self.generate_chunks()?;
     let mut chunk_by_id = chunks
       .into_iter()
       .map(|c| (c.id.clone(), c))
