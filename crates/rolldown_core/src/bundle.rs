@@ -3,7 +3,7 @@ use rolldown_common::CWD;
 use rustc_hash::FxHashMap as HashMap;
 
 use crate::{
-  Asset, BundleResult, Chunk, CodeSplitter, FinalizeBundleContext, Graph, InputOptions,
+  Asset, BuildResult, Chunk, CodeSplitter, FinalizeBundleContext, Graph, InputOptions,
   ModuleRefMutById, OutputOptions, SplitPointIdToChunkId,
 };
 
@@ -29,7 +29,7 @@ impl<'a> Bundle<'a> {
     }
   }
 
-  pub fn generate(&mut self) -> BundleResult<Vec<Asset>> {
+  pub fn generate(&mut self) -> BuildResult<Vec<Asset>> {
     let mut chunks = self.generate_chunks()?;
     chunks.iter_mut().for_each(|c| {
       c.export_mode = self.output_options.export_mode;
@@ -72,7 +72,7 @@ impl<'a> Bundle<'a> {
       .collect::<Vec<_>>();
 
     chunk_and_modules.into_iter().par_bridge().try_for_each(
-      |(chunk, module_mut_ref_by_id)| -> BundleResult<()> {
+      |(chunk, module_mut_ref_by_id)| -> BuildResult<()> {
         CWD.set(&self.input_options.cwd, || {
           chunk.finalize(FinalizeBundleContext {
             modules: module_mut_ref_by_id,
@@ -106,7 +106,7 @@ impl<'a> Bundle<'a> {
     Ok(chunks)
   }
 
-  fn generate_chunks(&mut self) -> BundleResult<Vec<Chunk>> {
+  fn generate_chunks(&mut self) -> BuildResult<Vec<Chunk>> {
     let code_splitter =
       CodeSplitter::new(self.graph.entries.clone(), self.graph, self.input_options);
     let chunk_graph = code_splitter.split()?;

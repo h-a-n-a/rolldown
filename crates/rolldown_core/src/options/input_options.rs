@@ -3,12 +3,12 @@ use std::{collections::HashMap, path::PathBuf, pin::Pin, sync::Arc};
 use derivative::Derivative;
 use futures::{future, Future, FutureExt};
 
-use crate::{BundleError, BundleResult};
+use crate::{BuildError, BuildResult};
 
 type PinFutureBox<T> = Pin<Box<dyn Future<Output = T> + Send>>;
 
 pub type IsExternal =
-  Arc<dyn Fn(&str, Option<&str>, bool) -> PinFutureBox<BundleResult<bool>> + Send + Sync>;
+  Arc<dyn Fn(&str, Option<&str>, bool) -> PinFutureBox<BuildResult<bool>> + Send + Sync>;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -19,7 +19,7 @@ pub struct InputOptions {
   #[derivative(Debug = "ignore")]
   pub is_external: IsExternal,
   #[derivative(Debug = "ignore")]
-  pub on_warn: Arc<dyn Fn(BundleError) + Send + Sync>,
+  pub on_warn: Arc<dyn Fn(BuildError) + Send + Sync>,
 }
 
 impl Default for InputOptions {

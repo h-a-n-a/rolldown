@@ -1,14 +1,12 @@
 use std::{path::Path, str::FromStr};
 
-use rolldown_core::{
-  Asset, BundleResult, Bundler, ExportMode, InternalModuleFormat, OutputOptions,
-};
+use rolldown_core::{Asset, BuildResult, Bundler, ExportMode, InternalModuleFormat, OutputOptions};
 use rolldown_test_utils::tester::Tester;
 
 pub struct CompiledFixture {
   pub tester: Tester,
   pub bundler: Bundler,
-  pub output: BundleResult<Vec<Asset>>,
+  pub output: BuildResult<Vec<Asset>>,
   pub name: String,
 }
 

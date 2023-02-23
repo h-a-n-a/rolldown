@@ -12,10 +12,10 @@ use swc_core::ecma::atoms::{js_word, JsWord};
 
 use crate::module_loader::ModuleLoader;
 use crate::{
-  norm_or_ext::NormOrExt, normal_module::NormalModule, options::InputOptions, BundleResult,
+  norm_or_ext::NormOrExt, normal_module::NormalModule, options::InputOptions, BuildResult,
   ModuleById, SWC_GLOBALS,
 };
-use crate::{BundleError, SharedBuildPluginDriver};
+use crate::{BuildError, SharedBuildPluginDriver};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -159,7 +159,7 @@ impl Graph {
     );
   }
 
-  fn link(&mut self) -> BundleResult<()> {
+  fn link(&mut self) -> BuildResult<()> {
     let mut order_modules = self
       .module_by_id
       .values()
@@ -181,14 +181,14 @@ impl Graph {
   /// ```
   /// If `index.js` is importer, `foo.ts` and `bar.ts` are importee.
   /// `foo` and `bar` are `ReExportedSpecifier`s.
-  fn link_exports(&mut self, order_modules: &[ModuleId]) -> BundleResult<()> {
+  fn link_exports(&mut self, order_modules: &[ModuleId]) -> BuildResult<()> {
     order_modules
       .iter()
       .filter(|importer_id| {
         // Fast path
         !importer_id.is_external()
       })
-      .try_for_each(|importer_id| -> BundleResult<()> {
+      .try_for_each(|importer_id| -> BuildResult<()> {
         let importee_and_re_exports = Self::fetch_normal_module(&self.module_by_id, importer_id)
           .re_exported_ids
           .iter()
@@ -198,12 +198,12 @@ impl Graph {
           .collect::<Vec<_>>();
 
         importee_and_re_exports.into_iter().try_for_each(
-          |(importee_id, re_exports)| -> BundleResult<()> {
+          |(importee_id, re_exports)| -> BuildResult<()> {
             if importer_id == &importee_id {
               let importee = Self::fetch_normal_module_mut(&mut self.module_by_id, &importee_id);
               re_exports
                 .into_iter()
-                .try_for_each(|spec| -> BundleResult<()> {
+                .try_for_each(|spec| -> BuildResult<()> {
                   importee.suggest_name(&spec.imported, &spec.exported_as);
                   if spec.imported == js_word!("*") {
                     importee.mark_namespace_id_referenced();
@@ -226,7 +226,7 @@ impl Graph {
               NormOrExt::Normal(importee) => {
                 re_exports
                   .into_iter()
-                  .try_for_each(|spec| -> BundleResult<()> {
+                  .try_for_each(|spec| -> BuildResult<()> {
                     importee.suggest_name(&spec.imported, &spec.exported_as);
                     // Case: export * as foo from './foo'
                     if spec.imported == js_word!("*") {
@@ -234,9 +234,7 @@ impl Graph {
                     }
                     let original_spec = importee
                       .find_exported(&spec.imported)
-                      .ok_or_else(|| {
-                        BundleError::panic(format!("original_id not found: {spec:?}"))
-                      })?
+                      .ok_or_else(|| BuildError::panic(format!("original_id not found: {spec:?}")))?
                       .clone();
                     importer.add_to_linked_exports(spec.exported_as, original_spec);
                     Ok(())
@@ -425,11 +423,11 @@ impl Graph {
   /// two things
   /// 1. Union symbol
   /// 2. Generate real ImportedSpecifier for each import and add to `linked_imports`
-  fn link_imports(&mut self, order_modules: &[ModuleId]) -> BundleResult<()> {
+  fn link_imports(&mut self, order_modules: &[ModuleId]) -> BuildResult<()> {
     order_modules
       .iter()
       .filter(|importer_id| !importer_id.is_external())
-      .try_for_each(|importer_id| -> BundleResult<()> {
+      .try_for_each(|importer_id| -> BuildResult<()> {
         tracing::trace!("link_imports for importer {}", importer_id);
         let importee_and_specifiers = Self::fetch_normal_module(&self.module_by_id, importer_id)
           .imports
@@ -438,7 +436,7 @@ impl Graph {
           .collect::<Vec<_>>();
 
         importee_and_specifiers.into_iter().try_for_each(
-          |(importee_id, specs)| -> BundleResult<()> {
+          |(importee_id, specs)| -> BuildResult<()> {
             tracing::trace!("link_imports for importee {}", importee_id);
             if importer_id == &importee_id {
               // Handle self import
@@ -467,7 +465,7 @@ impl Graph {
                       imported: exported_spec.exported_as.clone(),
                     });
                 } else {
-                  return Err(BundleError::missing_export(
+                  return Err(BuildError::missing_export(
                     &imported_spec.imported,
                     importer_id.as_ref(),
                     importee_id.as_ref(),
@@ -519,7 +517,7 @@ impl Graph {
                     if importee.external_modules_of_re_export_all.len() > 1 {
                       self
                         .warnings
-                        .push(BundleError::ambiguous_external_namespaces(
+                        .push(BuildError::ambiguous_external_namespaces(
                           imported_spec.imported_as.name().to_string(),
                           importer_id.to_string(),
                           first_external_id.to_string(),
@@ -563,7 +561,7 @@ impl Graph {
                       .uf
                       .union(&imported_spec.imported_as, &symbol_in_importee);
                   } else {
-                    return Err(BundleError::missing_export(
+                    return Err(BuildError::missing_export(
                       &imported_spec.imported,
                       importer_id.as_ref(),
                       importee_id.as_ref(),
@@ -609,7 +607,7 @@ impl Graph {
       });
   }
 
-  pub(crate) async fn build(&mut self, input_opts: &InputOptions) -> BundleResult<()> {
+  pub(crate) async fn build(&mut self, input_opts: &InputOptions) -> BuildResult<()> {
     let resolver = Arc::new(Resolver::with_cwd(input_opts.cwd.clone()));
 
     ModuleLoader::new(self, resolver, self.build_plugin_driver.clone(), input_opts)

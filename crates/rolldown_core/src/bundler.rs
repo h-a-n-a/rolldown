@@ -2,7 +2,7 @@ use rolldown_plugin::BuildPlugin;
 use sugar_path::AsPath;
 
 use crate::{
-  BuildPluginDriver, Bundle, BundleResult, Graph, InputOptions, OutputOptions,
+  BuildPluginDriver, BuildResult, Bundle, Graph, InputOptions, OutputOptions,
   SharedBuildPluginDriver,
 };
 
@@ -33,7 +33,7 @@ impl Bundler {
     }
   }
 
-  async fn build(&mut self, output_opts: OutputOptions) -> BundleResult<Vec<Asset>> {
+  async fn build(&mut self, output_opts: OutputOptions) -> BuildResult<Vec<Asset>> {
     tracing::debug!("InputOptions {:#?}", self.input_options);
     tracing::debug!("start bundling with OutputOptions: {:#?}", output_opts);
     let mut graph = Graph::new(self.plugin_driver.clone());
@@ -50,7 +50,7 @@ impl Bundler {
     Ok(assets)
   }
 
-  pub async fn write(&mut self, output_options: OutputOptions) -> BundleResult<Vec<Asset>> {
+  pub async fn write(&mut self, output_options: OutputOptions) -> BuildResult<Vec<Asset>> {
     let dir = output_options.dir.clone().unwrap_or_else(|| {
       self
         .input_options
@@ -79,7 +79,7 @@ impl Bundler {
     Ok(output)
   }
 
-  pub async fn generate(&mut self, output_options: OutputOptions) -> BundleResult<Vec<Asset>> {
+  pub async fn generate(&mut self, output_options: OutputOptions) -> BuildResult<Vec<Asset>> {
     let output = self.build(output_options).await?;
 
     Ok(output)

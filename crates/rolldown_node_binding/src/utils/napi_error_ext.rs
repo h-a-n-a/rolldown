@@ -1,11 +1,11 @@
-use rolldown_core::BundleError;
+use rolldown_core::BuildError;
 
 pub(crate) trait NapiErrorExt {
-  fn into_bundle_error(self) -> BundleError;
+  fn into_bundle_error(self) -> BuildError;
 }
 
 impl NapiErrorExt for napi::Error {
-  fn into_bundle_error(self) -> BundleError {
-    BundleError::napi_error(self.status.to_string(), self.reason.clone())
+  fn into_bundle_error(self) -> BuildError {
+    BuildError::napi_error(self.status.to_string(), self.reason.clone())
   }
 }

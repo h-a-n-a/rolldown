@@ -10,7 +10,7 @@ use swc_node_comments::SwcComments;
 
 use super::Msg;
 use crate::{
-  resolve_id, BundleError, BundleResult, IsExternal, ResolvedModuleIds, SharedBuildPluginDriver,
+  resolve_id, BuildError, BuildResult, IsExternal, ResolvedModuleIds, SharedBuildPluginDriver,
   SharedResolver, COMPILER, SWC_GLOBALS,
 };
 
@@ -34,7 +34,7 @@ impl ModuleTask {
     specifier: &str,
     plugin_driver: &SharedBuildPluginDriver,
     is_external: &IsExternal,
-  ) -> BundleResult<ModuleId> {
+  ) -> BuildResult<ModuleId> {
     let inner_ret = {
       let is_external = is_external(specifier, Some(importer.id()), false).await?;
       if is_external {
@@ -74,7 +74,7 @@ impl ModuleTask {
     }
   }
 
-  async fn run_inner(self) -> BundleResult<TaskResult> {
+  async fn run_inner(self) -> BuildResult<TaskResult> {
     // load hook
     let code = tokio::fs::read_to_string(self.id.as_ref())
       .await
@@ -92,7 +92,7 @@ impl ModuleTask {
 
     let comments = SwcComments::default();
     let (fm, ast) = COMPILER.parse_with_comments(code, self.id.as_ref(), Some(&comments));
-    let mut ast = ast.map_err(|e| BundleError::parse_js_failed(fm, e))?;
+    let mut ast = ast.map_err(|e| BuildError::parse_js_failed(fm, e))?;
 
     GLOBALS.set(&SWC_GLOBALS, || {
       rolldown_swc_visitors::resolve(&mut ast, self.unresolved_mark, self.top_level_mark);

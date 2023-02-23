@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::BundleError;
+use crate::BuildError;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ExportMode {
@@ -29,7 +29,7 @@ impl ExportMode {
 }
 
 impl FromStr for ExportMode {
-  type Err = BundleError;
+  type Err = BuildError;
 
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     match value {
@@ -37,7 +37,7 @@ impl FromStr for ExportMode {
       "named" => Ok(ExportMode::Named),
       "default" => Ok(ExportMode::Default),
       "none" => Ok(ExportMode::None),
-      _ => Err(BundleError::invalid_export_option_value(value.to_string())),
+      _ => Err(BuildError::invalid_export_option_value(value.to_string())),
     }
   }
 }

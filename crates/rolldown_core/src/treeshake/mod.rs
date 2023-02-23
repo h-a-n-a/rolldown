@@ -8,7 +8,7 @@ use rolldown_common::{ImportedSpecifier, ModuleId, Symbol};
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::ecma::atoms::JsWord;
 
-use crate::{treeshake::statement_part::Include, BundleError, NormalModule};
+use crate::{treeshake::statement_part::Include, BuildError, NormalModule};
 
 mod graph;
 mod statement_part;
@@ -111,7 +111,7 @@ impl<'m> TreeshakeNormalModule<'m> {
         return Some(included);
       }
       if visited.contains(&(maybe_the_definer, imported_symbol_name)) {
-        ctx.add_warning(BundleError::circular_dependency(
+        ctx.add_warning(BuildError::circular_dependency(
           visited
             .iter()
             .map(|(module, _)| module.to_string())
@@ -132,7 +132,7 @@ impl<'m> TreeshakeNormalModule<'m> {
           // The symbol is maybe imported from external module, just return the symbol itself
           return Some(included);
         } else {
-          ctx.add_error(BundleError::panic(format!(
+          ctx.add_error(BuildError::panic(format!(
             " \"{:#?}\" is not exported from module {:?}",
             import_spec.imported, exporter.module.id
           )));
@@ -204,7 +204,7 @@ impl<'m> TreeshakeNormalModule<'m> {
       res
     } else {
       ctx.add_error(
-        BundleError::panic(format!(
+        BuildError::panic(format!(
           "top_level_id: {:?} is not found in {:?}",
           top_level_symbol, self.module.id
         ))
@@ -239,7 +239,7 @@ impl<'m> TreeshakeNormalModule<'m> {
       // The symbol is maybe imported from external module, just ignore it
       Default::default()
     } else {
-      ctx.add_error(BundleError::panic(format!(
+      ctx.add_error(BuildError::panic(format!(
         " \"{:#?}\" is not exported from module {:?}",
         exported_name, self.module.id
       )));

@@ -5,13 +5,13 @@ use std::{
 };
 
 use futures::FutureExt;
-use rolldown_core::BundleError;
+use rolldown_core::BuildError;
 
 use crate::test_config::TestConfig;
 
 pub struct Tester {
   pub config: TestConfig,
-  pub warnings: Vec<BundleError>,
+  pub warnings: Vec<BuildError>,
 }
 
 impl Tester {

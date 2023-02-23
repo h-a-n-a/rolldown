@@ -59,5 +59,6 @@ pub(crate) static SWC_GLOBALS: Lazy<Arc<Globals>> = Lazy::new(|| Arc::new(Global
 
 // public exports
 
-pub type BundleResult<T> = rolldown_error::Result<T>;
-pub type BundleError = rolldown_error::Error;
+pub type BuildResult<T> = rolldown_error::Result<T>;
+pub(crate) type BuildResultWithErrors<T> = rolldown_error::ResultWithErrors<T>;
+pub type BuildError = rolldown_error::Error;

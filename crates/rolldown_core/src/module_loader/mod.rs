@@ -14,7 +14,7 @@ use swc_core::ecma::atoms::js_word;
 
 use crate::{norm_or_ext::NormOrExt, Graph, InputOptions, NormalModule, SWC_GLOBALS};
 use crate::{
-  resolve_id, BundleError, BundleResult, ExternalModule, SharedBuildPluginDriver, SharedResolver,
+  resolve_id, BuildError, BuildResult, ExternalModule, SharedBuildPluginDriver, SharedResolver,
   StatementParts,
 };
 
@@ -27,14 +27,14 @@ pub(crate) struct ModuleLoader<'a> {
   tx: tokio::sync::mpsc::UnboundedSender<Msg>,
   rx: tokio::sync::mpsc::UnboundedReceiver<Msg>,
   resolver: SharedResolver,
-  errors: Vec<BundleError>,
+  errors: Vec<BuildError>,
   dynamic_imported_modules: FxHashSet<ModuleId>,
 }
 
 #[derive(Debug)]
 pub(crate) enum Msg {
   Scanned(TaskResult),
-  Error(BundleError),
+  Error(BuildError),
 }
 
 impl<'a> ModuleLoader<'a> {
@@ -59,7 +59,7 @@ impl<'a> ModuleLoader<'a> {
     }
   }
 
-  async fn resolve_entries(&self, input_opts: &InputOptions) -> Vec<BundleResult<ModuleId>> {
+  async fn resolve_entries(&self, input_opts: &InputOptions) -> Vec<BuildResult<ModuleId>> {
     join_all(input_opts.input.values().cloned().map(|specifier| async {
       let id = resolve_id(
         &self.resolver,
@@ -72,20 +72,20 @@ impl<'a> ModuleLoader<'a> {
       .await?;
 
       let Some(id) = id else {
-          return Err(BundleError::unresolved_entry(specifier))
+          return Err(BuildError::unresolved_entry(specifier))
         };
 
       if id.is_external() {
         return CWD.set(&input_opts.cwd, || {
-          Err(BundleError::entry_cannot_be_external(id.as_ref()))
+          Err(BuildError::entry_cannot_be_external(id.as_ref()))
         });
       }
-      BundleResult::Ok(id)
+      BuildResult::Ok(id)
     }))
     .await
   }
 
-  pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BundleResult<()> {
+  pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BuildResult<()> {
     if input_opts.input.is_empty() {
       return Err(format_err!("You must supply options.input to rolldown").into());
     }
@@ -94,11 +94,11 @@ impl<'a> ModuleLoader<'a> {
 
     resolved_entries
       .into_iter()
-      .try_for_each(|entry| -> BundleResult<()> {
+      .try_for_each(|entry| -> BuildResult<()> {
         let id = entry?;
         if id.is_external() {
           return CWD.set(&input_opts.cwd, || {
-            Err(BundleError::entry_cannot_be_external(id.as_ref()))
+            Err(BuildError::entry_cannot_be_external(id.as_ref()))
           });
         }
         self.loaded_modules.insert(id.clone());

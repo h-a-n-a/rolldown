@@ -18,7 +18,7 @@ use swc_core::{
 };
 
 use crate::{
-  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BundleError, BundleResult, ExportMode,
+  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BuildError, BuildResult, ExportMode,
   Graph, InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions,
   SplitPointIdToChunkId, COMPILER,
 };
@@ -78,7 +78,7 @@ impl Chunk {
     graph: &Graph,
     input_options: &InputOptions,
     output_options: &OutputOptions,
-  ) -> BundleResult<String> {
+  ) -> BuildResult<String> {
     let mut runtime_code = self.runtime_helpers.generate_helpers().join("\n");
     runtime_code.push('\n');
 
@@ -113,7 +113,7 @@ impl Chunk {
         .parse_with_comments(code.clone(), &filename, Some(&comments))
         .1
         .map_err(|_| {
-          BundleError::panic(format!(
+          BuildError::panic(format!(
             "Failed to parse generated code \n{}\n for {}",
             code, &self.entry
           ))
@@ -244,7 +244,7 @@ impl Chunk {
     id_to_name
   }
 
-  pub(crate) fn finalize(&mut self, mut ctx: FinalizeBundleContext) -> BundleResult<()> {
+  pub(crate) fn finalize(&mut self, mut ctx: FinalizeBundleContext) -> BuildResult<()> {
     self.generate_cross_chunk_links(&mut ctx)?;
     let ordered_modules = {
       let mut modules = ctx.modules.values_mut().collect::<Vec<_>>();
@@ -365,7 +365,7 @@ impl Chunk {
   pub(crate) fn generate_cross_chunk_links(
     &mut self,
     ctx: &mut FinalizeBundleContext,
-  ) -> BundleResult<()> {
+  ) -> BuildResult<()> {
     let ordered_modules = {
       let mut modules = ctx.modules.values().collect::<Vec<_>>();
       modules.sort_by_key(|m| m.exec_order());
@@ -576,13 +576,13 @@ impl Chunk {
     &mut self,
     output_options: &OutputOptions,
     exports: &FxHashMap<JsWord, ExportedSpecifier>,
-  ) -> BundleResult<()> {
+  ) -> BuildResult<()> {
     // validate export mode
     if output_options.format.is_cjs() {
       match output_options.export_mode {
         ExportMode::Default => {
           if !exports.contains_key(&js_word!("default")) || exports.len() != 1 {
-            return Err(BundleError::incompatible_export_option_value(
+            return Err(BuildError::incompatible_export_option_value(
               "default",
               exports.keys().map(|s| s.to_string()).collect(),
               self.entry.as_ref(),
@@ -591,7 +591,7 @@ impl Chunk {
         }
         ExportMode::None => {
           if !exports.is_empty() {
-            return Err(BundleError::incompatible_export_option_value(
+            return Err(BuildError::incompatible_export_option_value(
               "none",
               exports.keys().map(|s| s.to_string()).collect(),
               self.entry.as_ref(),
