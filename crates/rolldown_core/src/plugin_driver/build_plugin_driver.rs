@@ -4,7 +4,7 @@ use rolldown_common::ModuleId;
 use rolldown_plugin::{BuildPlugin, Context, ResolveArgs, ResolveOutput, TransformArgs};
 use tokio::sync::RwLock;
 
-use crate::BuildResult;
+use crate::UnaryBuildResult;
 
 pub(crate) type SharedBuildPluginDriver = Arc<RwLock<BuildPluginDriver>>;
 
@@ -32,7 +32,7 @@ impl BuildPluginDriver {
     Ok(None)
   }
 
-  pub(crate) async fn transform(&self, id: &ModuleId, code: String) -> BuildResult<String> {
+  pub(crate) async fn transform(&self, id: &ModuleId, code: String) -> UnaryBuildResult<String> {
     let mut code = code;
     for plugin in &self.plugins {
       let output = plugin

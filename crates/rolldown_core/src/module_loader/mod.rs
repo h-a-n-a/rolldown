@@ -14,8 +14,8 @@ use swc_core::ecma::atoms::js_word;
 
 use crate::{norm_or_ext::NormOrExt, Graph, InputOptions, NormalModule, SWC_GLOBALS};
 use crate::{
-  resolve_id, BuildError, BuildResult, ExternalModule, SharedBuildPluginDriver, SharedResolver,
-  StatementParts,
+  resolve_id, BuildError, ExternalModule, SharedBuildPluginDriver, SharedResolver, StatementParts,
+  UnaryBuildResult,
 };
 
 pub(crate) struct ModuleLoader<'a> {
@@ -59,7 +59,7 @@ impl<'a> ModuleLoader<'a> {
     }
   }
 
-  async fn resolve_entries(&self, input_opts: &InputOptions) -> Vec<BuildResult<ModuleId>> {
+  async fn resolve_entries(&self, input_opts: &InputOptions) -> Vec<UnaryBuildResult<ModuleId>> {
     join_all(input_opts.input.values().cloned().map(|specifier| async {
       let id = resolve_id(
         &self.resolver,
@@ -80,12 +80,15 @@ impl<'a> ModuleLoader<'a> {
           Err(BuildError::entry_cannot_be_external(id.as_ref()))
         });
       }
-      BuildResult::Ok(id)
+      UnaryBuildResult::Ok(id)
     }))
     .await
   }
 
-  pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BuildResult<()> {
+  pub(crate) async fn fetch_all_modules(
+    mut self,
+    input_opts: &InputOptions,
+  ) -> UnaryBuildResult<()> {
     if input_opts.input.is_empty() {
       return Err(format_err!("You must supply options.input to rolldown").into());
     }
@@ -94,7 +97,7 @@ impl<'a> ModuleLoader<'a> {
 
     resolved_entries
       .into_iter()
-      .try_for_each(|entry| -> BuildResult<()> {
+      .try_for_each(|entry| -> UnaryBuildResult<()> {
         let id = entry?;
         if id.is_external() {
           return CWD.set(&input_opts.cwd, || {

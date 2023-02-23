@@ -33,7 +33,7 @@ pub fn uri_to_chunk_name(root: &str, uri: &str) -> String {
   name
 }
 
-use crate::{BuildResult, Chunk, ChunkGraph, Graph, InputOptions};
+use crate::{Chunk, ChunkGraph, Graph, InputOptions, UnaryBuildResult};
 
 pub(crate) struct CodeSplitter<'me> {
   opts: &'me InputOptions,
@@ -207,7 +207,7 @@ impl<'me> CodeSplitter<'me> {
       FxHashSet::from_iter([owner_chunk_id.clone()]);
   }
 
-  pub(crate) fn split(mut self) -> BuildResult<ChunkGraph> {
+  pub(crate) fn split(mut self) -> UnaryBuildResult<ChunkGraph> {
     self.analyze_entries(self.entries.clone(), true);
     self.analyze_entries(
       self.dynamic_entries.clone().into_iter().collect_vec(),

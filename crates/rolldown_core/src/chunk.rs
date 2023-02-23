@@ -18,9 +18,9 @@ use swc_core::{
 };
 
 use crate::{
-  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BuildError, BuildResult, ExportMode,
-  Graph, InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions,
-  SplitPointIdToChunkId, COMPILER,
+  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BuildError, ExportMode, Graph,
+  InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions, SplitPointIdToChunkId,
+  UnaryBuildResult, COMPILER,
 };
 
 pub struct Chunk {
@@ -78,7 +78,7 @@ impl Chunk {
     graph: &Graph,
     input_options: &InputOptions,
     output_options: &OutputOptions,
-  ) -> BuildResult<String> {
+  ) -> UnaryBuildResult<String> {
     let mut runtime_code = self.runtime_helpers.generate_helpers().join("\n");
     runtime_code.push('\n');
 
@@ -244,7 +244,7 @@ impl Chunk {
     id_to_name
   }
 
-  pub(crate) fn finalize(&mut self, mut ctx: FinalizeBundleContext) -> BuildResult<()> {
+  pub(crate) fn finalize(&mut self, mut ctx: FinalizeBundleContext) -> UnaryBuildResult<()> {
     self.generate_cross_chunk_links(&mut ctx)?;
     let ordered_modules = {
       let mut modules = ctx.modules.values_mut().collect::<Vec<_>>();
@@ -365,7 +365,7 @@ impl Chunk {
   pub(crate) fn generate_cross_chunk_links(
     &mut self,
     ctx: &mut FinalizeBundleContext,
-  ) -> BuildResult<()> {
+  ) -> UnaryBuildResult<()> {
     let ordered_modules = {
       let mut modules = ctx.modules.values().collect::<Vec<_>>();
       modules.sort_by_key(|m| m.exec_order());
@@ -576,7 +576,7 @@ impl Chunk {
     &mut self,
     output_options: &OutputOptions,
     exports: &FxHashMap<JsWord, ExportedSpecifier>,
-  ) -> BuildResult<()> {
+  ) -> UnaryBuildResult<()> {
     // validate export mode
     if output_options.format.is_cjs() {
       match output_options.export_mode {

@@ -1,6 +1,6 @@
 use napi::tokio::sync::Mutex;
 use napi_derive::*;
-use rolldown_core::Bundler as BundlerCore;
+use rolldown_core::{error::Errors, Bundler as BundlerCore};
 
 use crate::{
   options::InputOptions,
@@ -46,7 +46,7 @@ impl Bundler {
     let outputs = bundler_core
       .write(binding_opts)
       .await
-      .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+      .map_err(|err| self.handle_errors(err))?;
 
     let output_chunks = outputs
       .into_iter()
@@ -68,7 +68,7 @@ impl Bundler {
     let outputs = bundler_core
       .generate(binding_opts)
       .await
-      .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+      .map_err(|err| self.handle_errors(err))?;
 
     let output_chunks = outputs
       .into_iter()
@@ -78,5 +78,12 @@ impl Bundler {
       })
       .collect::<Vec<_>>();
     Ok(output_chunks)
+  }
+
+  fn handle_errors(&self, errors: Errors) -> napi::Error {
+    for error in errors.into_vec().into_iter() {
+      eprintln!("{}", error);
+    }
+    napi::Error::from_reason("Build failed")
   }
 }

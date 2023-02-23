@@ -68,9 +68,12 @@ pub fn run_test(test_config_path: &Path) {
 
   // If the test config has an expected error, assert that the error matches
   if let Some(expected_error) = compiled_fx.tester.config.expected_error {
-    let error = compiled_fx
+    let errors = compiled_fx
       .output
-      .expect_err("Expected error but got success");
+      .expect_err("Expected error but got success")
+      .into_vec();
+    assert_eq!(errors.len(), 1);
+    let error = errors.into_iter().next().unwrap();
     assert_eq!(error.kind.code(), expected_error.code);
     assert_eq!(error.kind.to_string(), expected_error.message);
     return;

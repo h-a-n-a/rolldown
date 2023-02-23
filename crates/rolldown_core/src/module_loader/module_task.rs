@@ -10,8 +10,8 @@ use swc_node_comments::SwcComments;
 
 use super::Msg;
 use crate::{
-  resolve_id, BuildError, BuildResult, IsExternal, ResolvedModuleIds, SharedBuildPluginDriver,
-  SharedResolver, COMPILER, SWC_GLOBALS,
+  resolve_id, BuildError, IsExternal, ResolvedModuleIds, SharedBuildPluginDriver, SharedResolver,
+  UnaryBuildResult, COMPILER, SWC_GLOBALS,
 };
 
 pub(crate) struct ModuleTask {
@@ -34,7 +34,7 @@ impl ModuleTask {
     specifier: &str,
     plugin_driver: &SharedBuildPluginDriver,
     is_external: &IsExternal,
-  ) -> BuildResult<ModuleId> {
+  ) -> UnaryBuildResult<ModuleId> {
     let inner_ret = {
       let is_external = is_external(specifier, Some(importer.id()), false).await?;
       if is_external {
@@ -74,7 +74,7 @@ impl ModuleTask {
     }
   }
 
-  async fn run_inner(self) -> BuildResult<TaskResult> {
+  async fn run_inner(self) -> UnaryBuildResult<TaskResult> {
     // load hook
     let code = tokio::fs::read_to_string(self.id.as_ref())
       .await

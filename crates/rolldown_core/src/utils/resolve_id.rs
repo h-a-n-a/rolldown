@@ -3,13 +3,13 @@ use rolldown_plugin::ResolveArgs;
 use rolldown_resolver::Resolver;
 use sugar_path::AsPath;
 
-use crate::{BuildResult, SharedBuildPluginDriver};
+use crate::{SharedBuildPluginDriver, UnaryBuildResult};
 
 pub(crate) async fn resolve_id(
   resolver: &Resolver,
   args: ResolveArgs<'_>,
   plugin_driver: &SharedBuildPluginDriver,
-) -> BuildResult<Option<ModuleId>> {
+) -> UnaryBuildResult<Option<ModuleId>> {
   let importer = args.importer.map(|id| id.as_ref());
   let specifier = args.specifier;
 

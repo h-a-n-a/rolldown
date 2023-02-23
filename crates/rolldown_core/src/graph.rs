@@ -12,8 +12,8 @@ use swc_core::ecma::atoms::{js_word, JsWord};
 
 use crate::module_loader::ModuleLoader;
 use crate::{
-  norm_or_ext::NormOrExt, normal_module::NormalModule, options::InputOptions, BuildResult,
-  ModuleById, SWC_GLOBALS,
+  norm_or_ext::NormOrExt, normal_module::NormalModule, options::InputOptions, ModuleById,
+  UnaryBuildResult, SWC_GLOBALS,
 };
 use crate::{BuildError, SharedBuildPluginDriver};
 
@@ -159,7 +159,7 @@ impl Graph {
     );
   }
 
-  fn link(&mut self) -> BuildResult<()> {
+  fn link(&mut self) -> UnaryBuildResult<()> {
     let mut order_modules = self
       .module_by_id
       .values()
@@ -181,14 +181,14 @@ impl Graph {
   /// ```
   /// If `index.js` is importer, `foo.ts` and `bar.ts` are importee.
   /// `foo` and `bar` are `ReExportedSpecifier`s.
-  fn link_exports(&mut self, order_modules: &[ModuleId]) -> BuildResult<()> {
+  fn link_exports(&mut self, order_modules: &[ModuleId]) -> UnaryBuildResult<()> {
     order_modules
       .iter()
       .filter(|importer_id| {
         // Fast path
         !importer_id.is_external()
       })
-      .try_for_each(|importer_id| -> BuildResult<()> {
+      .try_for_each(|importer_id| -> UnaryBuildResult<()> {
         let importee_and_re_exports = Self::fetch_normal_module(&self.module_by_id, importer_id)
           .re_exported_ids
           .iter()
@@ -198,12 +198,12 @@ impl Graph {
           .collect::<Vec<_>>();
 
         importee_and_re_exports.into_iter().try_for_each(
-          |(importee_id, re_exports)| -> BuildResult<()> {
+          |(importee_id, re_exports)| -> UnaryBuildResult<()> {
             if importer_id == &importee_id {
               let importee = Self::fetch_normal_module_mut(&mut self.module_by_id, &importee_id);
               re_exports
                 .into_iter()
-                .try_for_each(|spec| -> BuildResult<()> {
+                .try_for_each(|spec| -> UnaryBuildResult<()> {
                   importee.suggest_name(&spec.imported, &spec.exported_as);
                   if spec.imported == js_word!("*") {
                     importee.mark_namespace_id_referenced();
@@ -226,7 +226,7 @@ impl Graph {
               NormOrExt::Normal(importee) => {
                 re_exports
                   .into_iter()
-                  .try_for_each(|spec| -> BuildResult<()> {
+                  .try_for_each(|spec| -> UnaryBuildResult<()> {
                     importee.suggest_name(&spec.imported, &spec.exported_as);
                     // Case: export * as foo from './foo'
                     if spec.imported == js_word!("*") {
@@ -423,11 +423,11 @@ impl Graph {
   /// two things
   /// 1. Union symbol
   /// 2. Generate real ImportedSpecifier for each import and add to `linked_imports`
-  fn link_imports(&mut self, order_modules: &[ModuleId]) -> BuildResult<()> {
+  fn link_imports(&mut self, order_modules: &[ModuleId]) -> UnaryBuildResult<()> {
     order_modules
       .iter()
       .filter(|importer_id| !importer_id.is_external())
-      .try_for_each(|importer_id| -> BuildResult<()> {
+      .try_for_each(|importer_id| -> UnaryBuildResult<()> {
         tracing::trace!("link_imports for importer {}", importer_id);
         let importee_and_specifiers = Self::fetch_normal_module(&self.module_by_id, importer_id)
           .imports
@@ -436,7 +436,7 @@ impl Graph {
           .collect::<Vec<_>>();
 
         importee_and_specifiers.into_iter().try_for_each(
-          |(importee_id, specs)| -> BuildResult<()> {
+          |(importee_id, specs)| -> UnaryBuildResult<()> {
             tracing::trace!("link_imports for importee {}", importee_id);
             if importer_id == &importee_id {
               // Handle self import
@@ -607,7 +607,7 @@ impl Graph {
       });
   }
 
-  pub(crate) async fn build(&mut self, input_opts: &InputOptions) -> BuildResult<()> {
+  pub(crate) async fn build(&mut self, input_opts: &InputOptions) -> UnaryBuildResult<()> {
     let resolver = Arc::new(Resolver::with_cwd(input_opts.cwd.clone()));
 
     ModuleLoader::new(self, resolver, self.build_plugin_driver.clone(), input_opts)

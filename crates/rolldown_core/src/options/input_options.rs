@@ -3,12 +3,12 @@ use std::{collections::HashMap, path::PathBuf, pin::Pin, sync::Arc};
 use derivative::Derivative;
 use futures::{future, Future, FutureExt};
 
-use crate::{BuildError, BuildResult};
+use crate::{BuildError, UnaryBuildResult};
 
 type PinFutureBox<T> = Pin<Box<dyn Future<Output = T> + Send>>;
 
 pub type IsExternal =
-  Arc<dyn Fn(&str, Option<&str>, bool) -> PinFutureBox<BuildResult<bool>> + Send + Sync>;
+  Arc<dyn Fn(&str, Option<&str>, bool) -> PinFutureBox<UnaryBuildResult<bool>> + Send + Sync>;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
