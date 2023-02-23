@@ -587,6 +587,8 @@ impl Chunk {
               exports.keys().map(|s| s.to_string()).collect(),
               self.entry.as_ref(),
             ));
+          } else {
+            self.export_mode = ExportMode::Default;
           }
         }
         ExportMode::None => {
@@ -596,6 +598,8 @@ impl Chunk {
               exports.keys().map(|s| s.to_string()).collect(),
               self.entry.as_ref(),
             ));
+          } else {
+            self.export_mode = ExportMode::None;
           }
         }
         ExportMode::Auto => {

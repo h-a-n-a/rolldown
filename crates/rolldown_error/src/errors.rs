@@ -20,6 +20,15 @@ impl Errors {
   pub fn into_vec(self) -> Vec<Error> {
     self.0
   }
+
+  /// This method will panic if passing Vec<Error> is empty.
+  pub fn from_vec(vec: Vec<Error>) -> Self {
+    assert!(
+      !vec.is_empty(),
+      "You must pass a non-empty Vec<Error> to Errors::from_vec"
+    );
+    Self(vec)
+  }
 }
 
 impl Extend<Error> for Errors {

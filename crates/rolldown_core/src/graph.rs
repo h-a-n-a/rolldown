@@ -15,7 +15,7 @@ use crate::{
   norm_or_ext::NormOrExt, normal_module::NormalModule, options::InputOptions, ModuleById,
   UnaryBuildResult, SWC_GLOBALS,
 };
-use crate::{BuildError, SharedBuildPluginDriver};
+use crate::{BuildError, BuildResult, SharedBuildPluginDriver};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -607,7 +607,7 @@ impl Graph {
       });
   }
 
-  pub(crate) async fn build(&mut self, input_opts: &InputOptions) -> UnaryBuildResult<()> {
+  pub(crate) async fn build(&mut self, input_opts: &InputOptions) -> BuildResult<()> {
     let resolver = Arc::new(Resolver::with_cwd(input_opts.cwd.clone()));
 
     ModuleLoader::new(self, resolver, self.build_plugin_driver.clone(), input_opts)

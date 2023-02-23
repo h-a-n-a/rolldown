@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use futures::future::join_all;
 use rolldown_common::{ExportedSpecifier, ModuleId, CWD};
-use rolldown_error::format_err;
+use rolldown_error::Errors;
 use rolldown_plugin::ResolveArgs;
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
@@ -14,8 +14,8 @@ use swc_core::ecma::atoms::js_word;
 
 use crate::{norm_or_ext::NormOrExt, Graph, InputOptions, NormalModule, SWC_GLOBALS};
 use crate::{
-  resolve_id, BuildError, ExternalModule, SharedBuildPluginDriver, SharedResolver, StatementParts,
-  UnaryBuildResult,
+  resolve_id, BuildError, BuildResult, ExternalModule, SharedBuildPluginDriver, SharedResolver,
+  StatementParts, UnaryBuildResult,
 };
 
 pub(crate) struct ModuleLoader<'a> {
@@ -85,12 +85,11 @@ impl<'a> ModuleLoader<'a> {
     .await
   }
 
-  pub(crate) async fn fetch_all_modules(
-    mut self,
-    input_opts: &InputOptions,
-  ) -> UnaryBuildResult<()> {
+  pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BuildResult<()> {
     if input_opts.input.is_empty() {
-      return Err(format_err!("You must supply options.input to rolldown").into());
+      return Err(
+        BuildError::panic("You must supply options.input to rolldown".to_string()).into(),
+      );
     }
 
     let resolved_entries = self.resolve_entries(input_opts).await;
@@ -131,8 +130,7 @@ impl<'a> ModuleLoader<'a> {
     if self.errors.is_empty() {
       Ok(())
     } else {
-      // TODO: we should return all errors
-      self.errors.into_iter().try_for_each(Err)
+      Err(Errors::from_vec(std::mem::take(&mut self.errors)))
     }
   }
 
