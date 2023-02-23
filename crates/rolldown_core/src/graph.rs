@@ -607,7 +607,10 @@ impl Graph {
       });
   }
 
-  pub(crate) async fn build(&mut self, input_opts: &InputOptions) -> BuildResult<()> {
+  pub(crate) async fn generate_module_graph(
+    &mut self,
+    input_opts: &InputOptions,
+  ) -> BuildResult<()> {
     let resolver = Arc::new(Resolver::with_cwd(input_opts.cwd.clone()));
 
     ModuleLoader::new(self, resolver, self.build_plugin_driver.clone(), input_opts)

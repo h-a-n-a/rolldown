@@ -37,7 +37,7 @@ impl Bundler {
     tracing::debug!("InputOptions {:#?}", self.input_options);
     tracing::debug!("start bundling with OutputOptions: {:#?}", output_opts);
     let mut graph = Graph::new(self.plugin_driver.clone());
-    graph.build(&self.input_options).await?;
+    graph.generate_module_graph(&self.input_options).await?;
     tracing::trace!("graph: {:#?}", graph);
     // TODO: Better warning handling
     if !graph.warnings.is_empty() {
