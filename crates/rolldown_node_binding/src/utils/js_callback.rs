@@ -7,6 +7,7 @@ use napi::{
 };
 
 use super::IntoJsUnknownVec;
+use crate::NAPI_ENV;
 
 pub trait JsCallbackArgs: IntoJsUnknownVec + Send + Sync + 'static {}
 impl<T: IntoJsUnknownVec + Send + Sync + 'static> JsCallbackArgs for T {}
@@ -21,10 +22,11 @@ pub struct JsCallback<Args: JsCallbackArgs, Ret: JsCallbackRet> {
 
 impl<Args: JsCallbackArgs + Debug, Ret: JsCallbackRet> JsCallback<Args, Ret> {
   pub fn new(js_fn: &JsFunction) -> napi::Result<Self> {
-    let ts_fn: ThreadsafeFunction<Args, ErrorStrategy::Fatal> = js_fn
+    let mut ts_fn: ThreadsafeFunction<Args, ErrorStrategy::Fatal> = js_fn
       .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<Args>| {
         ctx.value.into_js_unknown_vec(&ctx.env)
       })?;
+    NAPI_ENV.with(|env| ts_fn.unref(env))?;
     Ok(Self {
       _args: PhantomData,
       _ret: PhantomData,

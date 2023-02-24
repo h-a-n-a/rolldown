@@ -1579,6 +1579,7 @@ dependencies = [
  "rolldown_plugin",
  "rolldown_tracing",
  "rustc-hash",
+ "scoped-tls",
  "serde",
  "tracing",
 ]

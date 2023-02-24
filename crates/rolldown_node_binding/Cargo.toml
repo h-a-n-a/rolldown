@@ -20,6 +20,7 @@ rolldown_core    = { path = "../rolldown_core" }
 rolldown_plugin  = { path = "../rolldown_plugin" }
 rolldown_tracing = { path = "../rolldown_tracing" }
 rustc-hash       = { workspace = true }
+scoped-tls       = { workspace = true }
 serde            = { version = "1", features = ["derive"] }
 tracing          = { workspace = true }
 
