@@ -2,7 +2,10 @@
   "[rust]": {
     "editor.formatOnSave": true
   },
-  "rust-analyzer.checkOnSave.command": "clippy",
+  "[toml]": {
+    "editor.formatOnSave": true
+  },
+
   "json.schemas": [
     {
       "fileMatch": ["test.config.json"],
