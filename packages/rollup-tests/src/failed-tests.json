@@ -421,5 +421,10 @@
   "rollup@function@warn-on-unused-missing-imports: warns on missing (but unused) imports",
   "rollup@function@warning-low-resolution-location: handles when a low resolution sourcemap is used to report an error",
   "rollup@function@warnings-to-string: provides a string conversion for warnings",
-  "rollup@function@warns-for-invalid-options: warns for invalid options"
+  "rollup@function@warns-for-invalid-options: warns for invalid options",
+  "rollup@function@configure-relative-external-module: allows a nonexistent relative module to be configured as external",
+  "rollup@function@export-default-anonymous-function: exports an anonymous function with custom ID resolver",
+  "rollup@function@preload-module: allows pre-loading modules via this.load",
+  "rollup@function@resolveid-is-entry: sends correct isEntry information to resolveId hooks",
+  "rollup@function@reuse-resolve-meta: does not modify meta objects passed in resolveId"
 ]
