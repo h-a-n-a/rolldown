@@ -4,14 +4,21 @@ The folder `rollup-tests/test` is copied from https://github.com/rollup/rollup/t
 
 1. Copy https://github.com/rollup/rollup/tree/master/test to replace folder `rollup-tests/test`.
 
-2. execute `pnpm run test:update`
+2. Run `yarn test` to check if all tests pass.
 
-## `pnpm run test`
+# Scripts
 
-The script will run the tests and skip the tests in `rollup-tests/failed-tests.json`.
+## yarn test
 
-## `pnpm run test:update`
+Run all tests but skip the ones in `src/failed-tests.json`.
 
-The script will run the tests and collected failed tests to `rollup-tests/failed-tests.json`.
+## yarn test:ci
 
-If a test is already in `rollup-tests/failed-tests.json`, it will be skipped.
+Same as `yarn test` but exit early if any test fails.
+
+## yarn test:update-failed
+
+Only run tests in `src/failed-tests.json`. If the test passes, remove it from the file.
+
+
+
