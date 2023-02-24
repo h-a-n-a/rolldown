@@ -1,13 +1,15 @@
-const { loadFailedTests, calcTestId } = require('./utils')
+const { loadFailedTests, calcTestId, updateFailedTestsJson, loadIgnoredTests } = require('./utils')
 
 const alreadyFailedTests = new Set(loadFailedTests())
+
+const ignoredTests = loadIgnoredTests()
 
 beforeEach(function skipAlreadyFiledTests() {
   if (!this.currentTest) {
     throw new Error('No current test')
   }
   const id = calcTestId(this.currentTest)
-  if (!alreadyFailedTests.has(id)) {
+  if (ignoredTests.has(id) || !alreadyFailedTests.has(id)) {
     this.currentTest?.skip()
   }
   // Easy way to find the test id in the logs
@@ -36,4 +38,11 @@ afterEach(function updateStatus() {
   if (state === 'passed' && alreadyFailedTests.has(testId)) {
     passedTests.add(testId)
   }
+})
+
+
+after(function printStatus() {
+  console.log('Passed tests:', passedTests)
+  passedTests.forEach((testId) => alreadyFailedTests.delete(testId))
+  updateFailedTestsJson(alreadyFailedTests)
 })
