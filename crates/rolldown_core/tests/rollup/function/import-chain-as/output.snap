@@ -1,0 +1,30 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/import-chain-as
+---
+---------- main.js ----------
+// first.js
+var value = 42;
+var first = Object.freeze({
+    __proto__: null,
+    get value () {
+        return value;
+    }
+});
+
+// second.js
+var second = Object.freeze({
+    __proto__: null,
+    get first () {
+        return first;
+    }
+});
+
+// main.js
+assert.equal(first.value, 42);
+assert.deepEqual(second, {
+    first: {
+        value: 42
+    }
+});

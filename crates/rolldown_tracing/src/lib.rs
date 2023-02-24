@@ -1,4 +1,4 @@
-use std::sync::atomic::AtomicBool;
+use std::sync::{atomic::AtomicBool, Arc};
 
 use tracing::Level;
 
@@ -13,5 +13,24 @@ pub fn init() {
         tracing_subscriber::filter::Targets::new().with_targets(vec![("rolldown", Level::TRACE)]),
       )
       .init();
+  }
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct ContextedTracer {
+  context: Vec<Arc<String>>,
+}
+
+impl ContextedTracer {
+  pub fn context(mut self, ctxt: String) -> Self {
+    self.context.push(ctxt.into());
+    self
+  }
+
+  pub fn emit_trace(&self, info: String) {
+    for ctxt in &self.context {
+      tracing::trace!("{}: {}", ansi_term::Color::Yellow.paint("context"), ctxt);
+    }
+    tracing::trace!(info)
   }
 }

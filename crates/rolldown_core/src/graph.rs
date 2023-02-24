@@ -5,6 +5,7 @@ use itertools::Itertools;
 use rayon::prelude::{ParallelBridge, ParallelIterator};
 use rolldown_common::{ExportedSpecifier, ImportedSpecifier, ModuleId, Symbol, UnionFind, CWD};
 use rolldown_resolver::Resolver;
+use rolldown_tracing::ContextedTracer;
 use rustc_hash::FxHashSet as HashSet;
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
@@ -428,7 +429,9 @@ impl Graph {
       .iter()
       .filter(|importer_id| !importer_id.is_external())
       .try_for_each(|importer_id| -> UnaryBuildResult<()> {
-        tracing::trace!("link_imports for importer {}", importer_id);
+        let tracer = ContextedTracer::default()
+          .context("link imports".to_string())
+          .context(format!("importer: {}", importer_id.as_ref()));
         let importee_and_specifiers = Self::fetch_normal_module(&self.module_by_id, importer_id)
           .imports
           .clone()
@@ -437,7 +440,9 @@ impl Graph {
 
         importee_and_specifiers.into_iter().try_for_each(
           |(importee_id, specs)| -> UnaryBuildResult<()> {
-            tracing::trace!("link_imports for importee {}", importee_id);
+            let tracer = tracer
+              .clone()
+              .context(format!("importee: {}", importee_id.as_ref()));
             if importer_id == &importee_id {
               // Handle self import
               let importee = Self::fetch_normal_module_mut(&mut self.module_by_id, &importee_id);
@@ -456,14 +461,19 @@ impl Graph {
                     .union(&imported_spec.imported_as, &exported_spec.local_id);
 
                   // The importee is also the importer
-                  importee
-                    .linked_imports
-                    .entry(exported_spec.owner.clone())
-                    .or_default()
-                    .insert(ImportedSpecifier {
-                      imported_as: imported_spec.imported_as.clone(),
-                      imported: exported_spec.exported_as.clone(),
-                    });
+                  let imported_specifier = ImportedSpecifier {
+                    imported_as: imported_spec.imported_as.clone(),
+                    imported: exported_spec.exported_as.clone(),
+                  };
+                  tracer
+                    .clone()
+                    .context(format!("{:?}", imported_spec))
+                    .context(format!("{:?}", exported_spec))
+                    .emit_trace(format!(
+                      "Add to importee.linked_imports: {:?}",
+                      imported_specifier
+                    ));
+                  importee.add_to_linked_imports(&exported_spec.owner, imported_specifier);
                 } else {
                   return Err(BuildError::missing_export(
                     &imported_spec.imported,
@@ -490,24 +500,27 @@ impl Graph {
                   if let Some(exported_spec) =
                     importee.find_exported(&imported_spec.imported).cloned()
                   {
-                    tracing::trace!(
-                      "union alias:{:?}, original:{:?}",
-                      imported_spec.imported_as,
-                      exported_spec
-                    );
                     self
                       .uf
                       .union(&imported_spec.imported_as, &exported_spec.local_id);
 
-                    importer
-                      .linked_imports
+                    let imported_specifier = ImportedSpecifier {
+                      imported_as: imported_spec.imported_as.clone(),
+                      imported: exported_spec.exported_as.clone(),
+                    };
+                    tracer
+                      .clone()
+                      .context(format!("{:?}", imported_spec))
+                      .context(format!("{:?}", exported_spec))
+                      .emit_trace(format!(
+                        "Add to importer.linked_imports: {:#?}",
+                        imported_specifier
+                      ));
+                    importer.add_to_linked_imports(
+                      &exported_spec.owner,
                       // Redirect to the owner of the exported symbol
-                      .entry(exported_spec.owner.clone())
-                      .or_default()
-                      .insert(ImportedSpecifier {
-                        imported_as: imported_spec.imported_as.clone(),
-                        imported: exported_spec.exported_as.clone(),
-                      });
+                      imported_specifier,
+                    );
                   } else if let Some(first_external_id) = importee
                     .external_modules_of_re_export_all
                     .iter()
@@ -531,14 +544,14 @@ impl Graph {
 
                     let symbol_in_importee =
                       importee.create_top_level_symbol(imported_spec.imported_as.name());
-                    importee
-                      .linked_imports
-                      .entry(first_external_id.clone())
-                      .or_default()
-                      .insert(ImportedSpecifier {
+
+                    importee.add_to_linked_imports(
+                      &first_external_id,
+                      ImportedSpecifier {
                         imported: imported_spec.imported.clone(),
                         imported_as: symbol_in_importee.clone(),
-                      });
+                      },
+                    );
 
                     importee.add_to_linked_exports(
                       imported_spec.imported.clone(),
@@ -548,14 +561,14 @@ impl Graph {
                         owner: importee_id.clone(),
                       },
                     );
-                    importer
-                      .linked_imports
-                      .entry(importee_id.clone())
-                      .or_default()
-                      .insert(ImportedSpecifier {
+
+                    importer.add_to_linked_imports(
+                      &importee_id,
+                      ImportedSpecifier {
                         imported: imported_spec.imported.clone(),
                         imported_as: imported_spec.imported_as.clone(),
-                      });
+                      },
+                    );
 
                     self
                       .uf
@@ -569,11 +582,7 @@ impl Graph {
                   };
                 }
                 NormOrExt::External(importee) => {
-                  importer
-                    .linked_imports
-                    .entry(importee_id.clone())
-                    .or_default()
-                    .insert(imported_spec.clone());
+                  importer.add_to_linked_imports(&importee_id, imported_spec.clone());
                   let exported_symbol_of_importee =
                     importee.find_exported_symbol(&imported_spec.imported);
 
@@ -619,8 +628,8 @@ impl Graph {
 
     self.sort_modules();
     CWD.set(&input_opts.cwd, || self.link())?;
-    tracing::debug!("link done, graph: {:#?}", self);
     self.patch();
+    tracing::trace!("graph after link and patch {:#?}", self);
 
     if input_opts.treeshake {
       self.treeshake()?;

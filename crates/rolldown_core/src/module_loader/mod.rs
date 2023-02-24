@@ -113,7 +113,6 @@ impl<'a> ModuleLoader<'a> {
       let msg = self.rx.recv().await.unwrap();
       match msg {
         Msg::Scanned(res) => {
-          tracing::trace!("finish: {}", res.module_id);
           self.remaining_tasks -= 1;
           self.handle_msg_scanned(res);
         }

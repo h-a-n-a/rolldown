@@ -88,8 +88,6 @@ impl ModuleTask {
       .transform(&self.id, code)
       .await?;
 
-    tracing::debug!("transformed");
-
     let comments = SwcComments::default();
     let (fm, ast) = COMPILER.parse_with_comments(code, self.id.as_ref(), Some(&comments));
     let mut ast = ast.map_err(|e| BuildError::parse_js_failed(fm, e))?;
@@ -104,8 +102,6 @@ impl ModuleTask {
       self.unresolved_ctxt,
       self.id.clone(),
     );
-
-    tracing::trace!("Scanned: {result:#?}");
 
     let resolved_ids = join_all(
       result
@@ -133,10 +129,7 @@ impl ModuleTask {
     )
     .await;
 
-    tracing::trace!("before resolved_ids");
     let resolved_ids = resolved_ids.into_iter().try_collect()?;
-
-    tracing::trace!("resolved_ids");
 
     Ok(TaskResult {
       module_id: self.id,

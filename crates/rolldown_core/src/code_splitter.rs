@@ -128,7 +128,6 @@ struct QueueItem {
 impl<'me> CodeSplitter<'me> {
   pub fn analyze_entries(&mut self, mut entries: Vec<ModuleId>, is_entry_chunk: bool) {
     while let Some(entry) = entries.pop() {
-      tracing::trace!("Analyzing entry: {}", entry);
       let _exec_order = self.graph.module_by_id[&entry].exec_order();
       let chunk = Chunk::new(
         uri_to_chunk_name(&self.opts.cwd.to_string_lossy(), entry.as_ref()),
@@ -192,10 +191,7 @@ impl<'me> CodeSplitter<'me> {
       .iter()
       .filter(|chunk_id| *chunk_id != owner_chunk_id)
       .collect_vec();
-    tracing::trace!(
-      "chunks_contains_duplicate_modules: {:?}",
-      chunks_contains_duplicate_modules
-    );
+
     chunks_contains_duplicate_modules
       .into_iter()
       .for_each(|chunk_id| {
@@ -217,11 +213,8 @@ impl<'me> CodeSplitter<'me> {
       self.remove_duplicated_module(entry);
     });
 
-    tracing::trace!("mod_to_chunks: {:#?}", self.mod_to_chunks);
-
     let mut shared_modules = self.collect_shared_modules();
     while let Some(shared_module_id) = shared_modules.pop() {
-      tracing::trace!("Detect shared module: {}", shared_module_id);
       self.analyze_entries(vec![shared_module_id.clone()], false);
 
       self.remove_duplicated_module(&shared_module_id);
@@ -230,8 +223,6 @@ impl<'me> CodeSplitter<'me> {
         shared_modules = self.collect_shared_modules()
       }
     }
-
-    tracing::trace!("final mod_to_chunks: {:#?}", self.mod_to_chunks);
 
     Ok(ChunkGraph {
       chunk_by_id: self.chunk_by_id,

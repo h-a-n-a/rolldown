@@ -66,7 +66,6 @@ impl<Key: Eq + Hash + Clone + Debug> UnionFind<Key> {
   }
 
   pub fn union(&mut self, key1: &Key, key2: &Key) -> &mut Self {
-    tracing::trace!("Unioning {:?} and {:?}", key1, key2);
     let k1 = self.intern_key(key1);
     let k2 = self.intern_key(key2);
     self.store.get_mut().unwrap().union(k1, k2);

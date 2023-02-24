@@ -34,11 +34,10 @@ impl Bundler {
   }
 
   async fn build(&mut self, output_opts: OutputOptions) -> BuildResult<Vec<Asset>> {
-    tracing::debug!("InputOptions {:#?}", self.input_options);
-    tracing::debug!("start bundling with OutputOptions: {:#?}", output_opts);
+    tracing::debug!("{:#?}", self.input_options);
+    tracing::debug!("{:#?}", output_opts);
     let mut graph = Graph::new(self.plugin_driver.clone());
     graph.generate_module_graph(&self.input_options).await?;
-    tracing::trace!("graph: {:#?}", graph);
     // TODO: Better warning handling
     if !graph.warnings.is_empty() {
       graph.warnings.iter().for_each(|w| {

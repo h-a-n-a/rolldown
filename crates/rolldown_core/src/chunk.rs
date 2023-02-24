@@ -371,14 +371,8 @@ impl Chunk {
       modules.sort_by_key(|m| m.exec_order());
       modules
     };
-    tracing::trace!(
-      "ordered_modules: {:#?}",
-      ordered_modules.iter().map(|m| m.id()).collect::<Vec<_>>()
-    );
 
     let depended_modules = self.depended_modules(&ordered_modules);
-
-    tracing::trace!("dependencies_of_chunk: {:#?}", depended_modules);
 
     // Merge imports coming from the same module.
     let mut imports_map: FxHashMap<&ModuleId, HashSet<&ImportedSpecifier>> = FxHashMap::default();

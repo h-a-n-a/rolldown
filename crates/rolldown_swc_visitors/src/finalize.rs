@@ -130,7 +130,6 @@ impl<'a> Finalizer<'a> {
 
   fn rewrite_dynamic_import(&mut self, node: &mut ast::CallExpr) -> Option<()> {
     if node.callee.is_import() {
-      // tracing::debug!("rewrite_dynamic_import: {:?}", node);
       let first_arg = node.args.get_mut(0)?.expr.as_mut_lit()?;
       if let ast::Lit::Str(ast::Str {
         value: local_module_id,

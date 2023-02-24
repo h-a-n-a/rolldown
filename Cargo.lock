@@ -1641,6 +1641,7 @@ dependencies = [
 name = "rolldown_tracing"
 version = "0.0.1"
 dependencies = [
+ "ansi_term",
  "tracing",
  "tracing-subscriber",
 ]

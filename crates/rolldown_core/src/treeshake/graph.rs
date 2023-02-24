@@ -14,7 +14,6 @@ impl Graph {
       .map(|id| id.to_id())
       .collect();
 
-    tracing::debug!("used_ids: {:#?}", used_ids);
     self
       .module_by_id
       .values_mut()
@@ -22,7 +21,7 @@ impl Graph {
       .filter_map(|m| m.as_norm_mut())
       .for_each(|module| {
         GLOBALS.set(&SWC_GLOBALS, || {
-          tracing::debug!(
+          tracing::trace!(
             "[before treeshake]module: {},code: \n{}",
             module.id,
             COMPILER.debug_print(&module.ast, None).unwrap()
@@ -37,7 +36,7 @@ impl Graph {
             COMPILER.cm.clone(),
             &module.comments,
           );
-          tracing::debug!(
+          tracing::trace!(
             "[after treeshake]module: {},code: \n{}",
             module.id,
             COMPILER.debug_print(&module.ast, None).unwrap()
@@ -77,7 +76,6 @@ impl Graph {
       errors: Default::default(),
       warnings: Default::default(),
     };
-    tracing::debug!("ctx: {:#?}", ctx);
     let used_ids = ctx
       .id_to_module
       .values()

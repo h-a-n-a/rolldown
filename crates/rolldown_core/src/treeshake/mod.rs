@@ -69,11 +69,6 @@ impl<'m> TreeshakeNormalModule<'m> {
     ctx: &TreeshakeContext,
     symbol: &Symbol,
   ) -> FxHashSet<Symbol> {
-    tracing::trace!(
-      "try_define_by_declared_id: {:?} in {:?}",
-      symbol,
-      self.module.id
-    );
     self
       .module
       .parts
@@ -193,11 +188,6 @@ impl<'m> TreeshakeNormalModule<'m> {
     ctx: &TreeshakeContext,
     top_level_symbol: &Symbol,
   ) -> FxHashSet<Symbol> {
-    tracing::trace!(
-      "define_by_top_level_id: {:?} in {:?}",
-      top_level_symbol,
-      self.module.id
-    );
     if self.is_declare_the_symbol(top_level_symbol) {
       self.define_symbol_created_by_declaration(ctx, top_level_symbol)
     } else if let Some(res) = self.define_symbol_created_by_import(ctx, top_level_symbol) {
@@ -219,11 +209,6 @@ impl<'m> TreeshakeNormalModule<'m> {
     ctx: &TreeshakeContext,
     exported_name: &JsWord,
   ) -> FxHashSet<Symbol> {
-    tracing::trace!(
-      "define_by_exported_name: {:?} in {:?}",
-      exported_name,
-      self.module.id
-    );
     if let Some(founded_spec) = self.module.find_exported(exported_name) {
       let is_local_export = founded_spec.owner == self.module.id;
       if is_local_export {
@@ -284,12 +269,6 @@ impl<'m> TreeshakeNormalModule<'m> {
       if !included_ids2.is_empty() {
         included_ids.extend(included_ids2);
       }
-
-      tracing::debug!(
-        "Include Module({})\nwith included symbols: {:?}",
-        self.module.id,
-        included_ids
-      );
 
       included_ids
     }

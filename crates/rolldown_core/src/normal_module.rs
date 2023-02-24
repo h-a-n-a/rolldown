@@ -135,6 +135,16 @@ impl NormalModule {
     self.linked_exports.insert(name, spec);
   }
 
+  pub fn add_to_linked_imports(&mut self, importee: &ModuleId, spec: ImportedSpecifier) {
+    self
+      .linked_imports
+      .raw_entry_mut()
+      .from_key(importee)
+      .or_insert_with(|| (importee.clone(), Default::default()))
+      .1
+      .insert(spec);
+  }
+
   pub(crate) fn add_statement_part(&mut self, part: StatementPart) {
     self.parts.add(part);
   }
@@ -180,14 +190,13 @@ impl NormalModule {
           // TODO: We might need to check if the importer is a already got import star from importee
           // And we could reuse that Symbol
 
-          self
-            .linked_imports
-            .entry(external_id.clone())
-            .or_default()
-            .insert(ImportedSpecifier {
+          self.add_to_linked_imports(
+            external_id,
+            ImportedSpecifier {
               imported_as: import_star_as_symbol.clone(),
               imported: js_word!("*"),
-            });
+            },
+          );
 
           (external_id.clone(), import_star_as_symbol)
         })
@@ -212,16 +221,23 @@ impl NormalModule {
 
       // Make sure all exports are imported.
       // Treeshake rely on this.
-      self.linked_exports.iter().for_each(|(_, spec)| {
-        self
-          .linked_imports
-          .entry(spec.owner.clone())
-          .or_default()
-          .insert(ImportedSpecifier {
-            imported_as: spec.local_id.clone(),
-            imported: spec.exported_as.clone(),
-          });
-      });
+      self
+        .linked_exports
+        .clone()
+        .into_iter()
+        .for_each(|(_, spec)| {
+          // Forbid cycle
+          if spec.owner == self.id {
+            return;
+          }
+          self.add_to_linked_imports(
+            &spec.owner,
+            ImportedSpecifier {
+              imported_as: spec.local_id,
+              imported: spec.exported_as,
+            },
+          );
+        });
 
       let namespace_export = rolldown_ast_template::build_namespace_export_stmt(
         self.facade_id_for_namespace.local_id.clone().to_id(),
