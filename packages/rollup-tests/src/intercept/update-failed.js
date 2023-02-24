@@ -1,4 +1,9 @@
-const { loadFailedTests, calcTestId, updateFailedTestsJson, loadIgnoredTests } = require('./utils')
+const {
+  loadFailedTests,
+  calcTestId,
+  updateFailedTestsJson,
+  loadIgnoredTests,
+} = require('./utils')
 
 const alreadyFailedTests = new Set(loadFailedTests())
 
@@ -39,7 +44,6 @@ afterEach(function updateStatus() {
     passedTests.add(testId)
   }
 })
-
 
 after(function printStatus() {
   console.log('Passed tests:', passedTests)
