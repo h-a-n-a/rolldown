@@ -1,4 +1,4 @@
-use rayon::prelude::{ParallelBridge, ParallelIterator};
+use rayon::prelude::*;
 use rolldown_common::Symbol;
 use rustc_hash::FxHashSet;
 use swc_core::common::GLOBALS;
@@ -70,7 +70,7 @@ impl Graph {
     let ctx = TreeshakeContext {
       id_to_module: self
         .module_by_id
-        .iter()
+        .par_iter()
         .filter_map(|(id, m)| m.as_norm().map(|m| (id, TreeshakeNormalModule::new(m))))
         .collect(),
       errors: Default::default(),
