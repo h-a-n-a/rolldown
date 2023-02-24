@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest --run",
-    "FIX:test:ci": "vitest --run --dangerouslyIgnoreUnhandledErrors"
+    "test:ci": "vitest --run --dangerouslyIgnoreUnhandledErrors"
   },
   "dependencies": {
     "@rolldown/core": "workspace:*",
