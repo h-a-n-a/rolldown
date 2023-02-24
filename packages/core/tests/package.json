@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "FIX:test:ci": "vitest --run --dangerouslyIgnoreUnhandledErrors"
   },
   "dependencies": {
     "@rolldown/core": "workspace:*",

@@ -34,7 +34,6 @@ function updateFailedTestsJson(failuresInThisRound) {
 
 const ignoreTests = new Set(require('../ignored-tests').ignoreTests)
 
-
 module.exports = {
   calcTestId,
   loadFailedTests,

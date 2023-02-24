@@ -7,6 +7,9 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc -b"
+  },
   "dependencies": {
     "@rolldown/node-binding": "workspace:*"
   },

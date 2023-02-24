@@ -19,6 +19,3 @@ Same as `yarn test` but exit early if any test fails.
 ## yarn test:update-failed
 
 Only run tests in `src/failed-tests.json`. If the test passes, remove it from the file.
-
-
-

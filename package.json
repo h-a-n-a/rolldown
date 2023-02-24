@@ -10,7 +10,7 @@
     "packages/core/tests"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach run build",
+    "build": "yarn workspaces foreach --topological --verbose run build",
     "build:binding": "yarn workspace @rolldown/node-binding run build",
     "build:binding:release": "yarn workspace @rolldown/node-binding run build:release",
     "build:ts": "tsc -b tsconfig.project.json",
@@ -21,7 +21,8 @@
     "format:toml:check": "taplo fmt --check",
     "format:rs": "cargo fmt",
     "format:toml": "taplo format",
-    "test": "yarn workspaces foreach --exclude=rollup-tests run test"
+    "test": "yarn workspaces foreach --exclude=rollup-tests run test",
+    "test:ci": "yarn workspaces foreach --verbose run test:ci"
   },
   "license": "MIT",
   "devDependencies": {
