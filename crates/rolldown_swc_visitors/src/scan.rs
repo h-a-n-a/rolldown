@@ -440,13 +440,15 @@ impl Scanner {
   /// to `var default = 'hello, world'; export default default;`
   /// We use `default` as a facade name to avoid conflict with local variable.
   /// In the finalize/deconflict phase, we will rename it to a valid name.
+  ///
+  /// Notices
+  ///
+  /// - `var` is used instead of `const`/`let` because the hoisting behavior of `export default`.
   fn name_anonymous_default_export(&self, node: &mut Vec<ModuleItem>) {
     let mut is_need_generate_export_default_ident = false;
     for module_item in node.iter_mut() {
       match module_item {
-        ModuleItem::ModuleDecl(ast::ModuleDecl::ExportDefaultExpr(expr))
-          if !expr.expr.is_ident() =>
-        {
+        ModuleItem::ModuleDecl(ast::ModuleDecl::ExportDefaultExpr(expr)) => {
           is_need_generate_export_default_ident = true;
           *module_item =
             ModuleItem::Stmt(ast::Stmt::Decl(ast::Decl::Var(Box::new(ast::VarDecl {
@@ -505,6 +507,23 @@ impl Scanner {
       .imports
       .values_mut()
       .for_each(|specs| specs.retain(|spec| referenced.contains(&spec.imported_as)));
+  }
+
+  fn scan_ident(&mut self, ident: &Ident) {
+    debug_assert!(
+      ident.span.ctxt != SyntaxContext::empty(),
+      "ident should have a context"
+    );
+    // TODO: Is the assumption correct?
+    debug_assert!(
+      ident.span.ctxt != SyntaxContext::empty(),
+      "ident should have a context"
+    );
+    if ident.span.ctxt == self.top_level_ctxt {
+      self.add_declared_id(ident.to_id().into());
+    } else {
+      self.add_declared_scope_id(ident.to_id().into());
+    }
   }
 }
 
@@ -574,32 +593,23 @@ impl VisitMut for Scanner {
   fn visit_mut_param(&mut self, node: &mut ast::Param) {
     let mut var_decl_collect = ParamsCollector::default();
     node.visit_children_with(&mut var_decl_collect);
-    var_decl_collect.collected.into_values().for_each(|id| {
-      if id.1 != self.top_level_ctxt {
-        self.add_declared_scope_id(id.into())
-      }
-    });
+    var_decl_collect
+      .collected
+      .into_values()
+      .for_each(|id| self.scan_ident(&id.into()));
 
     node.visit_mut_children_with(self);
   }
 
   fn visit_mut_fn_expr(&mut self, node: &mut ast::FnExpr) {
     if let Some(ident) = &node.ident {
-      if ident.span.ctxt == self.top_level_ctxt {
-        self.add_declared_id(ident.to_id().into());
-      } else {
-        self.add_declared_scope_id(ident.to_id().into());
-      }
+      self.scan_ident(ident)
     }
     node.visit_mut_children_with(self);
   }
 
   fn visit_mut_fn_decl(&mut self, node: &mut ast::FnDecl) {
-    if node.ident.span.ctxt == self.top_level_ctxt {
-      self.add_declared_id(node.ident.to_id().into());
-    } else {
-      self.add_declared_scope_id(node.ident.to_id().into());
-    }
+    self.scan_ident(&node.ident);
     node.visit_mut_children_with(self);
   }
 
@@ -607,13 +617,9 @@ impl VisitMut for Scanner {
     let mut collected = vec![] as Vec<Ident>;
     let mut collector = VarCollector { to: &mut collected };
     node.visit_with(&mut collector);
-    collected.into_iter().for_each(|ident| {
-      if ident.span.ctxt == self.top_level_ctxt {
-        self.add_declared_id(ident.to_id().into())
-      } else {
-        self.add_declared_scope_id(ident.to_id().into())
-      }
-    });
+    collected
+      .into_iter()
+      .for_each(|ident| self.scan_ident(&ident));
 
     node.visit_mut_children_with(self);
   }
