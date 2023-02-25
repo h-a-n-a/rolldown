@@ -1,4 +1,5 @@
 #![feature(box_patterns)]
+#![feature(box_syntax)]
 #![feature(let_chains)]
 #![feature(if_let_guard)]
 

@@ -1,0 +1,13 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/default-exports-in-parens-class-without-id
+---
+---------- main.js ----------
+// foo.js
+var Foo = class {
+};
+
+// main.js
+var obj = new Foo();
+assert.ok(obj instanceof Foo);

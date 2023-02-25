@@ -14,10 +14,10 @@ Currently we are targeting to pass the [function tests](https://github.com/rollu
 ├────────────┼────────┤
 │   total    │  870   │
 │   failed   │   0    │
-│ skipFailed │  370   │
+│ skipFailed │  367   │
 │  ignored   │   7    │
 │  skipped   │   0    │
-│   passed   │  493   │
+│   passed   │  496   │
 └────────────┴────────┘
 ```
 

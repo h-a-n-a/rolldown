@@ -50,3 +50,9 @@ impl Debug for Symbol {
       .finish()
   }
 }
+
+impl AsRef<ast::Id> for Symbol {
+  fn as_ref(&self) -> &ast::Id {
+    &self.0
+  }
+}
