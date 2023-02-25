@@ -6,8 +6,6 @@ export default defineConfig({
     },
   },
   test: {
-    isolate: false,
-    threads: false,
     include: ['./function/index.test.ts'],
   },
 })

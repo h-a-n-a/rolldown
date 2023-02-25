@@ -12,7 +12,7 @@
     "@rolldown/core": "workspace:*",
     "@swc-node/jest": "^1.5.7",
     "globby": "11.1.0",
-    "vitest": "^0.28.4"
+    "vitest": "^0.29.0"
   },
   "keywords": [],
   "author": "",
