@@ -1,0 +1,10 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/default-export-before-declaration
+---
+---------- main.js ----------
+// main.js
+var main = foo;
+var foo = true;
+export { main as default };
