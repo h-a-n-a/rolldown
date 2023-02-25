@@ -24,6 +24,7 @@
     "stripInternal": true,
     "resolveJsonModule": true,
     "importsNotUsedAsValues": "remove",
+    "isolatedModules": true,
     "outDir": "lib",
     "lib": ["dom", "DOM.Iterable", "ES2019", "ES2020", "esnext"]
   },
