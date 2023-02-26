@@ -26,6 +26,20 @@ impl CompiledFixture {
           asset.content.trim().to_string(),
         ]
       })
+      .chain(if self.tester.warnings.lock().unwrap().is_empty() {
+        vec![]
+      } else {
+        let mut warnings = self.tester.warnings.lock().unwrap();
+        warnings.sort();
+        vec![
+          format!("---------- WARNINGS ----------"),
+          warnings
+            .iter()
+            .map(|w| w.kind.to_readable_string(&self.fixture_path))
+            .collect::<Vec<_>>()
+            .join("\n"),
+        ]
+      })
       .collect::<Vec<_>>()
       .join("\n")
   }

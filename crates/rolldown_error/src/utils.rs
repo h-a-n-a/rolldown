@@ -35,7 +35,7 @@ pub trait PathExt {
 
 impl PathExt for Path {
   fn relative_if_possiable(&self) -> PathBuf {
-    if CWD.is_set() {
+    if CWD.is_set() && self.is_absolute() {
       CWD.with(|cwd| self.relative(cwd))
     } else {
       self.to_path_buf()

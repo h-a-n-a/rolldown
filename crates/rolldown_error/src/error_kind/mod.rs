@@ -82,7 +82,7 @@ impl Display for ErrorKind {
         sources,
       } => write!(
         f,
-        "Ambiguous external namespace resolution: {} re-exports {binding} from one of the external modules {}, guessing {}",
+        "Ambiguous external namespace resolution: \"{}\" re-exports \"{binding}\" from one of the external modules {}, guessing \"{}\".",
         reexporting_module.relative_if_possiable().display(),
         format_quoted_strings(&sources.iter().map(|p| p.relative_if_possiable().display().to_string()).collect::<Vec<_>>()),
         used_module.relative_if_possiable().display(),

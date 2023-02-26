@@ -1,0 +1,15 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+assertion_line: 113
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/rollup/function/conflicting-reexports/named-import-external
+---
+---------- main.js ----------
+import { foo } from "first";
+
+import "second";
+
+// main.js
+assert.strictEqual(foo, 'first');
+---------- WARNINGS ----------
+Ambiguous external namespace resolution: "reexport.js" re-exports "foo" from one of the external modules "first" and "second", guessing "first".

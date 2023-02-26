@@ -3,7 +3,7 @@ use std::{path::PathBuf, pin::Pin, sync::Arc};
 use derivative::Derivative;
 use futures::{future, Future, FutureExt};
 
-use crate::{BuildError, UnaryBuildResult};
+use crate::{BuildError, UnaryBuildResult, WarningHandler};
 
 mod input_item;
 pub use input_item::*;
@@ -22,7 +22,7 @@ pub struct InputOptions {
   #[derivative(Debug = "ignore")]
   pub is_external: IsExternal,
   #[derivative(Debug = "ignore")]
-  pub on_warn: Arc<dyn Fn(BuildError) + Send + Sync>,
+  pub on_warn: WarningHandler,
 }
 
 impl Default for InputOptions {

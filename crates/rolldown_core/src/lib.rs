@@ -62,6 +62,7 @@ pub(crate) static SWC_GLOBALS: Lazy<Arc<Globals>> = Lazy::new(|| Arc::new(Global
 pub(crate) type UnaryBuildResult<T> = rolldown_error::Result<T>;
 pub type BuildResult<T> = rolldown_error::ResultWithErrors<T>;
 pub type BuildError = rolldown_error::Error;
+pub type WarningHandler = Arc<dyn Fn(BuildError) + Send + Sync>;
 
 // re-exported crates
 

@@ -1,6 +1,6 @@
 use std::sync::{atomic::AtomicBool, Arc};
 
-use tracing::Level;
+use tracing::{metadata::LevelFilter, Level};
 
 static IS_INIT: AtomicBool = AtomicBool::new(false);
 pub fn init() {
@@ -8,7 +8,11 @@ pub fn init() {
   if !IS_INIT.swap(true, std::sync::atomic::Ordering::SeqCst) {
     tracing_subscriber::registry()
       .with(fmt::layer())
-      .with(EnvFilter::from_default_env())
+      .with(
+        EnvFilter::builder()
+          .with_default_directive(LevelFilter::WARN.into())
+          .from_env_lossy(),
+      )
       .with(
         tracing_subscriber::filter::Targets::new().with_targets(vec![("rolldown", Level::TRACE)]),
       )

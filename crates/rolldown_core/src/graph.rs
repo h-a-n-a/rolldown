@@ -16,7 +16,7 @@ use crate::{
   norm_or_ext::NormOrExt, normal_module::NormalModule, options::InputOptions, ModuleById,
   UnaryBuildResult, SWC_GLOBALS,
 };
-use crate::{BuildError, BuildResult, SharedBuildPluginDriver};
+use crate::{BuildError, BuildResult, SharedBuildPluginDriver, WarningHandler};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -28,12 +28,13 @@ pub struct Graph {
   #[derivative(Debug = "ignore")]
   pub(crate) uf: UnionFind<Symbol>,
   pub(crate) build_plugin_driver: SharedBuildPluginDriver,
-  pub(crate) warnings: Vec<rolldown_error::Error>,
   pub(crate) used_symbols: HashSet<Symbol>,
+  #[derivative(Debug = "ignore")]
+  pub(crate) on_warn: WarningHandler,
 }
 
 impl Graph {
-  pub(crate) fn new(build_plugin_driver: SharedBuildPluginDriver) -> Self {
+  pub(crate) fn new(build_plugin_driver: SharedBuildPluginDriver, on_warn: WarningHandler) -> Self {
     let (unresolved_mark, unresolved_ctxt) = GLOBALS.set(&SWC_GLOBALS, || {
       let mark = Mark::new();
       let ctxt = SyntaxContext::empty().apply_mark(mark);
@@ -47,8 +48,8 @@ impl Graph {
       unresolved_ctxt,
       uf: Default::default(),
       build_plugin_driver,
-      warnings: Default::default(),
       used_symbols: Default::default(),
+      on_warn,
     }
   }
 
@@ -528,18 +529,16 @@ impl Graph {
                     .cloned()
                   {
                     if importee.external_modules_of_re_export_all.len() > 1 {
-                      self
-                        .warnings
-                        .push(BuildError::ambiguous_external_namespaces(
-                          imported_spec.imported_as.name().to_string(),
-                          importer_id.to_string().into(),
-                          first_external_id.to_string().into(),
-                          importee
-                            .external_modules_of_re_export_all
-                            .iter()
-                            .map(|id| id.to_string().into())
-                            .collect_vec(),
-                        ))
+                      (self.on_warn)(BuildError::ambiguous_external_namespaces(
+                        imported_spec.imported_as.name().to_string(),
+                        importee_id.to_string().into(),
+                        first_external_id.to_string().into(),
+                        importee
+                          .external_modules_of_re_export_all
+                          .iter()
+                          .map(|id| id.to_string().into())
+                          .collect_vec(),
+                      ))
                     }
 
                     let symbol_in_importee =

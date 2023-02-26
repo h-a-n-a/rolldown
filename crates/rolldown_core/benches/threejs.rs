@@ -1,14 +1,13 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use rolldown_core::{Bundler, InputOptions};
+use rolldown_core::{Bundler, InputItem, InputOptions};
 
 #[tokio::main]
 async fn threejs() {
   let mut bundler = Bundler::new(InputOptions {
-    input: [(
-      "threejs".to_string(),
-      "../three.js/src/Three.js".to_string(),
-    )]
-    .into(),
+    input: vec![InputItem {
+      name: "threejs".to_string(),
+      import: "../three.js/src/Three.js".to_string(),
+    }],
     ..Default::default()
   });
   bundler

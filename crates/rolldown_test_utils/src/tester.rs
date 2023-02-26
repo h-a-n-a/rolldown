@@ -1,7 +1,7 @@
 use std::{
   collections::HashSet,
   path::{Path, PathBuf},
-  sync::Arc,
+  sync::{Arc, Mutex},
 };
 
 use futures::FutureExt;
@@ -11,7 +11,7 @@ use crate::test_config::TestConfig;
 
 pub struct Tester {
   pub config: TestConfig,
-  pub warnings: Vec<BuildError>,
+  pub warnings: Arc<Mutex<Vec<BuildError>>>,
 }
 
 impl Tester {
@@ -24,6 +24,7 @@ impl Tester {
   }
 
   pub fn input_options(&self, cwd: PathBuf) -> rolldown_core::InputOptions {
+    let warning_collector = self.warnings.clone();
     rolldown_core::InputOptions {
       // TODO: the order should be preserved
       input: self
@@ -51,6 +52,9 @@ impl Tester {
           futures::future::ready(Ok(external.contains(specifier))).boxed()
         })
       },
+      on_warn: Arc::new(move |err| {
+        warning_collector.lock().unwrap().push(err);
+      }),
       ..Default::default()
     }
   }

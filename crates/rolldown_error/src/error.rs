@@ -14,6 +14,26 @@ pub struct Error {
   pub kind: ErrorKind,
 }
 
+impl PartialEq for Error {
+  fn eq(&self, other: &Self) -> bool {
+    self.kind.to_string().eq(&other.kind.to_string())
+  }
+}
+
+impl Eq for Error {}
+
+impl PartialOrd for Error {
+  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    self.kind.to_string().partial_cmp(&other.kind.to_string())
+  }
+}
+
+impl Ord for Error {
+  fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    self.kind.to_string().cmp(&other.kind.to_string())
+  }
+}
+
 impl Error {
   fn with_kind(kind: ErrorKind) -> Self {
     Self {

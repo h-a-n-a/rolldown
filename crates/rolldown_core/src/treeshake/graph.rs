@@ -1,13 +1,14 @@
 use rayon::prelude::*;
 use rolldown_common::Symbol;
+use rolldown_error::Errors;
 use rustc_hash::FxHashSet;
 use swc_core::common::GLOBALS;
 
 use super::TreeshakeContext;
-use crate::{treeshake::TreeshakeNormalModule, Graph, UnaryBuildResult, COMPILER, SWC_GLOBALS};
+use crate::{treeshake::TreeshakeNormalModule, BuildResult, Graph, COMPILER, SWC_GLOBALS};
 
 impl Graph {
-  pub(crate) fn treeshake(&mut self) -> UnaryBuildResult<()> {
+  pub(crate) fn treeshake(&mut self) -> BuildResult<()> {
     let used_ids = self
       .collect_all_used_ids()?
       .into_iter()
@@ -66,7 +67,7 @@ impl Graph {
     Ok(())
   }
 
-  pub(crate) fn collect_all_used_ids(&mut self) -> UnaryBuildResult<FxHashSet<Symbol>> {
+  pub(crate) fn collect_all_used_ids(&mut self) -> BuildResult<FxHashSet<Symbol>> {
     let ctx = TreeshakeContext {
       id_to_module: self
         .module_by_id
@@ -74,7 +75,6 @@ impl Graph {
         .filter_map(|(id, m)| m.as_norm().map(|m| (id, TreeshakeNormalModule::new(m))))
         .collect(),
       errors: Default::default(),
-      warnings: Default::default(),
     };
     let used_ids = ctx
       .id_to_module
@@ -84,10 +84,8 @@ impl Graph {
       .flatten()
       .collect::<FxHashSet<_>>();
     let errors = ctx.errors.into_inner().unwrap();
-    let warnings = ctx.warnings.into_inner().unwrap();
-    self.warnings.extend(warnings);
     if !errors.is_empty() {
-      return Err(errors.into_iter().next().unwrap());
+      return Err(Errors::from_vec(errors));
     }
     Ok(used_ids)
   }

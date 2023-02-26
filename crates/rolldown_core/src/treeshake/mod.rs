@@ -17,7 +17,6 @@ mod statement_part;
 struct TreeshakeContext<'a> {
   id_to_module: FxHashMap<&'a ModuleId, TreeshakeNormalModule<'a>>,
   pub(crate) errors: Mutex<Vec<rolldown_error::Error>>,
-  pub(crate) warnings: Mutex<Vec<rolldown_error::Error>>,
 }
 
 impl<'a> TreeshakeContext<'a> {
@@ -25,8 +24,9 @@ impl<'a> TreeshakeContext<'a> {
     self.errors.lock().unwrap().push(error);
   }
 
-  pub(crate) fn add_warning(&self, warning: rolldown_error::Error) {
-    self.warnings.lock().unwrap().push(warning);
+  // Use for debugging
+  pub(crate) fn emit_warnning_for_debugging(&self, warning: rolldown_error::Error) {
+    tracing::warn!("{}", warning);
   }
 }
 
@@ -106,7 +106,7 @@ impl<'m> TreeshakeNormalModule<'m> {
         return Some(included);
       }
       if visited.contains(&(maybe_the_definer, imported_symbol_name)) {
-        ctx.add_warning(BuildError::circular_dependency(
+        ctx.emit_warnning_for_debugging(BuildError::circular_dependency(
           visited
             .iter()
             .map(|(module, _)| module.to_string())
