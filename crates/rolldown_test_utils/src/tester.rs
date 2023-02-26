@@ -25,7 +25,17 @@ impl Tester {
 
   pub fn input_options(&self, cwd: PathBuf) -> rolldown_core::InputOptions {
     rolldown_core::InputOptions {
-      input: self.config.input.input.clone(),
+      // TODO: the order should be preserved
+      input: self
+        .config
+        .input
+        .input
+        .iter()
+        .map(|item| rolldown_core::InputItem {
+          name: item.name.clone(),
+          import: item.import.clone(),
+        })
+        .collect(),
       cwd,
       treeshake: self.config.input.treeshake,
       is_external: {

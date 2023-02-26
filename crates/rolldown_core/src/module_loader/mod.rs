@@ -60,19 +60,19 @@ impl<'a> ModuleLoader<'a> {
   }
 
   async fn resolve_entries(&self, input_opts: &InputOptions) -> Vec<UnaryBuildResult<ModuleId>> {
-    join_all(input_opts.input.values().cloned().map(|specifier| async {
+    join_all(input_opts.input.iter().cloned().map(|input_item| async {
       let id = resolve_id(
         &self.resolver,
         ResolveArgs {
           importer: None,
-          specifier: &specifier,
+          specifier: &input_item.import,
         },
         &self.build_plugin_driver,
       )
       .await?;
 
       let Some(id) = id else {
-          return Err(BuildError::unresolved_entry(specifier))
+          return Err(BuildError::unresolved_entry(input_item.import))
         };
 
       if id.is_external() {

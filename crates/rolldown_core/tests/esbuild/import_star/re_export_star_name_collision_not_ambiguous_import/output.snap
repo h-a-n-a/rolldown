@@ -1,11 +1,11 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.output_friendly_to_snapshot()
+expression: compiled_fx.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_name_collision_not_ambiguous_import
 ---
----------- entry.js ----------
+---------- main.js ----------
 // c.js
 let x = 1, y = 2;
 
-// entry.js
+// main.js
 console.log(x, y);

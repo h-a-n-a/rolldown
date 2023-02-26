@@ -1,3 +1,3 @@
 import * as ns from './bar'
 let foo = 234
-console.log(foo)
+console.log(ns, ns.foo, foo)

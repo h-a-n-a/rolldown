@@ -15,6 +15,7 @@ test  = false
 [dependencies]
 dashmap       = { workspace = true }
 futures       = { workspace = true }
+hashlink      = { workspace = true, features = ["serde_impl"] }
 rolldown_core = { path = "../rolldown_core" }
 schemars      = "0.8.11"
 serde         = { workspace = true, features = ["derive"] }

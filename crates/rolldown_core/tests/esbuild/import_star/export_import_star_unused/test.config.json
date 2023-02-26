@@ -1,22 +1,58 @@
 {
   "input": {
-    "input": {
-      "external-default2": "./external-default2.js",
-      "external-ns": "./external-ns.js",
-      "external-ns-default": "./external-ns-default.js",
-      "external-ns-def": "./external-ns-def.js",
-      "external-default": "./external-default.js",
-      "external-def": "./external-def.js",
-      "internal-default2": "./internal-default2.js",
-      "internal-ns": "./internal-ns.js",
-      "internal-ns-default": "./internal-ns-default.js",
-      "internal-ns-def": "./internal-ns-def.js",
-      "internal-default": "./internal-default.js",
-      "internal-def": "./internal-def.js"
-    }
+    "input": [
+      {
+        "name": "external-default2",
+        "import": "./external-default2.js"
+      },
+      {
+        "name": "external-ns",
+        "import": "./external-ns.js"
+      },
+      {
+        "name": "external-ns-default",
+        "import": "./external-ns-default.js"
+      },
+      {
+        "name": "external-ns-def",
+        "import": "./external-ns-def.js"
+      },
+      {
+        "name": "external-default",
+        "import": "./external-default.js"
+      },
+      {
+        "name": "external-def",
+        "import": "./external-def.js"
+      },
+      {
+        "name": "internal-default2",
+        "import": "./internal-default2.js"
+      },
+      {
+        "name": "internal-ns",
+        "import": "./internal-ns.js"
+      },
+      {
+        "name": "internal-ns-default",
+        "import": "./internal-ns-default.js"
+      },
+      {
+        "name": "internal-ns-def",
+        "import": "./internal-ns-def.js"
+      },
+      {
+        "name": "internal-default",
+        "import": "./internal-default.js"
+      },
+      {
+        "name": "internal-def",
+        "import": "./internal-def.js"
+      }
+    ]
   },
   "expectedError": {
     "code": "MISSING_EXPORT",
-    "message": "\"def\" is not exported by \"internal.js\", imported by \"internal-def.js\"."
+    "message": "\"def\" is not exported by \"internal.js\", imported by \"internal-ns-def.js\"."
   }
 }

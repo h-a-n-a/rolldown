@@ -1,10 +1,10 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.output_friendly_to_snapshot()
+expression: compiled_fx.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/esbuild/import_star/export_self_as_namespace_common_js
 ---
----------- entry.js ----------
-// entry.js
+---------- main.js ----------
+// main.js
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true

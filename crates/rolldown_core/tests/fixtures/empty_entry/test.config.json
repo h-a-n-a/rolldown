@@ -1,6 +1,6 @@
 {
   "input": {
-    "input": {}
+    "input": []
   },
   "expectedError": {
     "code": "PANIC",

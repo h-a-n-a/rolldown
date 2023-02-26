@@ -1,8 +1,14 @@
 {
   "input": {
-    "input": {
-      "a": "./src/pages/page-a/page.js",
-      "b": "./src/pages/page-b/page.js"
-    }
+    "input": [
+      {
+        "name": "a",
+        "import": "./src/pages/page-a/page.js"
+      },
+      {
+        "name": "b",
+        "import": "./src/pages/page-b/page.js"
+      }
+    ]
   }
 }

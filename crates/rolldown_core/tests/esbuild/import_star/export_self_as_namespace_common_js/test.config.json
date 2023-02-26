@@ -1,9 +1,4 @@
 {
-  "input": {
-    "input": {
-      "main": "./entry.js"
-    }
-  },
   "output": {
     "format": "cjs"
   }

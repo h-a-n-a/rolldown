@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use napi_derive::*;
+use rolldown_core::InputItem;
 use rolldown_plugin::BuildPlugin;
 use serde::Deserialize;
 mod external;
@@ -61,7 +62,11 @@ pub fn resolve_input_options(
 
   Ok((
     rolldown_core::InputOptions {
-      input: opts.input,
+      input: opts
+        .input
+        .into_iter()
+        .map(|(name, import)| InputItem { name, import })
+        .collect(),
       cwd: opts
         .cwd
         .map(PathBuf::from)

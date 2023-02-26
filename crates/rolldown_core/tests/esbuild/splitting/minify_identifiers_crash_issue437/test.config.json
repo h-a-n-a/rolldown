@@ -1,9 +1,18 @@
 {
-    "input": {
-        "input": {
-            "a": "./a.js",
-            "b": "./b.js",
-            "c": "./c.js"
-        }
-    }
+  "input": {
+    "input": [
+      {
+        "name": "a",
+        "import": "./a.js"
+      },
+      {
+        "name": "b",
+        "import": "./b.js"
+      },
+      {
+        "name": "c",
+        "import": "./c.js"
+      }
+    ]
+  }
 }

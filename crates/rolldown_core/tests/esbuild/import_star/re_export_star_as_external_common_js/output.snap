@@ -1,9 +1,9 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.output_friendly_to_snapshot()
+expression: compiled_fx.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_as_external_common_js
 ---
----------- entry.js ----------
+---------- main.js ----------
 "use strict";
 function _getRequireWildcardCache(nodeInterop) {
     if (typeof WeakMap !== "function") return null;

@@ -1,12 +1,12 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/esbuild/samples/splitting/dynamic_es6_into_es6
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/splitting/dynamic_es6_into_es6
 ---
----------- entry.js ----------
-// entry.js
-import("./foo.js").then(({ bar  })=>console.log(bar));
 ---------- foo.js ----------
 // foo.js
 let bar = 123;
 export { bar };
+---------- main.js ----------
+// main.js
+import("./foo.js").then(({ bar  })=>console.log(bar));

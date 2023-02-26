@@ -1,9 +1,9 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/esbuild/samples/import_star/import_star_capture
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/import_star_capture
 ---
----------- entry.js ----------
+---------- main.js ----------
 // foo.js
 const foo$1 = 123;
 var ns = Object.freeze({
@@ -13,6 +13,6 @@ var ns = Object.freeze({
     }
 });
 
-// entry.js
+// main.js
 let foo = 234;
 console.log(ns, foo$1, foo);

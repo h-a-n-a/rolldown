@@ -38,6 +38,22 @@
       },
       "additionalProperties": false
     },
+    "InputItem": {
+      "type": "object",
+      "required": [
+        "import",
+        "name"
+      ],
+      "properties": {
+        "import": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "InputOptions": {
       "type": "object",
       "properties": {
@@ -49,12 +65,9 @@
           }
         },
         "input": {
-          "default": {
-            "main": "./main.js"
-          },
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InputItem"
           }
         },
         "treeshake": {

@@ -1,12 +1,12 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.content_for_snapshot()
-input_file: crates/rolldown_core/tests/esbuild/samples/import_star/export_star_no_capture
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/import_star/export_star_no_capture
 ---
----------- entry.js ----------
+---------- main.js ----------
 // foo.js
 const foo$1 = 123;
 
-// entry.js
+// main.js
 let foo = 234;
 console.log(foo$1, foo$1, foo);

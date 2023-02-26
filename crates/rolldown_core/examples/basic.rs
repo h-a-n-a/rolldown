@@ -1,6 +1,6 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
-use rolldown_core::{Bundler, InputOptions, OutputOptions};
+use rolldown_core::{Bundler, InputItem, InputOptions, OutputOptions};
 
 #[tokio::main]
 async fn main() {
@@ -9,7 +9,10 @@ async fn main() {
   let dist_dir = root.join("examples/dist");
 
   let mut bundler = Bundler::new(InputOptions {
-    input: HashMap::from([("main.js".to_string(), "./entry".to_string())]),
+    input: vec![InputItem {
+      name: "main.js".to_string(),
+      import: "./entry".to_string(),
+    }],
     cwd: fixture_path,
     ..Default::default()
   });

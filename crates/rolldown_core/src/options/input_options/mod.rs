@@ -1,9 +1,12 @@
-use std::{collections::HashMap, path::PathBuf, pin::Pin, sync::Arc};
+use std::{path::PathBuf, pin::Pin, sync::Arc};
 
 use derivative::Derivative;
 use futures::{future, Future, FutureExt};
 
 use crate::{BuildError, UnaryBuildResult};
+
+mod input_item;
+pub use input_item::*;
 
 type PinFutureBox<T> = Pin<Box<dyn Future<Output = T> + Send>>;
 
@@ -13,7 +16,7 @@ pub type IsExternal =
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct InputOptions {
-  pub input: HashMap<String, String>,
+  pub input: Vec<InputItem>,
   pub treeshake: bool,
   pub cwd: PathBuf,
   #[derivative(Debug = "ignore")]

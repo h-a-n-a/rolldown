@@ -1,8 +1,13 @@
 {
   "input": {
-    "input": {
-      "a": "./a.js"
-    },
-    "external": ["external"]
+    "input": [
+      {
+        "name": "a",
+        "import": "./a.js"
+      }
+    ],
+    "external": [
+      "external"
+    ]
   }
 }

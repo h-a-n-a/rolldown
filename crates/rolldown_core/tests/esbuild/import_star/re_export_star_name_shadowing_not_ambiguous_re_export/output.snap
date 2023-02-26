@@ -1,9 +1,9 @@
 ---
 source: crates/rolldown_core/tests/common/mod.rs
-expression: res.output_friendly_to_snapshot()
+expression: compiled_fx.output_friendly_to_snapshot()
 input_file: crates/rolldown_core/tests/esbuild/import_star/re_export_star_name_shadowing_not_ambiguous_re_export
 ---
----------- entry.js ----------
+---------- main.js ----------
 // bar.js
 const bar = 123;
 var bar_ns = Object.freeze({
@@ -21,5 +21,5 @@ var foo_ns = Object.freeze({
     }
 });
 
-// entry.js
+// main.js
 console.log(foo_ns);
