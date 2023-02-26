@@ -3,7 +3,7 @@ use rolldown_common::{ChunkId, ModuleId};
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use swc_common::{util::take::Take, SyntaxContext, DUMMY_SP};
 use swc_core::{
-  common::{self as swc_common, Span},
+  common::{self as swc_common},
   ecma::{
     ast::{self, BindingIdent, Stmt},
     atoms::{js_word, JsWord},
@@ -179,103 +179,68 @@ impl<'a> Finalizer<'a> {
   }
 
   fn make_exported_specifier_shorter(&mut self, node: &mut ast::ExportNamedSpecifier) {
-    if let ExportNamedSpecifier {
-            exported: Some(ast::ModuleExportName::Ident(ast::Ident { sym: exported_name, .. })),
-            orig: ast::ModuleExportName::Ident(ast::Ident { sym: orig_name, .. }),
-            ..
-        } = node && exported_name == orig_name
-        { node.exported = None }
+    match node {
+      ExportNamedSpecifier {
+        exported:
+          Some(ast::ModuleExportName::Ident(ast::Ident {
+            sym: exported_name, ..
+          })),
+        orig: ast::ModuleExportName::Ident(ast::Ident { sym: orig_name, .. }),
+        ..
+      } if exported_name == orig_name => node.exported = None,
+      _ => {}
+    }
   }
 
   /// Turn `obj = ({ a })` to `obj = ({ a: a })`
   /// After expanding, if the property `a` is renamed to `b`,
   /// the output would be `{ a: b }`. The expr `obj.a` is still valid.
-  fn expand_shorthand(&self, prop: &mut ast::Prop) -> bool {
-    if let ast::Prop::Shorthand(ident) = prop {
-      *prop = ast::Prop::KeyValue(ast::KeyValueProp {
-        key: quote_ident!(ident.sym.clone()).into(),
-        value: Box::new(ast::Expr::Ident(ident.take())),
-      });
-      true
-    } else {
-      false
+  fn expand_shorthand_if_needed(&self, prop: &mut ast::Prop) {
+    match prop {
+      ast::Prop::Shorthand(ident) if self.should_rename_the_ident(ident) => {
+        *prop = ast::Prop::KeyValue(ast::KeyValueProp {
+          key: quote_ident!(ident.sym.clone()).into(),
+          value: Box::new(ast::Expr::Ident(ident.take())),
+        });
+      }
+      _ => {}
     }
-  }
-
-  fn undo_expand_shorthand(&self, prop: &mut ast::Prop, shorthanded: bool) {
-    if shorthanded && let ast::Prop::KeyValue(ast::KeyValueProp { key: ast::PropName::Ident(key), value: box ast::Expr::Ident(value) }) = prop && key.sym == value.sym { *prop = ast::Prop::Shorthand(value.take()) }
   }
 
   /// If the property `foo` is renamed `foo2`, we need to keep the semantics of ObjectPatProp.
   /// turn `const { foo } = { foo }`
   /// into `const { foo: foo2 } = { foo }`
   /// instead `const { foo2 } = { foo }`
-  fn keep_semantics_of_object_pat_prop(&self, node: &mut ast::ObjectPatProp) -> Option<Span> {
-    if let ast::ObjectPatProp::Assign(prop) = node {
-      let prop_span = prop.span;
-      *node = ast::ObjectPatProp::KeyValue(ast::KeyValuePatProp {
-        key: PropName::Ident(quote_ident!(prop.key.sym.clone())),
-        value: prop
-          .value
-          .take()
-          .map(|value| {
-            // handle case `const { foo = 1 } = { foo }`
-            Box::new(ast::Pat::Assign(ast::AssignPat {
-              span: DUMMY_SP,
-              left: Box::new(ast::Pat::Ident(ast::BindingIdent {
-                id: prop.key.take(),
-                type_ann: None,
-              })),
-              right: value,
-              type_ann: None,
-            }))
-          })
-          .unwrap_or_else(|| {
-            Box::new(ast::Pat::Ident(ast::BindingIdent {
-              id: prop.key.take(),
-              type_ann: None,
-            }))
-          }),
-      });
-      Some(prop_span)
-    } else {
-      None
-    }
-  }
-
-  fn undo_keep_semantics_of_object_pat_prop(
-    &self,
-    node: &mut ast::ObjectPatProp,
-    changed: Option<Span>,
-  ) {
-    if let Some(assign_prop_span) = changed {
-      if let ast::ObjectPatProp::KeyValue(ast::KeyValuePatProp {
-        key: ast::PropName::Ident(ref key),
-        value,
-      }) = node
+  fn keep_semantics_of_object_pat_prop(&self, node: &mut ast::ObjectPatProp) {
+    match node {
+      ast::ObjectPatProp::Assign(ast::AssignPatProp { key, value, .. })
+        if self.should_rename_the_ident(key) =>
       {
-        match value.as_mut() {
-          ast::Pat::Ident(ast::BindingIdent { id: value, .. }) if key.sym == value.sym => {
-            *node = ast::ObjectPatProp::Assign(ast::AssignPatProp {
-              span: assign_prop_span,
-              key: value.take(),
-              value: None,
+        *node = ast::ObjectPatProp::KeyValue(ast::KeyValuePatProp {
+          key: PropName::Ident(quote_ident!(key.sym.clone())),
+          value: value
+            .take()
+            .map(|value| {
+              // handle case `const { foo = 1 } = { foo }`
+              Box::new(ast::Pat::Assign(ast::AssignPat {
+                span: DUMMY_SP,
+                left: Box::new(ast::Pat::Ident(ast::BindingIdent {
+                  id: key.take(),
+                  type_ann: None,
+                })),
+                right: value,
+                type_ann: None,
+              }))
             })
-          }
-          ast::Pat::Assign(ast::AssignPat {
-            left: box ast::Pat::Ident(ast::BindingIdent { id, .. }),
-            right,
-            ..
-          }) if key.sym == id.sym => {
-            *node = ast::ObjectPatProp::Assign(ast::AssignPatProp {
-              span: assign_prop_span,
-              key: id.take(),
-              value: Some(right.take()),
-            })
-          }
-          _ => {}
-        }
+            .unwrap_or_else(|| {
+              Box::new(ast::Pat::Ident(ast::BindingIdent {
+                id: key.take(),
+                type_ann: None,
+              }))
+            }),
+        });
       }
+      _ => {}
     }
   }
 
@@ -363,15 +328,13 @@ impl<'a> VisitMut for Finalizer<'a> {
   }
 
   fn visit_mut_prop(&mut self, prop: &mut ast::Prop) {
-    let shorthanded = self.expand_shorthand(prop);
+    self.expand_shorthand_if_needed(prop);
     prop.visit_mut_children_with(self);
-    self.undo_expand_shorthand(prop, shorthanded);
   }
 
   fn visit_mut_object_pat_prop(&mut self, node: &mut ast::ObjectPatProp) {
-    let changed = self.keep_semantics_of_object_pat_prop(node);
+    self.keep_semantics_of_object_pat_prop(node);
     node.visit_mut_children_with(self);
-    self.undo_keep_semantics_of_object_pat_prop(node, changed);
   }
 
   fn visit_mut_export_named_specifier(&mut self, node: &mut ExportNamedSpecifier) {
