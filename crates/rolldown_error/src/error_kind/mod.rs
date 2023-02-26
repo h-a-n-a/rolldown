@@ -1,8 +1,13 @@
-use std::{fmt::Display, path::PathBuf, sync::Arc};
+use std::{
+  fmt::Display,
+  path::{Path, PathBuf},
+  sync::Arc,
+};
 
+use rolldown_common::CWD;
 use swc_core::common::SourceFile;
 
-use crate::utils::format_quoted_strings;
+use crate::utils::{format_quoted_strings, PathExt};
 
 pub mod error_code;
 
@@ -21,12 +26,12 @@ pub enum ErrorKind {
     missing_export: String,
   },
   AmbiguousExternalNamespaces {
-    reexporting_module: String,
-    used_module: String,
+    reexporting_module: PathBuf,
+    used_module: PathBuf,
     binding: String,
-    sources: Vec<String>,
+    sources: Vec<PathBuf>,
   },
-  CircularDependency(Vec<String>),
+  CircularDependency(Vec<PathBuf>),
   InvalidExportOptionValue(String),
   IncompatibleExportOptionValue {
     option_value: &'static str,
@@ -62,13 +67,13 @@ impl Display for ErrorKind {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
       // Aligned with rollup
-      ErrorKind::UnresolvedEntry { unresolved_id } => write!(f, "Could not resolve entry module \"{}\"", unresolved_id.display()),
-      ErrorKind::ExternalEntry { id } => write!(f, "Entry module \"{}\" cannot be external.", id.display()),
+      ErrorKind::UnresolvedEntry { unresolved_id } => write!(f, "Could not resolve entry module \"{}\"", unresolved_id.relative_if_possiable().display()),
+      ErrorKind::ExternalEntry { id } => write!(f, "Entry module \"{}\" cannot be external.", id.relative_if_possiable().display()),
       ErrorKind::MissingExport { missing_export, importee, importer } => write!(
         f,
         r#""{missing_export}" is not exported by "{}", imported by "{}"."#,
-        importee.display(),
-        importer.display(),
+        importee.relative_if_possiable().display(),
+        importer.relative_if_possiable().display(),
       ),
       ErrorKind::AmbiguousExternalNamespaces {
         binding,
@@ -77,14 +82,17 @@ impl Display for ErrorKind {
         sources,
       } => write!(
         f,
-        "Ambiguous external namespace resolution: {reexporting_module} re-exports {binding} from one of the external modules {sources:?}, guessing {used_module}"
+        "Ambiguous external namespace resolution: {} re-exports {binding} from one of the external modules {}, guessing {}",
+        reexporting_module.relative_if_possiable().display(),
+        format_quoted_strings(&sources.iter().map(|p| p.relative_if_possiable().display().to_string()).collect::<Vec<_>>()),
+        used_module.relative_if_possiable().display(),
       ),
-      ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.join(" -> ")),
+      ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.iter().map(|p| p.relative_if_possiable().display().to_string()).collect::<Vec<_>>().join(" -> ")),
       ErrorKind::InvalidExportOptionValue(value) =>  write!(f, r#""output.exports" must be "default", "named", "none", "auto", or left unspecified (defaults to "auto"), received "{value}"."#),
       ErrorKind::IncompatibleExportOptionValue { option_value, exported_keys, entry_module } => {
         let mut exported_keys = exported_keys.iter().collect::<Vec<_>>();
         exported_keys.sort();
-        write!(f, r#""{option_value}" was specified for "output.exports", but entry module "{}" has the following exports: {}"#, entry_module.display(), format_quoted_strings(&exported_keys))
+        write!(f, r#""{option_value}" was specified for "output.exports", but entry module "{}" has the following exports: {}"#, entry_module.relative_if_possiable().display(), format_quoted_strings(&exported_keys))
       }
       // Rolldown specific
       ErrorKind::Panic { source } => source.fmt(f),
@@ -97,6 +105,11 @@ impl Display for ErrorKind {
 }
 
 impl ErrorKind {
+  pub fn to_readable_string(&self, cwd: impl AsRef<Path>) -> String {
+    let cwd = cwd.as_ref().to_path_buf();
+    CWD.set(&cwd, || self.to_string())
+  }
+
   pub fn code(&self) -> &'static str {
     match self {
       // Aligned with rollup

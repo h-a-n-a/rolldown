@@ -1,3 +1,8 @@
+use std::path::{Path, PathBuf};
+
+use rolldown_common::CWD;
+use sugar_path::SugarPath;
+
 pub fn format_quoted_strings_with_verbs(
   list: &[impl AsRef<str>],
   verb: Option<(&str, &str)>,
@@ -22,4 +27,18 @@ pub fn format_quoted_strings_with_verbs(
 
 pub fn format_quoted_strings(list: &[impl AsRef<str>]) -> String {
   format_quoted_strings_with_verbs(list, None)
+}
+
+pub trait PathExt {
+  fn relative_if_possiable(&self) -> PathBuf;
+}
+
+impl PathExt for Path {
+  fn relative_if_possiable(&self) -> PathBuf {
+    if CWD.is_set() {
+      CWD.with(|cwd| self.relative(cwd))
+    } else {
+      self.to_path_buf()
+    }
+  }
 }

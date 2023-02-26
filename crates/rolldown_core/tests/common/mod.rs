@@ -1,4 +1,7 @@
-use std::{path::Path, str::FromStr};
+use std::{
+  path::{Path, PathBuf},
+  str::FromStr,
+};
 
 use rolldown_core::{Asset, BuildResult, Bundler, ExportMode, InternalModuleFormat, OutputOptions};
 use rolldown_test_utils::tester::Tester;
@@ -7,7 +10,8 @@ pub struct CompiledFixture {
   pub tester: Tester,
   pub bundler: Bundler,
   pub output: BuildResult<Vec<Asset>>,
-  pub name: String,
+  pub dir_name: String,
+  pub fixture_path: PathBuf,
 }
 
 impl CompiledFixture {
@@ -56,7 +60,8 @@ pub async fn compile_fixture(test_config_path: &Path) -> CompiledFixture {
     tester,
     bundler,
     output,
-    name: fixture_name,
+    dir_name: fixture_name,
+    fixture_path: fixture_path.to_path_buf(),
   }
 }
 
@@ -75,7 +80,10 @@ pub fn run_test(test_config_path: &Path) {
     assert_eq!(errors.len(), 1);
     let error = errors.into_iter().next().unwrap();
     assert_eq!(error.kind.code(), expected_error.code);
-    assert_eq!(error.kind.to_string(), expected_error.message);
+    assert_eq!(
+      error.kind.to_readable_string(&compiled_fx.fixture_path),
+      expected_error.message
+    );
     return;
   }
 

@@ -532,12 +532,12 @@ impl Graph {
                         .warnings
                         .push(BuildError::ambiguous_external_namespaces(
                           imported_spec.imported_as.name().to_string(),
-                          importer_id.to_string(),
-                          first_external_id.to_string(),
+                          importer_id.to_string().into(),
+                          first_external_id.to_string().into(),
                           importee
                             .external_modules_of_re_export_all
                             .iter()
-                            .map(|id| id.to_string())
+                            .map(|id| id.to_string().into())
                             .collect_vec(),
                         ))
                     }

@@ -1,7 +1,9 @@
-use std::{fmt::Display, path::Path, sync::Arc};
+use std::{
+  fmt::Display,
+  path::{Path, PathBuf},
+  sync::Arc,
+};
 
-use rolldown_common::CWD;
-use sugar_path::SugarPath;
 use swc_core::common::SourceFile;
 
 use crate::ErrorKind;
@@ -27,22 +29,16 @@ impl Error {
 
   // --- Aligned with rollup
   pub fn entry_cannot_be_external(unresolved_id: impl AsRef<Path>) -> Self {
-    CWD.with(|cwd| {
-      let unresolved_id = unresolved_id.as_ref();
-      let id = if unresolved_id.is_absolute() {
-        unresolved_id.relative(cwd)
-      } else {
-        unresolved_id.to_path_buf()
-      };
-      Self::with_kind(ErrorKind::ExternalEntry { id })
+    Self::with_kind(ErrorKind::ExternalEntry {
+      id: unresolved_id.as_ref().to_path_buf(),
     })
   }
 
   pub fn ambiguous_external_namespaces(
     binding: String,
-    reexporting_module: String,
-    used_module: String,
-    sources: Vec<String>,
+    reexporting_module: PathBuf,
+    used_module: PathBuf,
+    sources: Vec<PathBuf>,
   ) -> Self {
     Self::with_kind(ErrorKind::AmbiguousExternalNamespaces {
       reexporting_module,
@@ -63,19 +59,22 @@ impl Error {
     importer: impl AsRef<Path>,
     importee: impl AsRef<Path>,
   ) -> Self {
-    CWD.with(|cwd| {
-      let importer = importer.as_ref().relative(cwd);
-      let importee = importee.as_ref().relative(cwd);
-      Self::with_kind(ErrorKind::MissingExport {
-        importer,
-        importee,
-        missing_export: missing_export.to_string(),
-      })
+    let importer = importer.as_ref().to_path_buf();
+    let importee = importee.as_ref().to_path_buf();
+    Self::with_kind(ErrorKind::MissingExport {
+      importer,
+      importee,
+      missing_export: missing_export.to_string(),
     })
   }
 
   pub fn circular_dependency(circular_path: Vec<String>) -> Self {
-    Self::with_kind(ErrorKind::CircularDependency(circular_path))
+    Self::with_kind(ErrorKind::CircularDependency(
+      circular_path
+        .into_iter()
+        .map(|p| PathBuf::from(p))
+        .collect(),
+    ))
   }
 
   pub fn invalid_export_option_value(value: String) -> Self {
@@ -87,13 +86,11 @@ impl Error {
     exported_keys: Vec<String>,
     entry_module: impl AsRef<Path>,
   ) -> Self {
-    CWD.with(|cwd| {
-      let entry_module = entry_module.as_ref().relative(cwd);
-      Self::with_kind(ErrorKind::IncompatibleExportOptionValue {
-        option_value,
-        exported_keys,
-        entry_module,
-      })
+    let entry_module = entry_module.as_ref().to_path_buf();
+    Self::with_kind(ErrorKind::IncompatibleExportOptionValue {
+      option_value,
+      exported_keys,
+      entry_module,
     })
   }
 
