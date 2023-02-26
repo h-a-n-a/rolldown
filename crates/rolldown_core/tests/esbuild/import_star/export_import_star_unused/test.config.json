@@ -1,7 +1,22 @@
 {
+  "input": {
     "input": {
-        "input": {
-            "main": "./entry.js"
-        }
+      "external-default2": "./external-default2.js",
+      "external-ns": "./external-ns.js",
+      "external-ns-default": "./external-ns-default.js",
+      "external-ns-def": "./external-ns-def.js",
+      "external-default": "./external-default.js",
+      "external-def": "./external-def.js",
+      "internal-default2": "./internal-default2.js",
+      "internal-ns": "./internal-ns.js",
+      "internal-ns-default": "./internal-ns-default.js",
+      "internal-ns-def": "./internal-ns-def.js",
+      "internal-default": "./internal-default.js",
+      "internal-def": "./internal-def.js"
     }
+  },
+  "expectedError": {
+    "code": "MISSING_EXPORT",
+    "message": "\"def\" is not exported by \"internal.js\", imported by \"internal-def.js\"."
+  }
 }

@@ -449,6 +449,7 @@ impl Scanner {
     for module_item in node.iter_mut() {
       match module_item {
         ModuleItem::ModuleDecl(ast::ModuleDecl::ExportDefaultExpr(expr)) => {
+          // TODO: emit warning if the expr is unresolved ident
           is_need_generate_export_default_ident = true;
           *module_item =
             ModuleItem::Stmt(ast::Stmt::Decl(ast::Decl::Var(Box::new(ast::VarDecl {
