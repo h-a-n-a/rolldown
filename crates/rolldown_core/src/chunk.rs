@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, path::PathBuf};
 
 use hashlink::LinkedHashSet;
 use itertools::Itertools;
@@ -18,9 +18,9 @@ use swc_core::{
 };
 
 use crate::{
-  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BuildError, ExportMode, Graph,
-  InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions, SplitPointIdToChunkId,
-  UnaryBuildResult, COMPILER,
+  file_name, norm_or_ext::NormOrExt, preset_of_used_names, syntax_by_loader, BuildError,
+  ExportMode, Graph, InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions,
+  SplitPointIdToChunkId, UnaryBuildResult, COMPILER,
 };
 
 pub struct Chunk {
@@ -106,18 +106,16 @@ impl Chunk {
     let mut code = before_code + &runtime_code + &code + &after_code;
 
     if output_options.format.is_cjs() {
-      let filename = format!("{}.js", self.id.value());
       // Workaround for cjs output
       let comments = SingleThreadedComments::default();
+      let fm = COMPILER.create_source_file(PathBuf::from(self.id.value().to_string()), code);
       let mut program = COMPILER
-        .parse_with_comments(code.clone(), &filename, Some(&comments))
-        .1
-        .map_err(|_| {
-          BuildError::panic(format!(
-            "Failed to parse generated code \n{}\n for {}",
-            code, &self.entry
-          ))
-        })?;
+        .parse_with_comments(
+          fm.clone(),
+          syntax_by_loader(&rolldown_common::Loader::Js),
+          Some(&comments),
+        )
+        .map_err(|e| BuildError::parse_js_failed(fm.clone(), e))?;
 
       program = GLOBALS.set(&Default::default(), || {
         rolldown_swc_visitors::to_cjs(

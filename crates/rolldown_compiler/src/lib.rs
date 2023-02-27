@@ -1,7 +1,6 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use ast::EsVersion;
-use sugar_path::AsPath;
 use swc_common::{
   comments::Comments,
   errors::{ColorConfig, Handler},
@@ -16,7 +15,7 @@ use swc_core::{
   },
 };
 use swc_ecma_codegen::text_writer::JsWriter;
-use swc_ecma_parser::{lexer::Lexer, Parser, StringInput, Syntax, TsConfig};
+use swc_ecma_parser::{lexer::Lexer, Parser, StringInput, Syntax};
 use swc_ecma_visit::{VisitMut, VisitMutWith};
 
 #[derive(Default)]
@@ -27,6 +26,10 @@ pub struct Compiler {
 impl Compiler {
   pub fn with_cm(cm: Arc<SourceMap>) -> Self {
     Self { cm }
+  }
+
+  pub fn create_source_file(&self, filename: PathBuf, code: String) -> Arc<SourceFile> {
+    self.cm.new_source_file(FileName::Real(filename), code)
   }
 
   pub fn print(
@@ -90,40 +93,22 @@ impl Compiler {
     String::from_utf8(output).map_err(Into::into)
   }
 
-  pub fn parse(
-    &self,
-    source_code: String,
-    filename: &str,
-  ) -> (Arc<SourceFile>, PResult<ast::Module>) {
-    self.parse_with_comments(source_code, filename, None)
+  pub fn parse(&self, source_file: Arc<SourceFile>, syntax: Syntax) -> PResult<ast::Module> {
+    self.parse_with_comments(source_file, syntax, None)
   }
 
   pub fn parse_with_comments(
     &self,
-    source_code: String,
-    filename: &str,
+    source_file: Arc<SourceFile>,
+    syntax: Syntax,
     comments: Option<&dyn Comments>,
-  ) -> (Arc<SourceFile>, PResult<ast::Module>) {
+  ) -> PResult<ast::Module> {
     let handler = Handler::with_tty_emitter(ColorConfig::Auto, true, false, Some(self.cm.clone()));
-    let p = filename.as_path();
-    let fm = self
-      .cm
-      .new_source_file(FileName::Custom(filename.to_owned()), source_code);
-    let ext = p.extension().and_then(|ext| ext.to_str()).unwrap_or("js");
-    let syntax = if ext == "ts" || ext == "tsx" {
-      Syntax::Typescript(TsConfig {
-        decorators: false,
-        tsx: ext == "tsx",
-        ..Default::default()
-      })
-    } else {
-      Syntax::Es(Default::default())
-    };
 
     let lexer = Lexer::new(
       syntax,
       EsVersion::latest(),
-      StringInput::from(fm.as_ref()),
+      StringInput::from(source_file.as_ref()),
       comments,
     );
     let mut parser = Parser::new_from(lexer);
@@ -131,7 +116,7 @@ impl Compiler {
       e.into_diagnostic(&handler).emit();
     });
     // To be clear, rolldown will always assume the input is a module
-    (fm.clone(), parser.parse_module())
+    parser.parse_module()
   }
 }
 

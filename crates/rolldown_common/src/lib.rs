@@ -6,6 +6,8 @@ mod union_find;
 pub use union_find::*;
 mod symbol;
 pub use symbol::*;
+mod loader;
+pub use loader::*;
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct ChunkId(JsWord);

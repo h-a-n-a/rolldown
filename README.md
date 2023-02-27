@@ -2,7 +2,7 @@
 
 [![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Fast JavaScript bundler in Rust with Rollup-compatible API.
+Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API.
 
 ## Status
 

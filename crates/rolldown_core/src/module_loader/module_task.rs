@@ -1,17 +1,18 @@
 use derivative::Derivative;
 use futures::future::join_all;
-use rolldown_common::ModuleId;
+use rolldown_common::{Loader, ModuleId};
 use rolldown_plugin::ResolveArgs;
 use rolldown_resolver::Resolver;
 use rolldown_swc_visitors::ScanResult;
+use sugar_path::AsPath;
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
 use swc_core::ecma::ast;
 use swc_node_comments::SwcComments;
 
 use super::Msg;
 use crate::{
-  resolve_id, BuildError, IsExternal, ResolvedModuleIds, SharedBuildPluginDriver, SharedResolver,
-  UnaryBuildResult, COMPILER, SWC_GLOBALS,
+  extract_loader_by_path, resolve_id, syntax_by_loader, BuildError, IsExternal, ResolvedModuleIds,
+  SharedBuildPluginDriver, SharedResolver, UnaryBuildResult, COMPILER, SWC_GLOBALS,
 };
 
 pub(crate) struct ModuleTask {
@@ -89,8 +90,15 @@ impl ModuleTask {
       .await?;
 
     let comments = SwcComments::default();
-    let (fm, ast) = COMPILER.parse_with_comments(code, self.id.as_ref(), Some(&comments));
-    let mut ast = ast.map_err(|e| BuildError::parse_js_failed(fm, e))?;
+    let fm = COMPILER.create_source_file(self.id.as_ref().as_path().to_path_buf(), code);
+    let loader = extract_loader_by_path(self.id.as_path());
+
+    let mut ast = COMPILER
+      .parse_with_comments(fm.clone(), syntax_by_loader(&loader), Some(&comments))
+      .map_err(|e| BuildError::parse_js_failed(fm, e).context(format!("{loader:?}")))?;
+    if matches!(loader, Loader::Ts | Loader::Tsx) {
+      rolldown_swc_visitors::ts_to_js(&mut ast);
+    }
 
     GLOBALS.set(&SWC_GLOBALS, || {
       rolldown_swc_visitors::resolve(&mut ast, self.unresolved_mark, self.top_level_mark);

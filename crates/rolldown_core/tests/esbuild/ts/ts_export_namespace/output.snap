@@ -1,0 +1,14 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/ts/ts_export_namespace
+---
+---------- a.js ----------
+// b.ts
+class Foo {
+}
+(Foo || (Foo = {})).foo = 1;
+(Foo || (Foo = {})).bar = 2;
+
+// a.ts
+console.log(new Foo());
