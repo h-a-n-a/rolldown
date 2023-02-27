@@ -1,5 +1,4 @@
 use std::fmt::Display;
-use std::path::PathBuf;
 
 use swc_core::ecma::atoms as swc_atoms;
 use swc_core::ecma::atoms::JsWord;
@@ -98,8 +97,3 @@ pub struct ExportedSpecifier {
   // id of the module which exports the local id.
   pub owner: ModuleId,
 }
-
-scoped_tls::scoped_thread_local!(
-  /// Current working directory.
-  pub static CWD: PathBuf
-);

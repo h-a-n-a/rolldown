@@ -3,7 +3,7 @@ use std::{path::PathBuf, pin::Pin, sync::Arc};
 use derivative::Derivative;
 use futures::{future, Future, FutureExt};
 
-use crate::{BuildError, UnaryBuildResult, WarningHandler};
+use crate::{UnaryBuildResult, WarningHandler};
 
 mod input_item;
 pub use input_item::*;

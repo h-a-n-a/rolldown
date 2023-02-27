@@ -1,5 +1,4 @@
 use rayon::prelude::*;
-use rolldown_common::CWD;
 use rustc_hash::FxHashMap as HashMap;
 
 use crate::{
@@ -70,15 +69,13 @@ impl<'a> Bundle<'a> {
 
     chunk_and_modules.into_iter().par_bridge().try_for_each(
       |(chunk, module_mut_ref_by_id)| -> UnaryBuildResult<()> {
-        CWD.set(&self.input_options.cwd, || {
-          chunk.finalize(FinalizeBundleContext {
-            modules: module_mut_ref_by_id,
-            uf: &self.graph.uf,
-            output_options: self.output_options,
-            split_point_id_to_chunk_id: &self.split_point_id_to_chunk_id,
-            chunk_filename_by_id: &chunk_filename_by_id,
-            unresolved_ctxt: self.graph.unresolved_ctxt,
-          })
+        chunk.finalize(FinalizeBundleContext {
+          modules: module_mut_ref_by_id,
+          uf: &self.graph.uf,
+          output_options: self.output_options,
+          split_point_id_to_chunk_id: &self.split_point_id_to_chunk_id,
+          chunk_filename_by_id: &chunk_filename_by_id,
+          unresolved_ctxt: self.graph.unresolved_ctxt,
         })
       },
     )?;

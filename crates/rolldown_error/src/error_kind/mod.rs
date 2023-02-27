@@ -4,10 +4,10 @@ use std::{
   sync::Arc,
 };
 
-use rolldown_common::CWD;
 use swc_core::common::SourceFile;
 
 use crate::utils::{format_quoted_strings, PathExt};
+use crate::CWD;
 
 pub mod error_code;
 

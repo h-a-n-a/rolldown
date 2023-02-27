@@ -3,7 +3,7 @@ use std::sync::Arc;
 use derivative::Derivative;
 use itertools::Itertools;
 use rayon::prelude::{ParallelBridge, ParallelIterator};
-use rolldown_common::{ExportedSpecifier, ImportedSpecifier, ModuleId, Symbol, UnionFind, CWD};
+use rolldown_common::{ExportedSpecifier, ImportedSpecifier, ModuleId, Symbol, UnionFind};
 use rolldown_resolver::Resolver;
 use rolldown_tracing::ContextedTracer;
 use rustc_hash::FxHashSet as HashSet;
@@ -626,7 +626,7 @@ impl Graph {
       .await?;
 
     self.sort_modules();
-    CWD.set(&input_opts.cwd, || self.link())?;
+    self.link()?;
     self.patch();
     tracing::trace!("graph after link and patch {:#?}", self);
 

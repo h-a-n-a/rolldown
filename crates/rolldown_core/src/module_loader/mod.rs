@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use futures::future::join_all;
-use rolldown_common::{ExportedSpecifier, ModuleId, CWD};
+use rolldown_common::{ExportedSpecifier, ModuleId};
 use rolldown_error::Errors;
 use rolldown_plugin::ResolveArgs;
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -76,9 +76,7 @@ impl<'a> ModuleLoader<'a> {
         };
 
       if id.is_external() {
-        return CWD.set(&input_opts.cwd, || {
-          Err(BuildError::entry_cannot_be_external(id.as_ref()))
-        });
+        return Err(BuildError::entry_cannot_be_external(id.as_ref()));
       }
       UnaryBuildResult::Ok(id)
     }))
@@ -99,9 +97,7 @@ impl<'a> ModuleLoader<'a> {
       .try_for_each(|entry| -> UnaryBuildResult<()> {
         let id = entry?;
         if id.is_external() {
-          return CWD.set(&input_opts.cwd, || {
-            Err(BuildError::entry_cannot_be_external(id.as_ref()))
-          });
+          return Err(BuildError::entry_cannot_be_external(id.as_ref()));
         }
         self.loaded_modules.insert(id.clone());
         self.graph.entries.push(id.clone());

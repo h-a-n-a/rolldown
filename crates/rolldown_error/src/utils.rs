@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 
-use rolldown_common::CWD;
 use sugar_path::SugarPath;
+
+use crate::CWD;
 
 pub fn format_quoted_strings_with_verbs(
   list: &[impl AsRef<str>],

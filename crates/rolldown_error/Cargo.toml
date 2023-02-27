@@ -8,8 +8,8 @@ version     = "0.0.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ansi_term       = { workspace = true }
-anyhow          = "1.0.66"
-rolldown_common = { path = "../rolldown_common" }
-sugar_path      = { workspace = true }
-swc_core        = { workspace = true, features = ["ecma_parser"] }
+ansi_term  = { workspace = true }
+anyhow     = "1.0.66"
+scoped-tls = { workspace = true }
+sugar_path = { workspace = true }
+swc_core   = { workspace = true, features = ["ecma_parser"] }
