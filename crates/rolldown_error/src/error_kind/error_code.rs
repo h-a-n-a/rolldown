@@ -70,3 +70,4 @@ pub const VALIDATION_ERROR: &str = "VALIDATION_ERROR";
 // Rolldown error codes
 
 pub const PANIC: &str = "PANIC";
+pub const IO_ERROR: &str = "IO_ERROR";

@@ -128,6 +128,10 @@ impl Error {
 
   // --- TODO: we should remove following errors
 
+  pub fn io_error(e: std::io::Error) -> Self {
+    Self::with_kind(ErrorKind::IoError(e))
+  }
+
   pub fn napi_error(status: String, reason: String) -> Self {
     Self::with_kind(ErrorKind::Napi { status, reason })
   }

@@ -61,6 +61,8 @@ pub enum ErrorKind {
     status: String,
     reason: String,
   },
+
+  IoError(std::io::Error),
 }
 
 impl Display for ErrorKind {
@@ -100,6 +102,7 @@ impl Display for ErrorKind {
       ErrorKind::ParseJsFailed { source_file, .. } => {
         write!(f, "Parse failed: {}", source_file.name )
       }
+      ErrorKind::IoError(e) => e.fmt(f),
     }
   }
 }
@@ -122,6 +125,7 @@ impl ErrorKind {
       ErrorKind::IncompatibleExportOptionValue { .. } => error_code::INVALID_EXPORT_OPTION,
       // Rolldown specific
       ErrorKind::Panic { .. } => error_code::PANIC,
+      ErrorKind::IoError(_) => error_code::IO_ERROR,
       ErrorKind::Napi {
         status: _,
         reason: _,

@@ -126,7 +126,7 @@ impl Chunk {
         )
       });
 
-      code = COMPILER.print(&program, Some(&comments)).unwrap()
+      code = COMPILER.print(&program, Some(&comments))?;
     }
     Ok(code)
   }

@@ -65,7 +65,13 @@ impl Bundler {
       )
     });
     for chunk in &output {
-      std::fs::write(dir.as_path().join(&chunk.filename), &chunk.content).unwrap_or_else(|_| {
+      let dest = dir.as_path().join(&chunk.filename);
+      if let Some(p) = dest.parent() {
+        if !p.exists() {
+          std::fs::create_dir_all(p)?;
+        }
+      };
+      std::fs::write(dest, &chunk.content).unwrap_or_else(|_| {
         panic!(
           "Failed to write file in {:?}",
           dir.as_path().join(&chunk.filename)

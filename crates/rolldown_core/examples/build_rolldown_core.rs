@@ -38,7 +38,7 @@ async fn main() {
   bundler
     .write(OutputOptions {
       // FIXME: If we don't overwrite the filenames, the filenames would be `src_index.mjs`
-      entry_file_names: FileNameTemplate::new("index.mjs".to_string()),
+      entry_file_names: FileNameTemplate::new("../lib/index.mjs".to_string()),
       format: InternalModuleFormat::Esm,
       ..Default::default()
     })

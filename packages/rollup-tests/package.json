@@ -5,7 +5,6 @@
   "private": true,
   "scripts": {
     "test:update-failed": "mocha --jobs 1 --file ./src/intercept/update-failed.js test/test.js",
-    "test:ci": "mocha -b --file ./src/intercept/status.js test/test.js",
     "test": "mocha --file ./src/intercept/status.js test/test.js"
   },
   "keywords": [],

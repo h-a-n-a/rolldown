@@ -42,3 +42,9 @@ impl From<Error> for Errors {
     Self(vec![error])
   }
 }
+
+impl From<std::io::Error> for Errors {
+  fn from(error: std::io::Error) -> Self {
+    Self(vec![Error::io_error(error)])
+  }
+}

@@ -10,11 +10,11 @@
     "packages/core/tests"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach --topological --verbose run build",
-    "type-check": "yarn workspaces foreach -p --verbose run type-check",
+    "build": "run-s build:ts build:packages",
+    "build:ts": "tsc -b tsconfig.project.json",
     "build:binding": "yarn workspace @rolldown/node-binding run build",
     "build:binding:release": "yarn workspace @rolldown/node-binding run build:release",
-    "build:ts": "tsc -b tsconfig.project.json",
+    "build:packages": "yarn workspaces foreach --topological --exclude rolldown run build",
     "format": "run-p format:prettier format:rs format:toml",
     "format:prettier": "prettier . -w",
     "format:check": "run-p format:prettier:check format:toml:check",
@@ -22,8 +22,8 @@
     "format:toml:check": "taplo fmt --check",
     "format:rs": "cargo fmt",
     "format:toml": "taplo format",
-    "test": "yarn workspaces foreach --exclude=rollup-tests run test",
-    "test:ci": "yarn workspaces foreach --verbose run test:ci"
+    "test": "yarn workspaces foreach run test",
+    "test:core": "yarn workspace @rolldown/core-tests test"
   },
   "license": "MIT",
   "devDependencies": {

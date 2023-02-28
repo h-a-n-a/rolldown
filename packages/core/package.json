@@ -3,23 +3,24 @@
   "version": "1.0.0",
   "description": "rolldown core binding",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "module": "./lib/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
+      "import": "./lib/index.mjs",
       "types": "./dist/index.d.ts"
     }
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "files": [
+    "dist",
+    "lib"
+  ],
   "scripts": {
-    "build": "yarn build:types && yarn build:lib",
-    "build:lib": "cargo run --example build_rolldown_core",
-    "build:types": "yarn run -T tsc --emitDeclarationOnly",
-    "type-check": "yarn run -T tsc --noEmit"
+    "build": "cargo run --example build_rolldown_core"
   },
   "dependencies": {
     "@rolldown/node-binding": "workspace:*"

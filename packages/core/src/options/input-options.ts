@@ -168,6 +168,7 @@ export async function normalizeInputOptions(
   const { input, treeshake, external, plugins, cwd, ...rest } = input_opts
 
   // Make sure all fields of RollupInputOptions are handled.
+  // @ts-expect-error
   const _empty: never = undefined as unknown as NonNullable<
     (typeof rest)[keyof typeof rest]
   >
