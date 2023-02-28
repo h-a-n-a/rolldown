@@ -18,7 +18,7 @@ impl FromStr for Loader {
       "ts" => Ok(Self::Ts),
       "tsx" => Ok(Self::Tsx),
       _ => Err(rolldown_error::Error::panic(format!(
-        "Unkonw loader value \"{}\"",
+        "Unknown loader value \"{}\"",
         s
       ))),
     }

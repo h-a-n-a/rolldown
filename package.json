@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological --verbose run build",
+    "type-check": "yarn workspaces foreach -p --verbose run type-check",
     "build:binding": "yarn workspace @rolldown/node-binding run build",
     "build:binding:release": "yarn workspace @rolldown/node-binding run build:release",
     "build:ts": "tsc -b tsconfig.project.json",

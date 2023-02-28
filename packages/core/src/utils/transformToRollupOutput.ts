@@ -1,4 +1,4 @@
-import { AsyncReturnType } from 'type-fest'
+import type { AsyncReturnType } from 'type-fest'
 import { Bundler, OutputChunk } from '@rolldown/node-binding'
 import type {
   RollupOutput,

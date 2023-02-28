@@ -100,6 +100,7 @@ impl ModuleTask {
       rolldown_swc_visitors::ts_to_js(&mut ast);
     }
 
+    // No matter what, the ast should be a pure valid JavaScript in this phrase
     GLOBALS.set(&SWC_GLOBALS, || {
       rolldown_swc_visitors::resolve(&mut ast, self.unresolved_mark, self.top_level_mark);
     });

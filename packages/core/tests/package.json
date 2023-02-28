@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest --run",
-    "test:ci": "vitest --run --dangerouslyIgnoreUnhandledErrors"
+    "test:ci": "vitest --run --dangerouslyIgnoreUnhandledErrors",
+    "type-check": "yarn run -T tsc --noEmit"
   },
   "dependencies": {
     "@rolldown/core": "workspace:*",

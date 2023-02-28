@@ -423,6 +423,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "daachorse"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63b7ef7a4be509357f4804d0a22e830daddb48f19fd604e4ad32ddce04a94c36"
+
+[[package]]
 name = "darling"
 version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -490,6 +496,12 @@ dependencies = [
  "block-buffer",
  "crypto-common",
 ]
+
+[[package]]
+name = "dunce"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bd4b30a6560bbd9b4620f4de34c3f14f60848e58a9b7216801afcb4c7b31c3c"
 
 [[package]]
 name = "dyn-clone"
@@ -870,6 +882,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonc-parser"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a1853e40333206f9a685358046d13ab200169e3ee573019bddf0ede0dc29307"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1101,6 +1122,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4a24736216ec316047a1fc4252e27dabb04218aa4a3f37c6e7ddbf1f9782b54"
 
 [[package]]
+name = "nodejs-resolver"
+version = "0.0.67"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89bf17bdc3a110377c432e672baa1e93895d3ec153e1cfaa3e5b8d81ed7d2f1d"
+dependencies = [
+ "daachorse",
+ "dashmap",
+ "dunce",
+ "indexmap",
+ "jsonc-parser",
+ "once_cell",
+ "path-absolutize",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "normpath"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1208,10 +1249,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "path-absolutize"
+version = "3.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f1d4993b16f7325d90c18c3c6a3327db7808752db8d208cea0acee0abd52c52"
+dependencies = [
+ "path-dedot",
+]
+
+[[package]]
 name = "path-clean"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ecba01bf2678719532c5e3059e0b5f0811273d94b397088b82e3bd0a78c78fdd"
+
+[[package]]
+name = "path-dedot"
+version = "3.0.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a81540d94551664b72b72829b12bd167c73c9d25fbac0e04fafa8023f7e4901"
+dependencies = [
+ "once_cell",
+]
 
 [[package]]
 name = "pathdiff"
@@ -1589,6 +1648,7 @@ dependencies = [
  "rolldown_compiler",
  "rolldown_error",
  "rolldown_plugin",
+ "rolldown_plugin_node_resolve",
  "rolldown_resolver",
  "rolldown_runtime_helpers",
  "rolldown_swc_visitors",
@@ -1642,6 +1702,14 @@ dependencies = [
  "async-trait",
  "rolldown_common",
  "rolldown_error",
+]
+
+[[package]]
+name = "rolldown_plugin_node_resolve"
+version = "0.1.0"
+dependencies = [
+ "nodejs-resolver",
+ "rolldown_plugin",
 ]
 
 [[package]]
@@ -1834,6 +1902,7 @@ version = "1.0.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cad406b69c91885b5107daf2c29572f6c8cdb3c66826821e286c533490c0bc76"
 dependencies = [
+ "indexmap",
  "itoa",
  "ryu",
  "serde",
@@ -1992,9 +2061,9 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "sugar_path"
-version = "0.0.11"
+version = "0.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d47671bd11342a392cf2dbb81a6b86c9babab4044ea90bfe04068a7fbdd1a4d"
+checksum = "2c23ada2c5165fc936136721f5f69c8dac6eceb5407de40262f32934510bd7b9"
 dependencies = [
  "once_cell",
 ]

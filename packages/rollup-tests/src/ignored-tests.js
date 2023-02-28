@@ -18,6 +18,9 @@ const ignoreTests = [
 
   // Not supported
   'rollup@function@enforce-plugin-order: allows to enforce plugin hook order',
+
+  // blocked by supporting `output.preserveModules: true`
+  'rollup@function@preserve-modules-default-mode-namespace: import namespace from chunks with default export mode when preserving modules',
 ]
 
 module.exports = {
