@@ -8,6 +8,8 @@ mod external;
 pub use external::*;
 mod build_plugin;
 pub use build_plugin::*;
+mod builtins;
+pub use builtins::*;
 
 use crate::js_build_plugin::JsBuildPlugin;
 
@@ -39,24 +41,43 @@ pub struct InputOptions {
   // preserveEntrySignatures?: PreserveEntrySignaturesOption;
   // /** @deprecated Use the "preserveModules" output option instead. */
   // preserveModules?: boolean;
-  // preserveSymlinks?: boolean;
+  pub preserve_symlinks: bool,
   // shimMissingExports?: boolean;
   // strictDeprecations?: boolean;
   pub treeshake: Option<bool>,
   // watch?: WatcherOptions | false;
 
   // extra
-  pub cwd: Option<String>,
+  pub cwd: String,
+  pub builtins: BuiltinsOption,
 }
 
 pub fn resolve_input_options(
   opts: InputOptions,
 ) -> napi::Result<(rolldown_core::InputOptions, Vec<Box<dyn BuildPlugin>>)> {
-  let plugins = opts
+  let cwd = PathBuf::from(opts.cwd.clone());
+  assert!(cwd != PathBuf::from("/"), "{:#?}", opts);
+
+  let mut plugins = opts
     .plugins
     .into_iter()
     .map(JsBuildPlugin::new_boxed)
     .try_collect::<Vec<_>>()?;
+
+  let mut builtin_post_plugins = vec![];
+
+  if let Some(node_resolve) = opts.builtins.node_resolve {
+    builtin_post_plugins.push(rolldown_plugin_node_resolve::NodeResolvePlugin::new_boxed(
+      rolldown_plugin_node_resolve::ResolverOptions {
+        extensions: node_resolve.extensions,
+        symlinks: !opts.preserve_symlinks,
+        ..Default::default()
+      },
+      cwd.clone(),
+    ))
+  }
+
+  plugins.extend(builtin_post_plugins);
 
   let is_external = resolve_external(opts.external)?;
 
@@ -67,10 +88,7 @@ pub fn resolve_input_options(
         .into_iter()
         .map(|(name, import)| InputItem { name, import })
         .collect(),
-      cwd: opts
-        .cwd
-        .map(PathBuf::from)
-        .unwrap_or_else(|| std::env::current_dir().unwrap()),
+      cwd,
       treeshake: opts.treeshake.unwrap_or(true),
       is_external,
       ..Default::default()

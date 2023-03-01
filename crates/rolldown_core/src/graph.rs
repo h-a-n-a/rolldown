@@ -451,7 +451,8 @@ impl Graph {
             if importer_id == &importee_id {
               // Handle self import
               let importee = Self::fetch_normal_module_mut(&mut self.module_by_id, &importee_id);
-
+              let mut specs = specs.into_iter().collect_vec();
+              specs.sort_unstable_by_key(|spec| spec.imported.clone());
               for imported_spec in specs {
                 if &imported_spec.imported == "*" {
                   importee.mark_namespace_id_referenced();

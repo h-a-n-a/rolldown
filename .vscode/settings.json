@@ -5,6 +5,18 @@
   "[toml]": {
     "editor.formatOnSave": true
   },
+  "[javascript]": {
+    "editor.formatOnSave": true
+  },
+  "[javascriptreact]": {
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.formatOnSave": true
+  },
 
   "json.schemas": [
     {
@@ -16,6 +28,7 @@
   "cSpell.words": [
     "arraify",
     "bindgen",
+    "builtins",
     "Callbackified",
     "callbackify",
     "codegen",

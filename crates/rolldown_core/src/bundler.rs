@@ -60,8 +60,9 @@ impl Bundler {
 
     std::fs::create_dir_all(&dir).unwrap_or_else(|_| {
       panic!(
-        "Could not create directory for output chunks: {:?}",
-        dir.as_path()
+        "Could not create directory for output chunks: {:?} \ncwd: {}",
+        dir.as_path(),
+        self.input_options.cwd.display()
       )
     });
     for chunk in &output {

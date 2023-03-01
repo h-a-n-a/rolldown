@@ -11,86 +11,6 @@ var ts_suite = suite{
 	name: "ts",
 }
 
-// func Testts_declare_const(t *testing.T) {
-// 	ts_suite.expectBundled(t, bundled{
-// 		files: map[string]string{
-// 			"/entry.ts": `
-// 				declare const require: any
-// 				declare const exports: any;
-// 				declare const module: any
-
-// 				declare const foo: any
-// 				let foo = bar()
-// 			`,
-// 		},
-// 		entryPaths: []string{"/entry.ts"},
-// 		options: config.Options{
-// 			Mode:          config.ModeBundle,
-// 			AbsOutputFile: "/out.js",
-// 		},
-// 	})
-// }
-
-// func Testts_declare_let(t *testing.T) {
-// 	ts_suite.expectBundled(t, bundled{
-// 		files: map[string]string{
-// 			"/entry.ts": `
-// 				declare let require: any
-// 				declare let exports: any;
-// 				declare let module: any
-
-// 				declare let foo: any
-// 				let foo = bar()
-// 			`,
-// 		},
-// 		entryPaths: []string{"/entry.ts"},
-// 		options: config.Options{
-// 			Mode:          config.ModeBundle,
-// 			AbsOutputFile: "/out.js",
-// 		},
-// 	})
-// }
-
-// func Testts_declare_var(t *testing.T) {
-// 	ts_suite.expectBundled(t, bundled{
-// 		files: map[string]string{
-// 			"/entry.ts": `
-// 				declare var require: any
-// 				declare var exports: any;
-// 				declare var module: any
-
-// 				declare var foo: any
-// 				let foo = bar()
-// 			`,
-// 		},
-// 		entryPaths: []string{"/entry.ts"},
-// 		options: config.Options{
-// 			Mode:          config.ModeBundle,
-// 			AbsOutputFile: "/out.js",
-// 		},
-// 	})
-// }
-
-// func Testts_declare_class(t *testing.T) {
-// 	ts_suite.expectBundled(t, bundled{
-// 		files: map[string]string{
-// 			"/entry.ts": `
-// 				declare class require {}
-// 				declare class exports {};
-// 				declare class module {}
-
-// 				declare class foo {}
-// 				let foo = bar()
-// 			`,
-// 		},
-// 		entryPaths: []string{"/entry.ts"},
-// 		options: config.Options{
-// 			Mode:          config.ModeBundle,
-// 			AbsOutputFile: "/out.js",
-// 		},
-// 	})
-// }
-
 func TestTSDeclareClassFields(t *testing.T) {
 	// Note: this test uses arrow functions to validate that
 	// scopes inside "declare" fields are correctly discarded
@@ -143,120 +63,120 @@ func TestTSDeclareClassFields(t *testing.T) {
 	})
 }
 
-func TestTSDeclareFunction(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				declare function require(): void
-				declare function exports(): void;
-				declare function module(): void
+// func Testts_declare_function(t *testing.T) {
+// 	ts_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.ts": `
+// 				declare function require(): void
+// 				declare function exports(): void;
+// 				declare function module(): void
 
-				declare function foo() {}
-				let foo = bar()
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// 				declare function foo() {}
+// 				let foo = bar()
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.ts"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
-func TestTSDeclareNamespace(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				declare namespace require {}
-				declare namespace exports {};
-				declare namespace module {}
+// func Testts_declare_namespace(t *testing.T) {
+// 	ts_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.ts": `
+// 				declare namespace require {}
+// 				declare namespace exports {};
+// 				declare namespace module {}
 
-				declare namespace foo {}
-				let foo = bar()
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// 				declare namespace foo {}
+// 				let foo = bar()
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.ts"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
-func TestTSDeclareEnum(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				declare enum require {}
-				declare enum exports {};
-				declare enum module {}
+// func Testts_declare_enum(t *testing.T) {
+// 	ts_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.ts": `
+// 				declare enum require {}
+// 				declare enum exports {};
+// 				declare enum module {}
 
-				declare enum foo {}
-				let foo = bar()
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// 				declare enum foo {}
+// 				let foo = bar()
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.ts"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
-func TestTSDeclareConstEnum(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				declare const enum require {}
-				declare const enum exports {};
-				declare const enum module {}
+// func Testts_declare_const_enum(t *testing.T) {
+// 	ts_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/entry.ts": `
+// 				declare const enum require {}
+// 				declare const enum exports {};
+// 				declare const enum module {}
 
-				declare const enum foo {}
-				let foo = bar()
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// 				declare const enum foo {}
+// 				let foo = bar()
+// 			`,
+// 		},
+// 		entryPaths: []string{"/entry.ts"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
-func TestTSConstEnumComments(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/bar.ts": `
-				export const enum Foo {
-					"%/*" = 1,
-					"*/%" = 2,
-				}
-			`,
-			"/foo.ts": `
-				import { Foo } from "./bar";
-				const enum Bar {
-					"%/*" = 1,
-					"*/%" = 2,
-				}
-				console.log({
-					'should have comments': [
-						Foo["%/*"],
-						Bar["%/*"],
-					],
-					'should not have comments': [
-						Foo["*/%"],
-						Bar["*/%"],
-					],
-				});
-			`,
-		},
-		entryPaths: []string{"/foo.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
+// func Testts_const_enum_comments(t *testing.T) {
+// 	ts_suite.expectBundled(t, bundled{
+// 		files: map[string]string{
+// 			"/bar.ts": `
+// 				export const enum Foo {
+// 					"%/*" = 1,
+// 					"*/%" = 2,
+// 				}
+// 			`,
+// 			"/foo.ts": `
+// 				import { Foo } from "./bar";
+// 				const enum Bar {
+// 					"%/*" = 1,
+// 					"*/%" = 2,
+// 				}
+// 				console.log({
+// 					'should have comments': [
+// 						Foo["%/*"],
+// 						Bar["%/*"],
+// 					],
+// 					'should not have comments': [
+// 						Foo["*/%"],
+// 						Bar["*/%"],
+// 					],
+// 				});
+// 			`,
+// 		},
+// 		entryPaths: []string{"/foo.ts"},
+// 		options: config.Options{
+// 			Mode:          config.ModeBundle,
+// 			AbsOutputFile: "/out.js",
+// 		},
+// 	})
+// }
 
 
 func TestTSImportMissingUnusedES6(t *testing.T) {

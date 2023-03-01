@@ -10,7 +10,7 @@
     "packages/core/tests"
   ],
   "scripts": {
-    "build": "run-s build:ts build:packages",
+    "build": "run-s build:packages build:ts ",
     "build:ts": "tsc -b tsconfig.project.json",
     "build:binding": "yarn workspace @rolldown/node-binding run build",
     "build:binding:release": "yarn workspace @rolldown/node-binding run build:release",

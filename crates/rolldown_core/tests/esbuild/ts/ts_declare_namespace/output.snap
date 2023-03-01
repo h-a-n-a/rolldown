@@ -1,0 +1,8 @@
+---
+source: crates/rolldown_core/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown_core/tests/esbuild/ts/ts_declare_namespace
+---
+---------- main.js ----------
+// main.ts
+bar();

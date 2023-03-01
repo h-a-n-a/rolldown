@@ -1714,6 +1714,7 @@ dependencies = [
  "napi-derive",
  "rolldown_core",
  "rolldown_plugin",
+ "rolldown_plugin_node_resolve",
  "rolldown_tracing",
  "rustc-hash",
  "scoped-tls",

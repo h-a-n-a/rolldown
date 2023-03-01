@@ -16,12 +16,21 @@ export interface BuildPluginOption {
   transform?: (id: string, code: string) => Promise<string | null | undefined>
   resolveId?: (specifier: string, importer?: string) => Promise<string | null | ResolveIdResult>
 }
+export interface BuiltinNodeResolveOption {
+  extensions: Array<string>
+}
+export interface BuiltinsOption {
+  /** None means disable the builtin */
+  nodeResolve?: BuiltinNodeResolveOption
+}
 export interface InputOptions {
   external: ExternalOption
   input: Record<string, string>
   plugins: Array<BuildPluginOption>
+  preserveSymlinks: boolean
   treeshake?: boolean
-  cwd?: string
+  cwd: string
+  builtins: BuiltinsOption
 }
 export interface OutputOptions {
   entryFileNames?: string

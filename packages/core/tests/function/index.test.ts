@@ -39,7 +39,7 @@ async function runSampleTest(sampleConfigPath: string) {
     sampleConfigPath
   )
   const build = await rolldown({
-    input: './main.js',
+    input: './main',
     cwd: sampleDir,
     ...testConfig.options,
   })

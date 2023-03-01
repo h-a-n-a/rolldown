@@ -1,7 +1,7 @@
 import { InputOptions as RollupInputOptions } from '../rollup-types'
 import { InputOptions as BindingInputOptions } from '@rolldown/node-binding'
 import path from 'path'
-import { arraify, normalizePluginOption } from '../utils'
+import { arraify, noop, normalizePluginOption } from '../utils'
 import { createBuildPluginAdapter } from './create-build-plugin-adapter'
 
 export interface InputOptions extends RollupInputOptions {
@@ -67,11 +67,6 @@ export interface InputOptions extends RollupInputOptions {
    * deprecated by Rollup
    */
   preserveModules?: never
-  /**
-   * @deprecated
-   * TODO: Need to investigate.
-   */
-  preserveSymlinks?: never
   /**
    * @deprecated
    * TODO: Need to investigate.
@@ -165,18 +160,32 @@ async function normalizePlugins(
 export async function normalizeInputOptions(
   input_opts: InputOptions,
 ): Promise<BindingInputOptions> {
-  const { input, treeshake, external, plugins, cwd, ...rest } = input_opts
+  const {
+    input,
+    treeshake,
+    external,
+    plugins,
+    cwd,
+    preserveSymlinks,
+    ...rest
+  } = input_opts
 
   // Make sure all fields of RollupInputOptions are handled.
-  // @ts-expect-error
   const _empty: never = undefined as unknown as NonNullable<
     (typeof rest)[keyof typeof rest]
   >
+  noop(_empty)
   return {
     input: normalizeInput(input),
     treeshake: treeshake,
     external: normalizeExternal(external),
     plugins: await normalizePlugins(plugins),
-    cwd: cwd,
+    cwd: cwd ?? process.cwd(),
+    builtins: {
+      nodeResolve: {
+        extensions: ['.js', '.ts', '.tsx', 'jsx'],
+      },
+    },
+    preserveSymlinks: preserveSymlinks ?? false,
   }
 }

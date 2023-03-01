@@ -32,7 +32,18 @@ async fn main() {
       }),
       ..Default::default()
     },
-    vec![rolldown_plugin_node_resolve::NodeResolvePlugin::new_boxed()],
+    vec![rolldown_plugin_node_resolve::NodeResolvePlugin::new_boxed(
+      rolldown_plugin_node_resolve::ResolverOptions {
+        extensions: vec![
+          ".ts".to_string(),
+          ".tsx".to_string(),
+          ".js".to_string(),
+          ".jsx".to_string(),
+        ],
+        ..Default::default()
+      },
+      cwd.clone(),
+    )],
   );
 
   bundler
@@ -56,14 +67,25 @@ async fn main() {
           .to_string_lossy()
           .to_string(),
       }],
-      cwd,
+      cwd: cwd.clone(),
       is_external: Arc::new(|specifier, _, _| {
         let res = Ok(specifier == "@rolldown/node-binding");
         async { res }.boxed()
       }),
       ..Default::default()
     },
-    vec![rolldown_plugin_node_resolve::NodeResolvePlugin::new_boxed()],
+    vec![rolldown_plugin_node_resolve::NodeResolvePlugin::new_boxed(
+      rolldown_plugin_node_resolve::ResolverOptions {
+        extensions: vec![
+          ".ts".to_string(),
+          ".tsx".to_string(),
+          ".js".to_string(),
+          ".jsx".to_string(),
+        ],
+        ..Default::default()
+      },
+      cwd.clone(),
+    )],
   );
 
   bundler
