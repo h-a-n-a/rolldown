@@ -1,11 +1,13 @@
 use napi::{tokio::sync::Mutex, Env};
 use napi_derive::*;
 use rolldown_core::{error::Errors, Bundler as BundlerCore};
+use tracing::instrument;
 
 use crate::{
   options::InputOptions,
   options::{resolve_input_options, resolve_output_options, OutputOptions},
   output_chunk::OutputChunk,
+  utils::init_custom_trace_subscriber,
   NAPI_ENV,
 };
 
@@ -18,6 +20,7 @@ pub struct Bundler {
 impl Bundler {
   #[napi(constructor)]
   pub fn new(env: Env, input_opts: InputOptions) -> napi::Result<Self> {
+    init_custom_trace_subscriber(env);
     Self::new_impl(env, input_opts)
   }
 
@@ -34,7 +37,6 @@ impl Bundler {
 
 impl Bundler {
   pub fn new_impl(env: Env, input_opts: InputOptions) -> napi::Result<Self> {
-    rolldown_tracing::init();
     NAPI_ENV.set(&env, || {
       let (input_opts, plugins) = resolve_input_options(input_opts)?;
       Ok(Bundler {
@@ -43,6 +45,7 @@ impl Bundler {
     })
   }
 
+  #[instrument(skip_all)]
   pub async fn write_impl(&self, opts: OutputOptions) -> napi::Result<Vec<OutputChunk>> {
     let mut bundler_core = self.inner.try_lock().map_err(|_| {
       napi::Error::from_reason("Failed to lock the bundler. Is another operation in progress?")
@@ -65,6 +68,7 @@ impl Bundler {
     Ok(output_chunks)
   }
 
+  #[instrument(skip_all)]
   pub async fn generate_impl(&self, opts: OutputOptions) -> napi::Result<Vec<OutputChunk>> {
     let mut bundler_core = self.inner.try_lock().map_err(|_| {
       napi::Error::from_reason("Failed to lock the bundler. Is another operation in progress?")

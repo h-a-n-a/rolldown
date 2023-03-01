@@ -1,5 +1,6 @@
 use rayon::prelude::*;
 use rustc_hash::FxHashMap as HashMap;
+use tracing::instrument;
 
 use crate::{
   Asset, Chunk, CodeSplitter, FinalizeBundleContext, Graph, InputOptions, ModuleRefMutById,
@@ -28,6 +29,7 @@ impl<'a> Bundle<'a> {
     }
   }
 
+  #[instrument(skip_all)]
   pub fn generate(&mut self) -> UnaryBuildResult<Vec<Asset>> {
     let chunks = self.generate_chunks()?;
     let mut chunk_by_id = chunks
@@ -100,6 +102,7 @@ impl<'a> Bundle<'a> {
     Ok(chunks)
   }
 
+  #[instrument(skip_all)]
   fn generate_chunks(&mut self) -> UnaryBuildResult<Vec<Chunk>> {
     let code_splitter =
       CodeSplitter::new(self.graph.entries.clone(), self.graph, self.input_options);

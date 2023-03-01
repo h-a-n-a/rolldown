@@ -10,6 +10,7 @@ use rustc_hash::FxHashSet as HashSet;
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
 use swc_core::ecma::atoms::{js_word, JsWord};
+use tracing::instrument;
 
 use crate::module_loader::ModuleLoader;
 use crate::{
@@ -161,6 +162,7 @@ impl Graph {
     );
   }
 
+  #[instrument(skip_all)]
   fn link(&mut self) -> UnaryBuildResult<()> {
     let mut order_modules = self
       .module_by_id
@@ -183,6 +185,7 @@ impl Graph {
   /// ```
   /// If `index.js` is importer, `foo.ts` and `bar.ts` are importee.
   /// `foo` and `bar` are `ReExportedSpecifier`s.
+  #[instrument(skip_all)]
   fn link_exports(&mut self, order_modules: &[ModuleId]) -> UnaryBuildResult<()> {
     order_modules
       .iter()
@@ -425,6 +428,7 @@ impl Graph {
   /// two things
   /// 1. Union symbol
   /// 2. Generate real ImportedSpecifier for each import and add to `linked_imports`
+  #[instrument(skip_all)]
   fn link_imports(&mut self, order_modules: &[ModuleId]) -> UnaryBuildResult<()> {
     order_modules
       .iter()
@@ -602,6 +606,7 @@ impl Graph {
   /// 1. TODO: More delicate analysis of import/export star for cross-module namespace export
   /// Only after linking, we can know which imported symbol is "namespace symbol" or declared by user.
   /// 2. Generate actual namespace export AST for each module whose namespace is referenced
+  #[instrument(skip_all)]
   fn patch(&mut self) {
     use rayon::prelude::*;
     self
@@ -615,6 +620,7 @@ impl Graph {
       });
   }
 
+  #[instrument(skip_all)]
   pub(crate) async fn generate_module_graph(
     &mut self,
     input_opts: &InputOptions,

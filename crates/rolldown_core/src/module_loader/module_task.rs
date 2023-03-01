@@ -8,6 +8,7 @@ use sugar_path::AsPath;
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
 use swc_core::ecma::ast;
 use swc_node_comments::SwcComments;
+use tracing::instrument;
 
 use super::Msg;
 use crate::{
@@ -63,6 +64,7 @@ impl ModuleTask {
     }
   }
 
+  #[instrument(skip_all)]
   pub(crate) async fn run(self) {
     let tx = self.tx.clone();
     match self.run_inner().await {

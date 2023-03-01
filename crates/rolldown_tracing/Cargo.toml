@@ -10,4 +10,5 @@ version     = "0.0.1"
 [dependencies]
 ansi_term          = { workspace = true }
 tracing            = { workspace = true }
+tracing-chrome     = "0.7.0"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }

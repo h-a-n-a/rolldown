@@ -1,5 +1,6 @@
 use rolldown_plugin::BuildPlugin;
 use sugar_path::AsPath;
+use tracing::instrument;
 
 use crate::{
   BuildPluginDriver, BuildResult, Bundle, Graph, InputOptions, OutputOptions,
@@ -19,20 +20,18 @@ pub struct Asset {
 
 impl Bundler {
   pub fn new(input_opts: InputOptions) -> Self {
-    rolldown_tracing::init();
-    Self {
-      input_options: input_opts,
-      plugin_driver: Default::default(),
-    }
+    Self::with_plugins(input_opts, vec![])
   }
 
   pub fn with_plugins(input_opts: InputOptions, plugins: Vec<Box<dyn BuildPlugin>>) -> Self {
+    rolldown_tracing::enable_tracing_on_demand();
     Self {
       input_options: input_opts,
       plugin_driver: BuildPluginDriver::new(plugins).into_shared(),
     }
   }
 
+  #[instrument(skip_all)]
   async fn build(&mut self, output_opts: OutputOptions) -> BuildResult<Vec<Asset>> {
     tracing::debug!("{:#?}", self.input_options);
     tracing::debug!("{:#?}", output_opts);
@@ -46,6 +45,7 @@ impl Bundler {
     Ok(assets)
   }
 
+  #[instrument(skip_all)]
   pub async fn write(&mut self, output_options: OutputOptions) -> BuildResult<Vec<Asset>> {
     let dir = output_options.dir.clone().unwrap_or_else(|| {
       self
@@ -81,6 +81,7 @@ impl Bundler {
     Ok(output)
   }
 
+  #[instrument(skip_all)]
   pub async fn generate(&mut self, output_options: OutputOptions) -> BuildResult<Vec<Asset>> {
     let output = self.build(output_options).await?;
 

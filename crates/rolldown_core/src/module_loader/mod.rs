@@ -11,6 +11,7 @@ pub(crate) mod module_task;
 
 use module_task::{ModuleTask, TaskResult};
 use swc_core::ecma::atoms::js_word;
+use tracing::instrument;
 
 use crate::{norm_or_ext::NormOrExt, Graph, InputOptions, NormalModule, SWC_GLOBALS};
 use crate::{
@@ -59,6 +60,7 @@ impl<'a> ModuleLoader<'a> {
     }
   }
 
+  #[instrument(skip_all)]
   async fn resolve_entries(&self, input_opts: &InputOptions) -> Vec<UnaryBuildResult<ModuleId>> {
     join_all(input_opts.input.iter().cloned().map(|input_item| async {
       let id = resolve_id(
@@ -83,6 +85,7 @@ impl<'a> ModuleLoader<'a> {
     .await
   }
 
+  #[instrument(skip_all)]
   pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BuildResult<()> {
     if input_opts.input.is_empty() {
       return Err(
@@ -163,6 +166,7 @@ impl<'a> ModuleLoader<'a> {
     tokio::spawn(task.run());
   }
 
+  #[instrument(skip_all)]
   fn handle_msg_scanned(&mut self, result: TaskResult) {
     let module_id = result.module_id;
     let scan_result = result.scan_result;

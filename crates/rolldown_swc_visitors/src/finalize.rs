@@ -13,6 +13,7 @@ use swc_core::{
 };
 use swc_ecma_utils::quote_ident;
 use swc_ecma_visit::{VisitMut, VisitMutWith};
+use tracing::instrument;
 
 enum IdentType {
   TopLevel,
@@ -53,6 +54,7 @@ pub struct FinalizeContext<'me> {
   pub top_level_ctxt_set: &'me HashSet<SyntaxContext>,
 }
 
+#[instrument(skip_all)]
 pub fn finalizer<'a>(
   rename_map: &'a HashMap<Id, JsWord>,
   split_point_id_to_chunk_id: &'a HashMap<ModuleId, ChunkId>,

@@ -7,6 +7,7 @@ use rolldown_common::{ChunkId, ModuleId};
 use rustc_hash::{FxHashMap, FxHashSet};
 use sugar_path::{AsPath, SugarPath};
 use swc_core::ecma::atoms::JsWord;
+use tracing::instrument;
 
 pub fn uri_to_chunk_name(root: &str, uri: &str) -> String {
   let path = uri.as_path();
@@ -203,6 +204,7 @@ impl<'me> CodeSplitter<'me> {
       FxHashSet::from_iter([owner_chunk_id.clone()]);
   }
 
+  #[instrument(skip_all)]
   pub(crate) fn split(mut self) -> UnaryBuildResult<ChunkGraph> {
     self.analyze_entries(self.entries.clone(), true);
     self.analyze_entries(

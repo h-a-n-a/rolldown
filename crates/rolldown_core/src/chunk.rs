@@ -16,6 +16,7 @@ use swc_core::{
     visit::VisitMutWith,
   },
 };
+use tracing::instrument;
 
 use crate::{
   file_name, norm_or_ext::NormOrExt, preset_of_used_names, syntax_by_loader, BuildError,
@@ -72,6 +73,7 @@ impl Chunk {
     modules
   }
 
+  #[instrument(skip_all)]
   pub(crate) fn render(
     &self,
     ctx: RenderContext,
@@ -242,6 +244,7 @@ impl Chunk {
     id_to_name
   }
 
+  #[instrument(skip_all)]
   pub(crate) fn finalize(&mut self, mut ctx: FinalizeBundleContext) -> UnaryBuildResult<()> {
     self.generate_cross_chunk_links(&mut ctx)?;
     let ordered_modules = {
@@ -360,6 +363,7 @@ impl Chunk {
 
   /// For generating correct exports in the chunk, we only need to care about the `linked_exports` in
   /// entry module. In linking phase, all needed exports are merged to `linked_exports` of entry module.
+  #[instrument(skip_all)]
   pub(crate) fn generate_cross_chunk_links(
     &mut self,
     ctx: &mut FinalizeBundleContext,

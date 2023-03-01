@@ -1,22 +1,39 @@
 use std::sync::{atomic::AtomicBool, Arc};
 
 use tracing::{metadata::LevelFilter, Level};
+use tracing_chrome::{ChromeLayerBuilder, FlushGuard};
 
-static IS_INIT: AtomicBool = AtomicBool::new(false);
-pub fn init() {
+static IS_INITIALIZE: AtomicBool = AtomicBool::new(false);
+
+pub fn enable_tracing_on_demand() -> Option<FlushGuard> {
   use tracing_subscriber::{fmt, prelude::*, EnvFilter};
-  if !IS_INIT.swap(true, std::sync::atomic::Ordering::SeqCst) {
-    tracing_subscriber::registry()
-      .with(fmt::layer())
-      .with(
-        EnvFilter::builder()
-          .with_default_directive(LevelFilter::WARN.into())
-          .from_env_lossy(),
-      )
-      .with(
-        tracing_subscriber::filter::Targets::new().with_targets(vec![("rolldown", Level::TRACE)]),
-      )
-      .init();
+  if !IS_INITIALIZE.swap(true, std::sync::atomic::Ordering::SeqCst) {
+    if std::env::var("TRACING").is_ok() {
+      let (chrome_layer, guard) = ChromeLayerBuilder::new().build();
+      tracing_subscriber::registry()
+        .with(chrome_layer)
+        .with(
+          tracing_subscriber::filter::Targets::new().with_targets(vec![("rolldown", Level::TRACE)]),
+        )
+        .init();
+      println!("with chrome");
+      Some(guard)
+    } else {
+      tracing_subscriber::registry()
+        .with(fmt::layer())
+        .with(
+          tracing_subscriber::filter::Targets::new().with_targets(vec![("rolldown", Level::TRACE)]),
+        )
+        .with(
+          EnvFilter::builder()
+            .with_default_directive(LevelFilter::WARN.into())
+            .from_env_lossy(),
+        )
+        .init();
+      None
+    }
+  } else {
+    None
   }
 }
 

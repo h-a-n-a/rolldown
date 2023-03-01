@@ -3,11 +3,13 @@ use rolldown_common::Symbol;
 use rolldown_error::Errors;
 use rustc_hash::FxHashSet;
 use swc_core::common::GLOBALS;
+use tracing::instrument;
 
 use super::TreeshakeContext;
 use crate::{treeshake::TreeshakeNormalModule, BuildResult, Graph, COMPILER, SWC_GLOBALS};
 
 impl Graph {
+  #[instrument(skip_all)]
   pub(crate) fn treeshake(&mut self) -> BuildResult<()> {
     let used_ids = self
       .collect_all_used_ids()?
@@ -67,6 +69,7 @@ impl Graph {
     Ok(())
   }
 
+  #[instrument(skip_all)]
   pub(crate) fn collect_all_used_ids(&mut self) -> BuildResult<FxHashSet<Symbol>> {
     let ctx = TreeshakeContext {
       id_to_module: self

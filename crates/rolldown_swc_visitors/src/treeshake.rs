@@ -19,8 +19,10 @@ use swc_ecma_minifier::{
 };
 use swc_ecma_utils::{quote_ident, var::VarCollector};
 use swc_ecma_visit::{FoldWith, VisitMut, VisitMutWith, VisitWith};
+use tracing::instrument;
 
 /// The goal is to do tree shaking on the AST not minimize it.
+#[instrument(skip_all, level = "trace")]
 pub fn treeshake(
   ast: &mut ast::Module,
   unresolved_mark: Mark,
@@ -44,7 +46,7 @@ pub fn treeshake(
       compress: Some(CompressOptions {
         ecma: ast::EsVersion::Es2022,
         // The maximum number of times to run compress. In some cases more than one pass leads to further compressed code. Keep in mind more passes will take more time.
-        passes: 0,
+        passes: 3,
         // --- Enabled
         // enable top level variable and function name mangling and to drop unused variables and functions.
         top_level: Some(TopLevelOptions { functions: true }),

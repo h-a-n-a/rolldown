@@ -19,6 +19,7 @@ use swc_core::{
   },
 };
 use swc_node_comments::SwcComments;
+use tracing::instrument;
 
 use crate::{make_legal, InputOptions, MergedExports, RenderContext, ResolvedModuleIds, COMPILER};
 
@@ -256,6 +257,7 @@ impl NormalModule {
     }
   }
 
+  #[instrument(skip_all)]
   pub(crate) fn render(&self, _ctx: &RenderContext, options: &InputOptions) -> String {
     let comments = SingleThreadedComments::default();
 
