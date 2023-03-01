@@ -1017,6 +1017,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rolldown/cli@workspace:packages/cli":
+  version: 0.0.0-use.local
+  resolution: "@rolldown/cli@workspace:packages/cli"
+  dependencies:
+    clipanion: ^3.2.0
+    typescript: ^4.9.5
+  bin:
+    rolldown: ./dist/index.js
+  languageName: unknown
+  linkType: soft
+
 "@rolldown/core-tests@workspace:packages/core/tests":
   version: 0.0.0-use.local
   resolution: "@rolldown/core-tests@workspace:packages/core/tests"
@@ -2542,6 +2553,17 @@ __metadata:
   version: 3.0.0
   resolution: "cli-width@npm:3.0.0"
   checksum: 4c94af3769367a70e11ed69aa6095f1c600c0ff510f3921ab4045af961820d57c0233acfa8b6396037391f31b4c397e1f614d234294f979ff61430a6c166c3f6
+  languageName: node
+  linkType: hard
+
+"clipanion@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "clipanion@npm:3.2.0"
+  dependencies:
+    typanion: ^3.8.0
+  peerDependencies:
+    typanion: "*"
+  checksum: e28e6f0d48aecff86097823c604aa486082d76d2a5d3abc71069a0d9f3338af769fd7c6634b2f444c5b1aac0743b503325cc0b30552c094c01ebc602631b273d
   languageName: node
   linkType: hard
 
@@ -5657,6 +5679,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash-es@npm:^4.17.21":
+  version: 4.17.21
+  resolution: "lodash-es@npm:4.17.21"
+  checksum: 05cbffad6e2adbb331a4e16fbd826e7faee403a1a04873b82b42c0f22090f280839f85b95393f487c1303c8a3d2a010048bf06151a6cbe03eee4d388fb0a12d2
+  languageName: node
+  linkType: hard
+
 "lodash.get@npm:^4.4.2":
   version: 4.4.2
   resolution: "lodash.get@npm:4.4.2"
@@ -7775,8 +7804,10 @@ __metadata:
     husky: ^8.0.3
     lerna: ^6.5.1
     lint-staged: ^13.1.2
+    lodash-es: ^4.17.21
     npm-run-all: ^4.1.5
     prettier: ^2.8.4
+    rollup: ^3.17.3
     typescript: ^4.9.5
   languageName: unknown
   linkType: soft
@@ -7814,6 +7845,20 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 9473eb7e7ffdb74c8e01e813eccb2e81e86cd429aea4705c424a5369845bedd871e715347a53be04a157f8febb99a8e502c124b896141e06d94fb86d6e121721
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^3.17.3":
+  version: 3.17.3
+  resolution: "rollup@npm:3.17.3"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: afce20a6ef4a613e5803eff7fb17a3efe740e326257b43f48bdbe10783f3eae79587d7e455234bc68f3c3154a50f2c29c85d4d2a42cdebcc17a5abeaeb04e0ed
   languageName: node
   linkType: hard
 
@@ -8664,6 +8709,13 @@ __metadata:
   peerDependencies:
     typescript: ">=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta"
   checksum: 1843f4c1b2e0f975e08c4c21caa4af4f7f65a12ac1b81b3b8489366826259323feb3fc7a243123453d2d1a02314205a7634e048d4a8009921da19f99755cdc48
+  languageName: node
+  linkType: hard
+
+"typanion@npm:^3.8.0":
+  version: 3.12.1
+  resolution: "typanion@npm:3.12.1"
+  checksum: a2e26fa216f8a1dbd2ffbaacb75b1e2dc042a0356e9702fba05a968cad95d9f661b24e37f6c6d8c3adad2c8582c99fca4826ff26a2d07cd2ae617ea87e6187eb
   languageName: node
   linkType: hard
 

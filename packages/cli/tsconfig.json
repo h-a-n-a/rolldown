@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "target": "ES2018",
+    "module": "CommonJS",
+    "outDir": "dist",
+    "resolveJsonModule": true
+  },
+  "include": [".", "package.json"],
+  "exclude": ["dist"],
+  "references": [{ "path": "../core" }]
+}

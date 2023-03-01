@@ -4,5 +4,5 @@
     "noEmit": true
   },
   "include": [],
-  "references": [{ "path": "./packages/core" }]
+  "references": [{ "path": "./packages/core" }, { "path": "./packages/cli" }]
 }
