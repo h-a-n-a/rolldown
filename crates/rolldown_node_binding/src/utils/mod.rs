@@ -10,6 +10,7 @@ pub use js_callback::*;
 use rolldown_tracing::enable_tracing_on_demand;
 
 static IS_ENABLE_TRACING: AtomicBool = AtomicBool::new(false);
+
 pub fn init_custom_trace_subscriber(mut env: Env) {
   if !IS_ENABLE_TRACING.swap(true, std::sync::atomic::Ordering::SeqCst) {
     let guard = enable_tracing_on_demand();
@@ -17,7 +18,7 @@ pub fn init_custom_trace_subscriber(mut env: Env) {
       env
         .add_env_cleanup_hook(guard, |flush_guard| {
           flush_guard.flush();
-          drop(guard);
+          drop(flush_guard);
         })
         .expect("Should able to initialize cleanup for custom trace subscriber");
     }
