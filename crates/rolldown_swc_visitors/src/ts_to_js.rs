@@ -4,7 +4,7 @@ use swc_core::{
     ast::Module,
     transforms::{
       base::{fixer::fixer, hygiene::hygiene, resolver},
-      typescript::strip,
+      typescript::{self, strip_with_config},
     },
     visit::FoldWith,
   },
@@ -23,7 +23,15 @@ pub fn ts_to_js(ast: &mut Module) {
       // Conduct identifier scope analysis
       resolver(unresolved_mark, top_level_mark, true),
       // Remove typescript types
-      strip(top_level_mark),
+      strip_with_config(
+        typescript::Config {
+          // SWC will remove unused `import unused = foo.unused`
+          // while tsc doesn't
+          import_not_used_as_values: typescript::ImportsNotUsedAsValues::Preserve,
+          ..Default::default()
+        },
+        top_level_mark
+      ),
       // Fix up any identifiers with the same name, but different contexts
       // Notice the resolved SyntaxContext is cleared by hygiene,
       // So we don't need to clear again.

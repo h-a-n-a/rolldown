@@ -271,6 +271,7 @@ impl<'a> ModuleLoader<'a> {
       id: module_id,
       runtime_helpers: Default::default(),
       parts: StatementParts::from_parts(scan_result.statement_parts),
+      missing_exports: Default::default(),
     };
     self.graph.add_module(NormOrExt::Normal(normal_module));
   }

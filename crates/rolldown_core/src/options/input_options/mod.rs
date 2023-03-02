@@ -23,6 +23,7 @@ pub struct BuildInputOptions {
   pub is_external: IsExternal,
   #[derivative(Debug = "ignore")]
   pub on_warn: WarningHandler,
+  pub shim_missing_exports: bool,
 }
 
 impl Default for BuildInputOptions {
@@ -35,6 +36,7 @@ impl Default for BuildInputOptions {
       on_warn: Arc::new(|err| {
         eprintln!("{}", err);
       }),
+      shim_missing_exports: false,
     }
   }
 }

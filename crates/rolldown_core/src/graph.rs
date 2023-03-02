@@ -8,6 +8,7 @@ use rolldown_resolver::Resolver;
 use rolldown_tracing::ContextedTracer;
 use rustc_hash::FxHashSet as HashSet;
 use rustc_hash::{FxHashMap, FxHashSet};
+use sugar_path::AsPath;
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
 use swc_core::ecma::atoms::{js_word, JsWord};
 use tracing::instrument;
@@ -32,10 +33,15 @@ pub struct Graph {
   pub(crate) used_symbols: HashSet<Symbol>,
   #[derivative(Debug = "ignore")]
   pub(crate) on_warn: WarningHandler,
+  pub(crate) shim_missing_export: bool,
 }
 
 impl Graph {
-  pub(crate) fn new(build_plugin_driver: SharedBuildPluginDriver, on_warn: WarningHandler) -> Self {
+  pub(crate) fn new(
+    build_plugin_driver: SharedBuildPluginDriver,
+    on_warn: WarningHandler,
+    shim_missing_export: bool,
+  ) -> Self {
     let (unresolved_mark, unresolved_ctxt) = GLOBALS.set(&SWC_GLOBALS, || {
       let mark = Mark::new();
       let ctxt = SyntaxContext::empty().apply_mark(mark);
@@ -51,6 +57,7 @@ impl Graph {
       build_plugin_driver,
       used_symbols: Default::default(),
       on_warn,
+      shim_missing_export,
     }
   }
 
@@ -481,11 +488,21 @@ impl Graph {
                     ));
                   importee.add_to_linked_imports(&exported_spec.owner, imported_specifier);
                 } else {
-                  return Err(BuildError::missing_export(
-                    &imported_spec.imported,
-                    importer_id.as_ref(),
-                    importee_id.as_ref(),
-                  ));
+                  if self.shim_missing_export {
+                    let sym = importee.shim_missing_export(&imported_spec.imported);
+                    self.uf.union(&imported_spec.imported_as, &sym);
+                    importee.add_to_linked_imports(&importee_id, imported_spec.clone());
+                    (self.on_warn)(BuildError::shimmed_export(
+                      imported_spec.imported.to_string(),
+                      importee_id.as_path().to_path_buf(),
+                    ));
+                  } else {
+                    return Err(BuildError::missing_export(
+                      &imported_spec.imported,
+                      importer_id.as_ref(),
+                      importee_id.as_ref(),
+                    ));
+                  }
                 }
               }
               return Ok(());
@@ -578,11 +595,21 @@ impl Graph {
                       .uf
                       .union(&imported_spec.imported_as, &symbol_in_importee);
                   } else {
-                    return Err(BuildError::missing_export(
-                      &imported_spec.imported,
-                      importer_id.as_ref(),
-                      importee_id.as_ref(),
-                    ));
+                    if self.shim_missing_export {
+                      let sym = importee.shim_missing_export(&imported_spec.imported);
+                      self.uf.union(&imported_spec.imported_as, &sym);
+                      importer.add_to_linked_imports(&importee_id, imported_spec.clone());
+                      (self.on_warn)(BuildError::shimmed_export(
+                        imported_spec.imported.to_string(),
+                        importee_id.as_path().to_path_buf(),
+                      ));
+                    } else {
+                      return Err(BuildError::missing_export(
+                        &imported_spec.imported,
+                        importer_id.as_ref(),
+                        importee_id.as_ref(),
+                      ));
+                    }
                   };
                 }
                 NormOrExt::External(importee) => {

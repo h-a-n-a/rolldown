@@ -380,91 +380,6 @@ func TestTSImportVsLocalCollisionMixed(t *testing.T) {
 	})
 }
 
-func TestTSImportEqualsEliminationTest(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import a = foo.a
-				import b = a.b
-				import c = b.c
-
-				import x = foo.x
-				import y = x.y
-				import z = y.z
-
-				export let bar = c
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestTSImportEqualsTreeShakingFalse(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import { foo } from 'pkg'
-				import used = foo.used
-				import unused = foo.unused
-				export { used }
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModePassThrough,
-			AbsOutputFile: "/out.js",
-			TreeShaking:   false,
-		},
-	})
-}
-
-func TestTSImportEqualsTreeShakingTrue(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import { foo } from 'pkg'
-				import used = foo.used
-				import unused = foo.unused
-				export { used }
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModePassThrough,
-			AbsOutputFile: "/out.js",
-			TreeShaking:   true,
-		},
-	})
-}
-
-func TestTSImportEqualsBundle(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import { foo } from 'pkg'
-				import used = foo.used
-				import unused = foo.unused
-				export { used }
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-			ExternalSettings: config.ExternalSettings{
-				PreResolve: config.ExternalMatchers{
-					Exact: map[string]bool{
-						"pkg": true,
-					},
-				},
-			},
-		},
-	})
-}
 
 func TestTSMinifiedBundleES6(t *testing.T) {
 	ts_suite.expectBundled(t, bundled{
@@ -845,43 +760,6 @@ func TestTSExportDefaultTypeIssue316(t *testing.T) {
 	})
 }
 
-func TestTSImplicitExtensions(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import './pick-js.js'
-				import './pick-ts.js'
-				import './pick-jsx.jsx'
-				import './pick-tsx.jsx'
-				import './order-js.js'
-				import './order-jsx.jsx'
-			`,
-
-			"/pick-js.js": `console.log("correct")`,
-			"/pick-js.ts": `console.log("wrong")`,
-
-			"/pick-ts.jsx": `console.log("wrong")`,
-			"/pick-ts.ts":  `console.log("correct")`,
-
-			"/pick-jsx.jsx": `console.log("correct")`,
-			"/pick-jsx.tsx": `console.log("wrong")`,
-
-			"/pick-tsx.js":  `console.log("wrong")`,
-			"/pick-tsx.tsx": `console.log("correct")`,
-
-			"/order-js.ts":  `console.log("correct")`,
-			"/order-js.tsx": `console.log("wrong")`,
-
-			"/order-jsx.ts":  `console.log("correct")`,
-			"/order-jsx.tsx": `console.log("wrong")`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
 
 func TestTSImplicitExtensionsMissing(t *testing.T) {
 	ts_suite.expectBundled(t, bundled{
@@ -909,50 +787,6 @@ entry.ts: ERROR: Could not resolve "./cjs.cjs"
 entry.ts: ERROR: Could not resolve "./js.js"
 entry.ts: ERROR: Could not resolve "./jsx.jsx"
 `,
-	})
-}
-
-func TestExportTypeIssue379(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import * as A from './a'
-				import * as B from './b'
-				import * as C from './c'
-				import * as D from './d'
-				console.log(A, B, C, D)
-			`,
-			"/a.ts": `
-				type Test = Element
-				let foo = 123
-				export { Test, foo }
-			`,
-			"/b.ts": `
-				export type Test = Element
-				export let foo = 123
-			`,
-			"/c.ts": `
-				import { Test } from './test'
-				let foo = 123
-				export { Test }
-				export { foo }
-			`,
-			"/d.ts": `
-				export { Test }
-				export { foo }
-				import { Test } from './test'
-				let foo = 123
-			`,
-			"/test.ts": `
-				export type Test = Element
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:                    config.ModeBundle,
-			AbsOutputFile:           "/out.js",
-			UseDefineForClassFields: config.False,
-		},
 	})
 }
 

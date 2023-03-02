@@ -25,6 +25,9 @@ pub struct InputOptions {
 
   #[serde(default = "true_by_default")]
   pub treeshake: bool,
+
+  #[serde(default)]
+  pub shim_missing_exports: bool,
 }
 
 #[derive(Deserialize, JsonSchema)]

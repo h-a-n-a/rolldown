@@ -1,0 +1,11 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_import_equals_bundle
+---
+---------- main.js ----------
+import { foo } from "pkg";
+
+// main.ts
+var used = foo.used;
+export { used };

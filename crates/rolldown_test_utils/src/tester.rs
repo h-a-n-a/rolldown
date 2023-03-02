@@ -59,6 +59,7 @@ impl Tester {
       builtins: rolldown::BuiltinsOptions {
         node_resolve: Some(Default::default()),
       },
+      shim_missing_exports: self.config.input.shim_missing_exports,
     }
   }
 }

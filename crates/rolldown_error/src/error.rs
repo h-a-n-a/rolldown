@@ -114,6 +114,10 @@ impl Error {
     })
   }
 
+  pub fn shimmed_export(binding: String, exporter: PathBuf) -> Self {
+    Self::with_kind(ErrorKind::ShimmedExport { binding, exporter })
+  }
+
   // --- rolldown special
 
   pub fn parse_js_failed(

@@ -70,6 +70,10 @@
             "$ref": "#/definitions/InputItem"
           }
         },
+        "shimMissingExports": {
+          "default": false,
+          "type": "boolean"
+        },
         "treeshake": {
           "default": true,
           "type": "boolean"

@@ -42,6 +42,7 @@ impl Bundler {
         cwd: input_opts.cwd,
         is_external: input_opts.is_external,
         on_warn: input_opts.on_warn,
+        shim_missing_exports: input_opts.shim_missing_exports,
       },
       plugins,
     );

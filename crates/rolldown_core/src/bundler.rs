@@ -37,6 +37,7 @@ impl BundlerCore {
     let mut graph = Graph::new(
       self.plugin_driver.clone(),
       self.input_options.on_warn.clone(),
+      self.input_options.shim_missing_exports,
     );
     graph.generate_module_graph(&self.input_options).await?;
     let mut bundle = Bundle::new(&self.input_options, &output_opts, &mut graph);

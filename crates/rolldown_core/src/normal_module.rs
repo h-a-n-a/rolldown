@@ -11,6 +11,7 @@ use sugar_path::{AsPath, SugarPath};
 use swc_core::{
   common::{
     comments::{Comment, CommentKind, Comments, SingleThreadedComments},
+    util::take::Take,
     Spanned, SyntaxContext,
   },
   ecma::{
@@ -76,9 +77,54 @@ pub struct NormalModule {
   /// Comments of the source code
   #[derivative(Debug = "ignore")]
   pub(crate) comments: SwcComments,
+
+  /// Key is missing exported name
+  pub(crate) missing_exports: HashMap<JsWord, Symbol>,
 }
 
 impl NormalModule {
+  pub(crate) fn shim_missing_export(&mut self, exported_name: &JsWord) -> &Symbol {
+    if !self.missing_exports.contains_key(exported_name) {
+      let mut declared_name = exported_name.clone();
+      let mut count = 0;
+      while self.contains_top_level_name(&declared_name) {
+        declared_name = format!("{declared_name}${count}").into();
+        count += 1;
+      }
+      let declared_symbol = Symbol::new(declared_name, self.top_level_ctxt);
+      self.linked_exports.insert(
+        exported_name.clone(),
+        ExportedSpecifier {
+          exported_as: exported_name.clone(),
+          local_id: declared_symbol.clone(),
+          owner: self.id.clone(),
+        },
+      );
+      let module_item = ast::ModuleItem::Stmt(ast::Stmt::Decl(ast::Decl::Var(box ast::VarDecl {
+        span: Default::default(),
+        kind: ast::VarDeclKind::Var,
+        declare: false,
+        decls: vec![ast::VarDeclarator {
+          span: Default::default(),
+          name: ast::Pat::Ident(declared_symbol.clone().to_id().into()),
+          ..ast::VarDeclarator::dummy()
+        }],
+      })));
+      self.ast.body.push(module_item);
+      let part = StatementPart {
+        declared: HashSet::from_iter([declared_symbol.clone()]),
+        is_included: Default::default(),
+        referenced: Default::default(),
+        side_effect: false,
+      };
+      self.add_statement_part(part);
+      self
+        .missing_exports
+        .insert(exported_name.clone(), declared_symbol);
+    }
+    self.missing_exports.get(exported_name).unwrap()
+  }
+
   /// We only need suggested names for following cases. We need a suggested names for
   /// those non-named variable.
   /// - non-named default export.

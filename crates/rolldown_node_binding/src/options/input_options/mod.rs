@@ -86,6 +86,7 @@ pub fn resolve_input_options(
           }),
       },
       on_warn: default_warning_handler(),
+      shim_missing_exports: false,
     },
     plugins,
   ))

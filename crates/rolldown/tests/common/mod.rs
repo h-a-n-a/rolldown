@@ -39,7 +39,13 @@ impl CompiledFixture {
           format!("---------- WARNINGS ----------"),
           warnings
             .iter()
-            .map(|w| w.kind.to_readable_string(&self.fixture_path))
+            .map(|w| {
+              format!(
+                "{}: {}",
+                w.kind.code(),
+                w.kind.to_readable_string(&self.fixture_path)
+              )
+            })
             .collect::<Vec<_>>()
             .join("\n"),
         ]

@@ -17,6 +17,7 @@ pub struct InputOptions {
   pub is_external: IsExternal,
   #[derivative(Debug = "ignore")]
   pub on_warn: WarningHandler,
+  pub shim_missing_exports: bool,
   pub builtins: BuiltinsOptions,
 }
 
@@ -35,6 +36,7 @@ impl Default for InputOptions {
       cwd: std::env::current_dir().unwrap(),
       is_external: Arc::new(|_, _, _| future::ready(Ok(false)).boxed()),
       on_warn: default_warning_handler(),
+      shim_missing_exports: false,
       builtins: BuiltinsOptions {
         node_resolve: Some(Default::default()),
       },
