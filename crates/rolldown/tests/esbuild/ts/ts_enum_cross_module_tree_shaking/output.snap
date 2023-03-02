@@ -1,0 +1,48 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_enum_cross_module_tree_shaking
+---
+---------- main.js ----------
+// enums.ts
+var a_DROP;
+(function(a_DROP$1) {
+    a_DROP$1[a_DROP$1["x"] = 1] = "x";
+})(a_DROP || (a_DROP = {}));
+var b_DROP;
+(function(b_DROP$1) {
+    b_DROP$1[b_DROP$1["x"] = 2] = "x";
+})(b_DROP || (b_DROP = {}));
+var c_DROP;
+(c_DROP || (c_DROP = {}))["x"] = '';
+var a_keep;
+(function(a_keep$1) {
+    a_keep$1[a_keep$1["x"] = false] = "x";
+})(a_keep || (a_keep = {}));
+var b_keep;
+(function(b_keep$1) {
+    b_keep$1[b_keep$1["x"] = foo] = "x";
+})(b_keep || (b_keep = {}));
+var c_keep;
+(function(c_keep$1) {
+    c_keep$1[c_keep$1["x"] = 3] = "x";
+})(c_keep || (c_keep = {}));
+var d_keep;
+(function(d_keep$1) {
+    d_keep$1[d_keep$1["x"] = 4] = "x";
+})(d_keep || (d_keep = {}));
+let e_keep = {};
+
+// main.ts
+console.log([
+    a_DROP.x,
+    b_DROP['x'],
+    c_DROP.x
+]);
+console.log([
+    a_keep.x,
+    b_keep.x,
+    c_keep,
+    d_keep.y,
+    e_keep.x
+]);
