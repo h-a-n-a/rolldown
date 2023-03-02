@@ -14,7 +14,7 @@ use tracing::instrument;
 
 use crate::module_loader::ModuleLoader;
 use crate::{
-  norm_or_ext::NormOrExt, normal_module::NormalModule, options::InputOptions, ModuleById,
+  norm_or_ext::NormOrExt, normal_module::NormalModule, options::BuildInputOptions, ModuleById,
   UnaryBuildResult, SWC_GLOBALS,
 };
 use crate::{BuildError, BuildResult, SharedBuildPluginDriver, WarningHandler};
@@ -624,7 +624,7 @@ impl Graph {
   #[instrument(skip_all)]
   pub(crate) async fn generate_module_graph(
     &mut self,
-    input_opts: &InputOptions,
+    input_opts: &BuildInputOptions,
   ) -> BuildResult<()> {
     let resolver = Arc::new(Resolver::with_cwd(input_opts.cwd.clone()));
 

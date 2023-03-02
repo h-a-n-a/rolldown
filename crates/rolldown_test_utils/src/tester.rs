@@ -5,7 +5,7 @@ use std::{
 };
 
 use futures::FutureExt;
-use rolldown_core::BuildError;
+use rolldown::error::Error as BuildError;
 
 use crate::test_config::TestConfig;
 
@@ -23,16 +23,16 @@ impl Tester {
     }
   }
 
-  pub fn input_options(&self, cwd: PathBuf) -> rolldown_core::InputOptions {
+  pub fn input_options(&self, cwd: PathBuf) -> rolldown::InputOptions {
     let warning_collector = self.warnings.clone();
-    rolldown_core::InputOptions {
+    rolldown::InputOptions {
       // TODO: the order should be preserved
       input: self
         .config
         .input
         .input
         .iter()
-        .map(|item| rolldown_core::InputItem {
+        .map(|item| rolldown::InputItem {
           name: item.name.clone(),
           import: item.import.clone(),
         })
@@ -55,7 +55,10 @@ impl Tester {
       on_warn: Arc::new(move |err| {
         warning_collector.lock().unwrap().push(err);
       }),
-      ..Default::default()
+      preserve_symlinks: false,
+      builtins: rolldown::BuiltinsOptions {
+        node_resolve: Some(Default::default()),
+      },
     }
   }
 }

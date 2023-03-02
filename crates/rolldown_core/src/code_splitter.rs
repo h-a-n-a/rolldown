@@ -34,10 +34,10 @@ pub fn uri_to_chunk_name(root: &str, uri: &str) -> String {
   name
 }
 
-use crate::{Chunk, ChunkGraph, Graph, InputOptions, UnaryBuildResult};
+use crate::{BuildInputOptions, Chunk, ChunkGraph, Graph, UnaryBuildResult};
 
 pub(crate) struct CodeSplitter<'me> {
-  opts: &'me InputOptions,
+  opts: &'me BuildInputOptions,
   graph: &'me Graph,
   chunk_by_id: FxHashMap<ChunkId, Chunk>,
   entries: Vec<ModuleId>,
@@ -52,7 +52,7 @@ impl<'me> CodeSplitter<'me> {
   pub(crate) fn new(
     entries: Vec<ModuleId>,
     graph: &'me mut Graph,
-    opts: &'me InputOptions,
+    opts: &'me BuildInputOptions,
   ) -> Self {
     Self {
       opts,

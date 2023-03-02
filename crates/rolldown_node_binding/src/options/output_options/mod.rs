@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use napi_derive::*;
-use rolldown_core::InternalModuleFormat;
+use rolldown::core::InternalModuleFormat;
 use serde::Deserialize;
 
 #[napi(object)]
@@ -60,8 +60,8 @@ pub struct OutputOptions {
   // pub minify: bool,
 }
 
-pub fn resolve_output_options(opts: OutputOptions) -> napi::Result<rolldown_core::OutputOptions> {
-  let mut defaults = rolldown_core::OutputOptions::default();
+pub fn resolve_output_options(opts: OutputOptions) -> napi::Result<rolldown::OutputOptions> {
+  let mut defaults = rolldown::OutputOptions::default();
 
   opts
     .entry_file_names

@@ -1,0 +1,18 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_enum_use_before_declare
+---
+---------- main.js ----------
+// main.ts
+function before() {
+    console.log(Foo.FOO);
+}
+var Foo;
+(function(Foo$1) {
+    Foo$1[Foo$1["FOO"] = 0] = "FOO";
+})(Foo || (Foo = {}));
+function after() {
+    console.log(Foo.FOO);
+}
+export { after, before };

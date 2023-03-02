@@ -1626,6 +1626,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3bf6b372449361333ac1f498b7edae4dd5e70dccd7c0c2a7c7bce8f05ede648"
 
 [[package]]
+name = "rolldown"
+version = "0.1.0"
+dependencies = [
+ "criterion",
+ "derivative",
+ "futures",
+ "insta",
+ "rolldown_core",
+ "rolldown_error",
+ "rolldown_plugin",
+ "rolldown_plugin_node_resolve",
+ "rolldown_test_utils",
+ "rolldown_tracing",
+ "sugar_path",
+ "testing_macros",
+ "tokio",
+]
+
+[[package]]
 name = "rolldown_ast_template"
 version = "0.0.1"
 dependencies = [
@@ -1712,7 +1731,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
- "rolldown_core",
+ "rolldown",
  "rolldown_plugin",
  "rolldown_plugin_node_resolve",
  "rolldown_tracing",
@@ -1779,7 +1798,7 @@ dependencies = [
  "dashmap",
  "futures",
  "hashlink",
- "rolldown_core",
+ "rolldown",
  "schemars",
  "serde",
  "serde_json",

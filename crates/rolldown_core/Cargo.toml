@@ -43,7 +43,3 @@ insta                        = { workspace = true }
 rolldown_plugin_node_resolve = { path = "../rolldown_plugin_node_resolve" }
 rolldown_test_utils          = { path = "../rolldown_test_utils" }
 testing_macros               = { workspace = true }
-
-[[bench]]
-harness = false
-name    = "threejs"

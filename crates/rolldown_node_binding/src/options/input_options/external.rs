@@ -22,7 +22,7 @@ pub struct ExternalOption {
   pub string: Vec<String>,
 }
 
-pub fn resolve_external(is_external: ExternalOption) -> napi::Result<rolldown_core::IsExternal> {
+pub fn resolve_external(is_external: ExternalOption) -> napi::Result<rolldown::core::IsExternal> {
   let is_external_cb = is_external
     .function
     .as_ref()

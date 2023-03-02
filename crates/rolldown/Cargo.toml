@@ -1,0 +1,28 @@
+[package]
+edition = "2021"
+name    = "rolldown"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+derivative                   = { workspace = true }
+futures                      = { workspace = true }
+rolldown_core                = { path = "../rolldown_core" }
+rolldown_error               = { path = "../rolldown_error" }
+rolldown_plugin              = { path = "../rolldown_plugin" }
+rolldown_plugin_node_resolve = { path = "../rolldown_plugin_node_resolve" }
+rolldown_tracing             = { path = "../rolldown_tracing" }
+sugar_path                   = { workspace = true }
+tokio                        = { workspace = true, features = ["full"] }
+
+[dev_dependencies]
+criterion                    = "0.4.0"
+insta                        = { workspace = true }
+rolldown_plugin_node_resolve = { path = "../rolldown_plugin_node_resolve" }
+rolldown_test_utils          = { path = "../rolldown_test_utils" }
+testing_macros               = { workspace = true }
+
+[[bench]]
+harness = false
+name    = "threejs"

@@ -21,7 +21,9 @@ use swc_core::{
 use swc_node_comments::SwcComments;
 use tracing::instrument;
 
-use crate::{make_legal, InputOptions, MergedExports, RenderContext, ResolvedModuleIds, COMPILER};
+use crate::{
+  make_legal, BuildInputOptions, MergedExports, RenderContext, ResolvedModuleIds, COMPILER,
+};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -258,7 +260,7 @@ impl NormalModule {
   }
 
   #[instrument(skip_all)]
-  pub(crate) fn render(&self, _ctx: &RenderContext, options: &InputOptions) -> String {
+  pub(crate) fn render(&self, _ctx: &RenderContext, options: &BuildInputOptions) -> String {
     let comments = SingleThreadedComments::default();
 
     let mut text = String::new();

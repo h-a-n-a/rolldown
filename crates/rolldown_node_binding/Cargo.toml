@@ -16,7 +16,7 @@ futures                      = { workspace = true }
 itertools                    = { workspace = true }
 napi                         = { version = "2.11.1", features = ["full"] }
 napi-derive                  = { version = "2.11.0" }
-rolldown_core                = { path = "../rolldown_core" }
+rolldown                     = { path = "../rolldown" }
 rolldown_plugin              = { path = "../rolldown_plugin" }
 rolldown_plugin_node_resolve = { path = "../rolldown_plugin_node_resolve" }
 rolldown_tracing             = { path = "../rolldown_tracing" }

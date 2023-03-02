@@ -15,7 +15,7 @@ pub type IsExternal =
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct InputOptions {
+pub struct BuildInputOptions {
   pub input: Vec<InputItem>,
   pub treeshake: bool,
   pub cwd: PathBuf,
@@ -25,7 +25,7 @@ pub struct InputOptions {
   pub on_warn: WarningHandler,
 }
 
-impl Default for InputOptions {
+impl Default for BuildInputOptions {
   fn default() -> Self {
     Self {
       input: Default::default(),

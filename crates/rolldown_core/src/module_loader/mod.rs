@@ -13,14 +13,14 @@ use module_task::{ModuleTask, TaskResult};
 use swc_core::ecma::atoms::js_word;
 use tracing::instrument;
 
-use crate::{norm_or_ext::NormOrExt, Graph, InputOptions, NormalModule, SWC_GLOBALS};
+use crate::{norm_or_ext::NormOrExt, BuildInputOptions, Graph, NormalModule, SWC_GLOBALS};
 use crate::{
   resolve_id, BuildError, BuildResult, ExternalModule, SharedBuildPluginDriver, SharedResolver,
   StatementParts, UnaryBuildResult,
 };
 
 pub(crate) struct ModuleLoader<'a> {
-  input_options: &'a InputOptions,
+  input_options: &'a BuildInputOptions,
   graph: &'a mut Graph,
   build_plugin_driver: SharedBuildPluginDriver,
   loaded_modules: HashSet<ModuleId>,
@@ -43,7 +43,7 @@ impl<'a> ModuleLoader<'a> {
     graph: &'a mut Graph,
     resolver: SharedResolver,
     plugin_driver: SharedBuildPluginDriver,
-    input_opts: &'a InputOptions,
+    input_opts: &'a BuildInputOptions,
   ) -> Self {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Msg>();
     Self {
@@ -61,7 +61,10 @@ impl<'a> ModuleLoader<'a> {
   }
 
   #[instrument(skip_all)]
-  async fn resolve_entries(&self, input_opts: &InputOptions) -> Vec<UnaryBuildResult<ModuleId>> {
+  async fn resolve_entries(
+    &self,
+    input_opts: &BuildInputOptions,
+  ) -> Vec<UnaryBuildResult<ModuleId>> {
     join_all(input_opts.input.iter().cloned().map(|input_item| async {
       let id = resolve_id(
         &self.resolver,
@@ -86,7 +89,10 @@ impl<'a> ModuleLoader<'a> {
   }
 
   #[instrument(skip_all)]
-  pub(crate) async fn fetch_all_modules(mut self, input_opts: &InputOptions) -> BuildResult<()> {
+  pub(crate) async fn fetch_all_modules(
+    mut self,
+    input_opts: &BuildInputOptions,
+  ) -> BuildResult<()> {
     if input_opts.input.is_empty() {
       return Err(
         BuildError::panic("You must supply options.input to rolldown".to_string()).into(),

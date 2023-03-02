@@ -3,22 +3,22 @@ use rustc_hash::FxHashMap as HashMap;
 use tracing::instrument;
 
 use crate::{
-  Asset, Chunk, CodeSplitter, FinalizeBundleContext, Graph, InputOptions, ModuleRefMutById,
-  OutputOptions, SplitPointIdToChunkId, UnaryBuildResult,
+  Asset, BuildInputOptions, BuildOutputOptions, Chunk, CodeSplitter, FinalizeBundleContext, Graph,
+  ModuleRefMutById, SplitPointIdToChunkId, UnaryBuildResult,
 };
 
 #[derive(Debug)]
 pub struct Bundle<'a> {
-  pub input_options: &'a InputOptions,
-  pub output_options: &'a OutputOptions,
+  pub input_options: &'a BuildInputOptions,
+  pub output_options: &'a BuildOutputOptions,
   pub graph: &'a mut Graph,
   split_point_id_to_chunk_id: SplitPointIdToChunkId,
 }
 
 impl<'a> Bundle<'a> {
   pub fn new(
-    input_options: &'a InputOptions,
-    output_options: &'a OutputOptions,
+    input_options: &'a BuildInputOptions,
+    output_options: &'a BuildOutputOptions,
     graph: &'a mut Graph,
   ) -> Self {
     Self {

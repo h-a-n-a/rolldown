@@ -20,8 +20,8 @@ use tracing::instrument;
 
 use crate::{
   file_name, norm_or_ext::NormOrExt, preset_of_used_names, syntax_by_loader, BuildError,
-  ExportMode, Graph, InputOptions, MergedExports, ModuleById, ModuleRefMutById, OutputOptions,
-  SplitPointIdToChunkId, UnaryBuildResult, COMPILER,
+  BuildInputOptions, BuildOutputOptions, ExportMode, Graph, MergedExports, ModuleById,
+  ModuleRefMutById, SplitPointIdToChunkId, UnaryBuildResult, COMPILER,
 };
 
 pub struct Chunk {
@@ -51,7 +51,7 @@ impl Chunk {
     }
   }
 
-  pub(crate) fn gen_file_name(&mut self, output_options: &OutputOptions) {
+  pub(crate) fn gen_file_name(&mut self, output_options: &BuildOutputOptions) {
     self.filename = Some(
       output_options
         .entry_file_names
@@ -78,8 +78,8 @@ impl Chunk {
     &self,
     ctx: RenderContext,
     graph: &Graph,
-    input_options: &InputOptions,
-    output_options: &OutputOptions,
+    input_options: &BuildInputOptions,
+    output_options: &BuildOutputOptions,
   ) -> UnaryBuildResult<String> {
     let mut runtime_code = self.runtime_helpers.generate_helpers().join("\n");
     runtime_code.push('\n');
@@ -570,7 +570,7 @@ impl Chunk {
 
   fn validate_export_mode(
     &mut self,
-    output_options: &OutputOptions,
+    output_options: &BuildOutputOptions,
     exports: &FxHashMap<JsWord, ExportedSpecifier>,
   ) -> UnaryBuildResult<()> {
     // validate export mode
@@ -629,5 +629,5 @@ pub(crate) struct FinalizeBundleContext<'me> {
   pub uf: &'me UnionFind<Symbol>,
   // pub unresolved_mark: Mark,
   pub unresolved_ctxt: SyntaxContext,
-  pub output_options: &'me OutputOptions,
+  pub output_options: &'me BuildOutputOptions,
 }

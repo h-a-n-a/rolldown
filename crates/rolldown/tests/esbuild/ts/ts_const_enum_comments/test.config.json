@@ -1,0 +1,10 @@
+{
+  "input": {
+    "input": [
+      {
+        "name": "foo",
+        "import": "./foo.ts"
+      }
+    ]
+  }
+}

@@ -17,6 +17,9 @@
   "[typescriptreact]": {
     "editor.formatOnSave": true
   },
+  "[json]": {
+    "editor.formatOnSave": true
+  },
 
   "json.schemas": [
     {

@@ -1,0 +1,29 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_const_enum_comments
+---
+---------- foo.js ----------
+// bar.ts
+var Foo;
+(function(Foo$1) {
+    Foo$1[Foo$1["%/*"] = 1] = "%/*";
+    Foo$1[Foo$1["*/%"] = 2] = "*/%";
+})(Foo || (Foo = {}));
+
+// foo.ts
+var Bar;
+(function(Bar$1) {
+    Bar$1[Bar$1["%/*"] = 1] = "%/*";
+    Bar$1[Bar$1["*/%"] = 2] = "*/%";
+})(Bar || (Bar = {}));
+console.log({
+    'should have comments': [
+        Foo["%/*"],
+        1
+    ],
+    'should not have comments': [
+        Foo["*/%"],
+        2
+    ]
+});

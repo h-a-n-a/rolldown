@@ -6,7 +6,7 @@ use crate::impl_serde_default;
 fn input_default() -> Vec<InputItem> {
   vec![InputItem {
     name: "main".to_string(),
-    import: "./main.js".to_string(),
+    import: "./main".to_string(),
   }]
 }
 

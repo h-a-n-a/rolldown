@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use napi_derive::*;
-use rolldown_core::InputItem;
+use rolldown::default_warning_handler;
 use rolldown_plugin::BuildPlugin;
 use serde::Deserialize;
 mod external;
@@ -54,44 +54,38 @@ pub struct InputOptions {
 
 pub fn resolve_input_options(
   opts: InputOptions,
-) -> napi::Result<(rolldown_core::InputOptions, Vec<Box<dyn BuildPlugin>>)> {
+) -> napi::Result<(rolldown::InputOptions, Vec<Box<dyn BuildPlugin>>)> {
   let cwd = PathBuf::from(opts.cwd.clone());
   assert!(cwd != PathBuf::from("/"), "{:#?}", opts);
 
-  let mut plugins = opts
+  let plugins = opts
     .plugins
     .into_iter()
     .map(JsBuildPlugin::new_boxed)
     .try_collect::<Vec<_>>()?;
 
-  let mut builtin_post_plugins = vec![];
-
-  if let Some(node_resolve) = opts.builtins.node_resolve {
-    builtin_post_plugins.push(rolldown_plugin_node_resolve::NodeResolvePlugin::new_boxed(
-      rolldown_plugin_node_resolve::ResolverOptions {
-        extensions: node_resolve.extensions,
-        symlinks: !opts.preserve_symlinks,
-        ..Default::default()
-      },
-      cwd.clone(),
-    ))
-  }
-
-  plugins.extend(builtin_post_plugins);
-
   let is_external = resolve_external(opts.external)?;
 
   Ok((
-    rolldown_core::InputOptions {
+    rolldown::InputOptions {
       input: opts
         .input
         .into_iter()
-        .map(|(name, import)| InputItem { name, import })
+        .map(|(name, import)| rolldown::core::InputItem { name, import })
         .collect(),
       cwd,
       treeshake: opts.treeshake.unwrap_or(true),
       is_external,
-      ..Default::default()
+      preserve_symlinks: opts.preserve_symlinks,
+      builtins: rolldown::BuiltinsOptions {
+        node_resolve: opts
+          .builtins
+          .node_resolve
+          .map(|opts| rolldown::NodeResolveOptions {
+            extensions: opts.extensions,
+          }),
+      },
+      on_warn: default_warning_handler(),
     },
     plugins,
   ))

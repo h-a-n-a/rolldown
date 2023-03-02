@@ -1,6 +1,6 @@
 use napi::{tokio::sync::Mutex, Env};
 use napi_derive::*;
-use rolldown_core::{error::Errors, Bundler as BundlerCore};
+use rolldown::{error::Errors, Bundler as NativeBundler};
 use tracing::instrument;
 
 use crate::{
@@ -13,7 +13,7 @@ use crate::{
 
 #[napi]
 pub struct Bundler {
-  inner: Mutex<BundlerCore>,
+  inner: Mutex<NativeBundler>,
 }
 
 #[napi]
@@ -40,7 +40,7 @@ impl Bundler {
     NAPI_ENV.set(&env, || {
       let (input_opts, plugins) = resolve_input_options(input_opts)?;
       Ok(Bundler {
-        inner: Mutex::new(BundlerCore::with_plugins(input_opts, plugins)),
+        inner: Mutex::new(NativeBundler::with_plugins(input_opts, plugins)),
       })
     })
   }
