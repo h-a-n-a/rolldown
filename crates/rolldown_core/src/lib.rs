@@ -55,6 +55,7 @@ pub(crate) static COMPILER: Lazy<Arc<rolldown_compiler::Compiler>> = Lazy::new(|
 pub(crate) type ModuleById = FxHashMap<ModuleId, NormOrExt>;
 pub(crate) type ModuleRefMutById<'a> = FxHashMap<&'a ModuleId, &'a mut NormOrExt>;
 pub(crate) type SplitPointIdToChunkId = FxHashMap<ModuleId, ChunkId>;
+pub(crate) type SharedBuildInputOptions = Arc<BuildInputOptions>;
 pub(crate) static SWC_GLOBALS: Lazy<Arc<Globals>> = Lazy::new(|| Arc::new(Globals::new()));
 
 // public exports

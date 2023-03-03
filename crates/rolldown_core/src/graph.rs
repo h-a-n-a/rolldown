@@ -18,11 +18,12 @@ use crate::{
   norm_or_ext::NormOrExt, normal_module::NormalModule, options::BuildInputOptions, ModuleById,
   UnaryBuildResult, SWC_GLOBALS,
 };
-use crate::{BuildError, BuildResult, SharedBuildPluginDriver, WarningHandler};
+use crate::{BuildError, BuildResult, SharedBuildInputOptions, SharedBuildPluginDriver};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct Graph {
+  pub input_options: SharedBuildInputOptions,
   pub entries: Vec<ModuleId>,
   pub(crate) module_by_id: ModuleById,
   pub(crate) unresolved_mark: Mark,
@@ -31,16 +32,12 @@ pub struct Graph {
   pub(crate) uf: UnionFind<Symbol>,
   pub(crate) build_plugin_driver: SharedBuildPluginDriver,
   pub(crate) used_symbols: HashSet<Symbol>,
-  #[derivative(Debug = "ignore")]
-  pub(crate) on_warn: WarningHandler,
-  pub(crate) shim_missing_export: bool,
 }
 
 impl Graph {
   pub(crate) fn new(
     build_plugin_driver: SharedBuildPluginDriver,
-    on_warn: WarningHandler,
-    shim_missing_export: bool,
+    input_options: SharedBuildInputOptions,
   ) -> Self {
     let (unresolved_mark, unresolved_ctxt) = GLOBALS.set(&SWC_GLOBALS, || {
       let mark = Mark::new();
@@ -49,6 +46,7 @@ impl Graph {
     });
 
     Self {
+      input_options,
       entries: Default::default(),
       module_by_id: Default::default(),
       unresolved_mark,
@@ -56,8 +54,6 @@ impl Graph {
       uf: Default::default(),
       build_plugin_driver,
       used_symbols: Default::default(),
-      on_warn,
-      shim_missing_export,
     }
   }
 
@@ -245,7 +241,7 @@ impl Graph {
                   if let Some(original_spec) = importee.find_exported(&spec.imported) {
                     importer.add_to_linked_exports(spec.exported_as, original_spec.clone());
                   } else {
-                    if self.shim_missing_export {
+                    if self.input_options.shim_missing_exports {
                       let sym = importee.shim_missing_export(&spec.imported).clone();
                       importee.add_to_linked_exports(
                         spec.exported_as.clone(),
@@ -255,7 +251,7 @@ impl Graph {
                           owner: importee_id.clone(),
                         },
                       );
-                      (self.on_warn)(BuildError::shimmed_export(
+                      (self.input_options.on_warn)(BuildError::shimmed_export(
                         spec.imported.to_string(),
                         importee_id.as_path().to_path_buf(),
                       ));
@@ -505,11 +501,11 @@ impl Graph {
                     ));
                   importee.add_to_linked_imports(&exported_spec.owner, imported_specifier);
                 } else {
-                  if self.shim_missing_export {
+                  if self.input_options.shim_missing_exports {
                     let sym = importee.shim_missing_export(&imported_spec.imported);
                     self.uf.union(&imported_spec.imported_as, &sym);
                     importee.add_to_linked_imports(&importee_id, imported_spec.clone());
-                    (self.on_warn)(BuildError::shimmed_export(
+                    (self.input_options.on_warn)(BuildError::shimmed_export(
                       imported_spec.imported.to_string(),
                       importee_id.as_path().to_path_buf(),
                     ));
@@ -568,7 +564,7 @@ impl Graph {
                     .cloned()
                   {
                     if importee.external_modules_of_re_export_all.len() > 1 {
-                      (self.on_warn)(BuildError::ambiguous_external_namespaces(
+                      (self.input_options.on_warn)(BuildError::ambiguous_external_namespaces(
                         imported_spec.imported_as.name().to_string(),
                         importee_id.to_string().into(),
                         first_external_id.to_string().into(),
@@ -612,11 +608,13 @@ impl Graph {
                       .uf
                       .union(&imported_spec.imported_as, &symbol_in_importee);
                   } else {
-                    if self.shim_missing_export {
-                      let sym = importee.shim_missing_export(&imported_spec.imported);
+                    if self.input_options.shim_missing_exports {
+                      let sym = importee
+                        .shim_missing_export(&imported_spec.imported)
+                        .clone();
                       self.uf.union(&imported_spec.imported_as, &sym);
                       importer.add_to_linked_imports(&importee_id, imported_spec.clone());
-                      (self.on_warn)(BuildError::shimmed_export(
+                      (self.input_options.on_warn)(BuildError::shimmed_export(
                         imported_spec.imported.to_string(),
                         importee_id.as_path().to_path_buf(),
                       ));
