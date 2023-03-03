@@ -1,0 +1,15 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_export_missing_es6
+---
+---------- main.js ----------
+// foo.ts
+var ns = Object.freeze({
+    __proto__: null
+});
+
+// main.ts
+console.log(ns);
+---------- WARNINGS ----------
+SHIMMED_EXPORT: Missing export "nope" has been shimmed in module "bar.ts".

@@ -1,0 +1,73 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_enum_tree_shaking
+---
+---------- namespace-after.js ----------
+// namespace-after.ts
+var x;
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+x || (x = {}), console.log(x, y);
+---------- namespace-before.js ----------
+// namespace-before.ts
+var x;
+x || (x = {}), console.log(x, y);
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+---------- sibling-enum-after.js ----------
+// sibling-enum-after.ts
+var x;
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+(function(x$2) {
+    x$2[x$2["z"] = 2 * y] = "z";
+})(x || (x = {}));
+console.log(x);
+---------- sibling-enum-before.js ----------
+// sibling-enum-before.ts
+console.log(x);
+var x;
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+(function(x$2) {
+    x$2[x$2["z"] = 2 * y] = "z";
+})(x || (x = {}));
+---------- sibling-enum-middle.js ----------
+// sibling-enum-middle.ts
+var x;
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+console.log(x);
+(function(x$2) {
+    x$2[x$2["z"] = 2 * y] = "z";
+})(x || (x = {}));
+---------- sibling-member.js ----------
+// sibling-member.ts
+var x;
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+(function(x$2) {
+    x$2[x$2["z"] = 2 * y] = "z";
+})(x || (x = {}));
+console.log(x.y, x.z);
+---------- simple-enum.js ----------
+// simple-enum.ts
+var x;
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+console.log(x);
+---------- simple-member.ts.js ----------
+// simple-member.ts.ts
+var x;
+(function(x$1) {
+    x$1[x$1["y"] = 123] = "y";
+})(x || (x = {}));
+console.log(x.y);

@@ -1,0 +1,38 @@
+{
+  "input": {
+    "input": [
+      {
+        "name": "simple-member",
+        "import": "./simple-member.ts"
+      },
+      {
+        "name": "simple-enum.ts",
+        "import": "./simple-enum.ts"
+      },
+      {
+        "name": "sibling-member",
+        "import": "./sibling-member.ts"
+      },
+      {
+        "name": "sibling-enum-before.ts",
+        "import": "./sibling-enum-before.ts"
+      },
+      {
+        "name": "sibling-enum-middle.ts",
+        "import": "./sibling-enum-middle.ts"
+      },
+      {
+        "name": "sibling-enum-after.ts",
+        "import": "./sibling-enum-after.ts"
+      },
+      {
+        "name": "namespace-before.ts",
+        "import": "./namespace-before.ts"
+      },
+      {
+        "name": "namespace-after.ts",
+        "import": "./namespace-after.ts"
+      }
+    ]
+  }
+}

@@ -236,21 +236,38 @@ impl Graph {
             let importer = importer.expect_norm_mut();
             match importee {
               NormOrExt::Normal(importee) => {
-                re_exports
-                  .into_iter()
-                  .try_for_each(|spec| -> UnaryBuildResult<()> {
-                    importee.suggest_name(&spec.imported, &spec.exported_as);
-                    // Case: export * as foo from './foo'
-                    if spec.imported == js_word!("*") {
-                      importee.mark_namespace_id_referenced();
+                for spec in re_exports {
+                  importee.suggest_name(&spec.imported, &spec.exported_as);
+                  // Case: export * as foo from './foo'
+                  if spec.imported == js_word!("*") {
+                    importee.mark_namespace_id_referenced();
+                  }
+                  if let Some(original_spec) = importee.find_exported(&spec.imported) {
+                    importer.add_to_linked_exports(spec.exported_as, original_spec.clone());
+                  } else {
+                    if self.shim_missing_export {
+                      let sym = importee.shim_missing_export(&spec.imported).clone();
+                      importee.add_to_linked_exports(
+                        spec.exported_as.clone(),
+                        ExportedSpecifier {
+                          exported_as: spec.imported.clone(),
+                          local_id: sym.clone(),
+                          owner: importee_id.clone(),
+                        },
+                      );
+                      (self.on_warn)(BuildError::shimmed_export(
+                        spec.imported.to_string(),
+                        importee_id.as_path().to_path_buf(),
+                      ));
+                    } else {
+                      return Err(BuildError::missing_export(
+                        &spec.imported,
+                        importer_id.as_ref(),
+                        importee_id.as_ref(),
+                      ));
                     }
-                    let original_spec = importee
-                      .find_exported(&spec.imported)
-                      .ok_or_else(|| BuildError::panic(format!("original_id not found: {spec:?}")))?
-                      .clone();
-                    importer.add_to_linked_exports(spec.exported_as, original_spec);
-                    Ok(())
-                  })?
+                  }
+                }
               }
               NormOrExt::External(importee) => {
                 // We will transform

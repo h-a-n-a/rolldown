@@ -64,46 +64,6 @@ func TestTSDeclareClassFields(t *testing.T) {
 }
 
 
-func TestTSImportMissingUnusedES6(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import fn, {x as a, y as b} from './foo'
-			`,
-			"/foo.js": `
-				export const x = 123
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestTSExportMissingES6(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import * as ns from './foo'
-				console.log(ns)
-			`,
-			"/foo.ts": `
-				export {nope} from './bar'
-			`,
-			"/bar.js": `
-				export const yep = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
 // It's an error to import from a file that does not exist
 func TestTSImportMissingFile(t *testing.T) {
 	ts_suite.expectBundled(t, bundled{
@@ -329,53 +289,6 @@ func TestTSMinifyDerivedClass(t *testing.T) {
 			MinifySyntax:          true,
 			UnsupportedJSFeatures: es(2015),
 			AbsOutputFile:         "/out.js",
-		},
-	})
-}
-
-func TestTSImportVsLocalCollisionAllTypes(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import {a, b, c, d, e} from './other.ts'
-				let a
-				const b = 0
-				var c
-				function d() {}
-				class e {}
-				console.log(a, b, c, d, e)
-			`,
-			"/other.ts": `
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
-
-func TestTSImportVsLocalCollisionMixed(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import {a, b, c, d, e, real} from './other.ts'
-				let a
-				const b = 0
-				var c
-				function d() {}
-				class e {}
-				console.log(a, b, c, d, e, real)
-			`,
-			"/other.ts": `
-				export let real = 123
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
 		},
 	})
 }
@@ -1068,24 +981,6 @@ func TestTSAbstractClassFieldUseDefine(t *testing.T) {
 	})
 }
 
-func TestTSImportMTS(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.ts": `
-				import './imported.mjs'
-			`,
-			"/imported.mts": `
-				console.log('works')
-			`,
-		},
-		entryPaths: []string{"/entry.ts"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-			OutputFormat:  config.FormatESModule,
-		},
-	})
-}
 
 func TestTSImportCTS(t *testing.T) {
 	ts_suite.expectBundled(t, bundled{
@@ -1263,65 +1158,6 @@ func TestTSSiblingEnum(t *testing.T) {
 		},
 	})
 }
-
-func TestTSEnumTreeShaking(t *testing.T) {
-	ts_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/simple-member.ts": `
-				enum x { y = 123 }
-				console.log(x.y)
-			`,
-			"/simple-enum.ts": `
-				enum x { y = 123 }
-				console.log(x)
-			`,
-			"/sibling-member.ts": `
-				enum x { y = 123 }
-				enum x { z = y * 2 }
-				console.log(x.y, x.z)
-			`,
-			"/sibling-enum-before.ts": `
-				console.log(x)
-				enum x { y = 123 }
-				enum x { z = y * 2 }
-			`,
-			"/sibling-enum-middle.ts": `
-				enum x { y = 123 }
-				console.log(x)
-				enum x { z = y * 2 }
-			`,
-			"/sibling-enum-after.ts": `
-				enum x { y = 123 }
-				enum x { z = y * 2 }
-				console.log(x)
-			`,
-			"/namespace-before.ts": `
-				namespace x { console.log(x, y) }
-				enum x { y = 123 }
-			`,
-			"/namespace-after.ts": `
-				enum x { y = 123 }
-				namespace x { console.log(x, y) }
-			`,
-		},
-		entryPaths: []string{
-			"/simple-member.ts",
-			"/simple-enum.ts",
-			"/sibling-member.ts",
-			"/sibling-enum-before.ts",
-			"/sibling-enum-middle.ts",
-			"/sibling-enum-after.ts",
-			"/namespace-before.ts",
-			"/namespace-after.ts",
-		},
-		options: config.Options{
-			Mode:         config.ModeBundle,
-			AbsOutputDir: "/out",
-			OutputFormat: config.FormatESModule,
-		},
-	})
-}
-
 
 func TestTSEnumDefine(t *testing.T) {
 	ts_suite.expectBundled(t, bundled{
