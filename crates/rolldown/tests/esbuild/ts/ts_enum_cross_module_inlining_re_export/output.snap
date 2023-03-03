@@ -1,0 +1,20 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_enum_cross_module_inlining_re_export
+---
+---------- main.js ----------
+// enums.ts
+var a;
+(a || (a = {}))["x"] = 'a';
+var b;
+(b || (b = {}))["x"] = 'b';
+var c;
+(c || (c = {}))["x"] = 'c';
+
+// main.ts
+console.log([
+    a.x,
+    b.x,
+    c.x
+]);

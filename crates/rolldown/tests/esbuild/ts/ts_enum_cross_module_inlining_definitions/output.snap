@@ -1,0 +1,22 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_enum_cross_module_inlining_definitions
+---
+---------- main.js ----------
+// enums.ts
+var a;
+(function(a$1) {
+    a$1[a$1["implicit_number"] = 0] = "implicit_number";
+    a$1[a$1["explicit_number"] = 123] = "explicit_number";
+    a$1["explicit_string"] = 'xyz';
+    a$1[a$1["non_constant"] = foo] = "non_constant";
+})(a || (a = {}));
+
+// main.ts
+console.log([
+    a.implicit_number,
+    a.explicit_number,
+    a.explicit_string,
+    a.non_constant
+]);
