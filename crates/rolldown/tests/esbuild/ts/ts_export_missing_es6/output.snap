@@ -4,9 +4,15 @@ expression: compiled_fx.output_friendly_to_snapshot()
 input_file: crates/rolldown/tests/esbuild/ts/ts_export_missing_es6
 ---
 ---------- main.js ----------
+// bar.ts
+var nope;
+
 // foo.ts
 var ns = Object.freeze({
-    __proto__: null
+    __proto__: null,
+    get nope () {
+        return nope;
+    }
 });
 
 // main.ts

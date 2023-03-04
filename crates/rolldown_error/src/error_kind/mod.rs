@@ -42,6 +42,10 @@ pub enum ErrorKind {
     binding: String,
     exporter: PathBuf,
   },
+  CircularReexport {
+    exporter: PathBuf,
+    export_name: String,
+  },
 
   // --- Rolldown specific
   ParseJsFailed {
@@ -101,6 +105,7 @@ impl Display for ErrorKind {
         write!(f, r#""{option_value}" was specified for "output.exports", but entry module "{}" has the following exports: {}"#, entry_module.relative_if_possiable().display(), format_quoted_strings(&exported_keys))
       }
       ErrorKind::ShimmedExport { binding, exporter } => write!(f, r#"Missing export "{binding}" has been shimmed in module "{}"."#, exporter.relative_if_possiable().display()),
+      ErrorKind::CircularReexport { export_name, exporter } => write!(f, r#""{export_name}" cannot be exported from "{}" as it is a reexport that references itself."#, exporter.relative_if_possiable().display()),
       // Rolldown specific
       ErrorKind::Panic { source } => source.fmt(f),
       ErrorKind::Napi { status, reason } => write!(f, "Napi error: {} {}", status, reason),
@@ -129,6 +134,7 @@ impl ErrorKind {
       ErrorKind::InvalidExportOptionValue(_) => error_code::INVALID_EXPORT_OPTION,
       ErrorKind::IncompatibleExportOptionValue { .. } => error_code::INVALID_EXPORT_OPTION,
       ErrorKind::ShimmedExport { .. } => error_code::SHIMMED_EXPORT,
+      ErrorKind::CircularReexport { .. } => error_code::CIRCULAR_REEXPORT,
       // Rolldown specific
       ErrorKind::Panic { .. } => error_code::PANIC,
       ErrorKind::IoError(_) => error_code::IO_ERROR,

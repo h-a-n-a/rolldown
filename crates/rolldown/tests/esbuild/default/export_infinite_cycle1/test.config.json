@@ -1,0 +1,9 @@
+{
+  "input": {
+    "shimMissingExports": true
+  },
+  "expectedError": {
+    "code": "CIRCULAR_REEXPORT",
+    "message": "\"a\" cannot be exported from \"main.js\" as it is a reexport that references itself."
+  }
+}

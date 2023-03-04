@@ -118,6 +118,13 @@ impl Error {
     Self::with_kind(ErrorKind::ShimmedExport { binding, exporter })
   }
 
+  pub fn circular_reexport(export_name: String, exporter: PathBuf) -> Self {
+    Self::with_kind(ErrorKind::CircularReexport {
+      exporter,
+      export_name,
+    })
+  }
+
   // --- rolldown special
 
   pub fn parse_js_failed(

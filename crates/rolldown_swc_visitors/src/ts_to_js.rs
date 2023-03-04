@@ -9,7 +9,6 @@ use swc_core::{
         hygiene::hygiene,
         resolver,
       },
-      proposal::decorators,
       typescript::{self, strip_with_config},
     },
     visit::FoldWith,

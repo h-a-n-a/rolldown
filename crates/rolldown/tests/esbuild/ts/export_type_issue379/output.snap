@@ -22,6 +22,9 @@ var B = Object.freeze({
     }
 });
 
+// test.ts
+var Test;
+
 // c.ts
 let foo$1 = 123;
 var C = Object.freeze({

@@ -40,7 +40,7 @@ pub struct ScanResult {
   // Representations of special cases
   // `export * from './src'        => alias: ("*", SyntaxContext) origin: "*"
   // `export * as foo from './src' => alias: ("foo", SyntaxContext) origin: "*"
-  pub re_exported_ids: HashMap<JsWord, HashSet<ReExportedSpecifier>>,
+  pub re_exported_ids: HashMap<JsWord, Vec<ReExportedSpecifier>>,
 
   pub re_export_all: LinkedHashSet<JsWord>,
 
@@ -138,7 +138,7 @@ impl Scanner {
       .re_exported_ids
       .entry(module_id)
       .or_default()
-      .insert(spec_id);
+      .push(spec_id);
   }
 
   fn add_dynamic_import(&mut self, node: &CallExpr) {

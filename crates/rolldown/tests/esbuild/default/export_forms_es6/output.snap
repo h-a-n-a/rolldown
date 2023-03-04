@@ -1,0 +1,27 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/default/export_forms_es6
+---
+---------- main.js ----------
+// a.js
+const abc = void 0;
+
+// b.js
+const xyz = null;
+var b = Object.freeze({
+    __proto__: null,
+    get xyz () {
+        return xyz;
+    }
+});
+
+// main.js
+var main = 123;
+var v = 234;
+let l = 234;
+const c = 234;
+function Fn() {}
+class Class {
+}
+export { Class as C, Class, Fn, abc, b, c, main as default, l, v };

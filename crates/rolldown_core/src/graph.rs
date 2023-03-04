@@ -215,9 +215,18 @@ impl Graph {
                   if spec.imported == js_word!("*") {
                     importee.mark_namespace_id_referenced();
                   }
-                  let original_spec = importee.find_exported(&spec.imported).unwrap();
-                  importee.add_to_linked_exports(spec.exported_as, original_spec.clone());
-                  Ok(())
+                  if let Some(original_spec) = importee.find_exported(&spec.imported) {
+                    importee.add_to_linked_exports(spec.exported_as, original_spec.clone());
+                    Ok(())
+                  } else {
+                    // A module try to re-export binding from itself. If the binding
+                    // is not exist, we won't do any shimming no matter if `enabling shim_missing_exports` is enable
+
+                    Err(BuildError::circular_reexport(
+                      spec.imported.to_string(),
+                      importee_id.as_ref().as_path().to_path_buf(),
+                    ))
+                  }
                 })?;
 
               return Ok(());
@@ -237,30 +246,22 @@ impl Graph {
                   if spec.imported == js_word!("*") {
                     importee.mark_namespace_id_referenced();
                   }
-                  if let Some(original_spec) = importee.find_exported(&spec.imported) {
-                    importer.add_to_linked_exports(spec.exported_as, original_spec.clone());
-                  } else {
-                    if self.input_options.shim_missing_exports {
-                      let sym = importee.shim_missing_export(&spec.imported).clone();
-                      importee.add_to_linked_exports(
-                        spec.exported_as.clone(),
-                        ExportedSpecifier {
-                          exported_as: spec.imported.clone(),
-                          local_id: sym.clone(),
-                          owner: importee_id.clone(),
-                        },
-                      );
+                  if self.input_options.shim_missing_exports {
+                    if shim_missing_export_if_needed(importee, &spec.imported) {
                       (self.input_options.on_warn)(BuildError::shimmed_export(
                         spec.imported.to_string(),
                         importee_id.as_path().to_path_buf(),
                       ));
-                    } else {
-                      return Err(BuildError::missing_export(
-                        &spec.imported,
-                        importer_id.as_ref(),
-                        importee_id.as_ref(),
-                      ));
                     }
+                  }
+                  if let Some(original_spec) = importee.find_exported(&spec.imported) {
+                    importer.add_to_linked_exports(spec.exported_as, original_spec.clone());
+                  } else {
+                    return Err(BuildError::missing_export(
+                      &spec.imported,
+                      importer_id.as_ref(),
+                      importee_id.as_ref(),
+                    ));
                   }
                 }
               }
@@ -478,6 +479,14 @@ impl Graph {
                 }
                 importee.suggest_name(&imported_spec.imported, imported_spec.imported_as.name());
 
+                if self.input_options.shim_missing_exports {
+                  if shim_missing_export_if_needed(importee, &imported_spec.imported) {
+                    (self.input_options.on_warn)(BuildError::shimmed_export(
+                      imported_spec.imported.to_string(),
+                      importee_id.as_path().to_path_buf(),
+                    ));
+                  }
+                }
                 if let Some(exported_spec) =
                   importee.find_exported(&imported_spec.imported).cloned()
                 {
@@ -500,21 +509,11 @@ impl Graph {
                     ));
                   importee.add_to_linked_imports(&exported_spec.owner, imported_specifier);
                 } else {
-                  if self.input_options.shim_missing_exports {
-                    let sym = importee.shim_missing_export(&imported_spec.imported);
-                    self.uf.union(&imported_spec.imported_as, &sym);
-                    importee.add_to_linked_imports(&importee_id, imported_spec.clone());
-                    (self.input_options.on_warn)(BuildError::shimmed_export(
-                      imported_spec.imported.to_string(),
-                      importee_id.as_path().to_path_buf(),
-                    ));
-                  } else {
-                    return Err(BuildError::missing_export(
-                      &imported_spec.imported,
-                      importer_id.as_ref(),
-                      importee_id.as_ref(),
-                    ));
-                  }
+                  return Err(BuildError::missing_export(
+                    &imported_spec.imported,
+                    importer_id.as_ref(),
+                    importee_id.as_ref(),
+                  ));
                 }
               }
               return Ok(());
@@ -532,6 +531,14 @@ impl Graph {
                     importee.mark_namespace_id_referenced();
                   }
                   importee.suggest_name(&imported_spec.imported, imported_spec.imported_as.name());
+                  if self.input_options.shim_missing_exports {
+                    if shim_missing_export_if_needed(importee, &imported_spec.imported) {
+                      (self.input_options.on_warn)(BuildError::shimmed_export(
+                        imported_spec.imported.to_string(),
+                        importee_id.as_path().to_path_buf(),
+                      ));
+                    }
+                  }
                   if let Some(exported_spec) =
                     importee.find_exported(&imported_spec.imported).cloned()
                   {
@@ -607,23 +614,11 @@ impl Graph {
                       .uf
                       .union(&imported_spec.imported_as, &symbol_in_importee);
                   } else {
-                    if self.input_options.shim_missing_exports {
-                      let sym = importee
-                        .shim_missing_export(&imported_spec.imported)
-                        .clone();
-                      self.uf.union(&imported_spec.imported_as, &sym);
-                      importer.add_to_linked_imports(&importee_id, imported_spec.clone());
-                      (self.input_options.on_warn)(BuildError::shimmed_export(
-                        imported_spec.imported.to_string(),
-                        importee_id.as_path().to_path_buf(),
-                      ));
-                    } else {
-                      return Err(BuildError::missing_export(
-                        &imported_spec.imported,
-                        importer_id.as_ref(),
-                        importee_id.as_ref(),
-                      ));
-                    }
+                    return Err(BuildError::missing_export(
+                      &imported_spec.imported,
+                      importer_id.as_ref(),
+                      importee_id.as_ref(),
+                    ));
                   };
                 }
                 NormOrExt::External(importee) => {
@@ -698,5 +693,14 @@ impl Graph {
         });
     }
     Ok(())
+  }
+}
+
+fn shim_missing_export_if_needed(importee: &mut NormalModule, imported_name: &JsWord) -> bool {
+  if importee.find_exported(imported_name).is_some() {
+    false
+  } else {
+    importee.shim_missing_export(imported_name);
+    true
   }
 }

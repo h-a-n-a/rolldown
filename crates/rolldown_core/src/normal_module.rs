@@ -48,7 +48,7 @@ pub struct NormalModule {
   // local_exports only contains local export like export const a = 1;
   // It does not contain info about re-exports.
   pub(crate) local_exports: HashMap<JsWord, ExportedSpecifier>,
-  pub(crate) re_exported_ids: HashMap<ModuleId, HashSet<ReExportedSpecifier>>,
+  pub(crate) re_exported_ids: HashMap<ModuleId, Vec<ReExportedSpecifier>>,
   pub(crate) re_export_all: LinkedHashSet<ModuleId>,
   pub(crate) declared_scoped_names: HashSet<JsWord>,
 
@@ -84,6 +84,8 @@ pub struct NormalModule {
 
 impl NormalModule {
   pub(crate) fn shim_missing_export(&mut self, exported_name: &JsWord) -> &Symbol {
+    debug_assert!(!self.local_exports.contains_key(exported_name));
+    debug_assert!(!self.linked_exports.contains_key(exported_name));
     if !self.missing_exports.contains_key(exported_name) {
       let mut declared_name = exported_name.clone();
       let mut count = 0;
@@ -100,16 +102,19 @@ impl NormalModule {
           owner: self.id.clone(),
         },
       );
-      let module_item = ast::ModuleItem::Stmt(ast::Stmt::Decl(ast::Decl::Var(box ast::VarDecl {
+      let module_item = ast::ModuleItem::ModuleDecl(ast::ModuleDecl::ExportDecl(ast::ExportDecl {
         span: Default::default(),
-        kind: ast::VarDeclKind::Var,
-        declare: false,
-        decls: vec![ast::VarDeclarator {
+        decl: ast::Decl::Var(box ast::VarDecl {
           span: Default::default(),
-          name: ast::Pat::Ident(declared_symbol.clone().to_id().into()),
-          ..ast::VarDeclarator::dummy()
-        }],
-      })));
+          kind: ast::VarDeclKind::Var,
+          declare: false,
+          decls: vec![ast::VarDeclarator {
+            span: Default::default(),
+            name: ast::Pat::Ident(declared_symbol.clone().to_id().into()),
+            ..ast::VarDeclarator::dummy()
+          }],
+        }),
+      }));
       self.ast.body.push(module_item);
       let part = StatementPart {
         declared: HashSet::from_iter([declared_symbol.clone()]),

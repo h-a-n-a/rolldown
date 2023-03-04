@@ -1,0 +1,9 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/default/export_chain
+---
+---------- main.js ----------
+// bar.js
+const c = 123;
+export { c as a };

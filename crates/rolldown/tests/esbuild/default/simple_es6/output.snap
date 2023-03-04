@@ -1,0 +1,13 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/default/simple_es6
+---
+---------- main.js ----------
+// foo.js
+function fn() {
+    return 123;
+}
+
+// main.js
+console.log(fn());
