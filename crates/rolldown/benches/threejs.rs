@@ -66,7 +66,7 @@ fn criterion_benchmark(c: &mut Criterion) {
   let mut group = c.benchmark_group("generate");
 
   group
-    .sample_size(10)
+    .sample_size(20)
     .bench_function("threejs", |b| b.iter(threejs))
     .bench_function("threejs10x", |b| b.iter(threejs10x));
 }
