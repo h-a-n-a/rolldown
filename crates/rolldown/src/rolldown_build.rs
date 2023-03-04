@@ -43,6 +43,10 @@ impl Bundler {
         is_external: input_opts.is_external,
         on_warn: input_opts.on_warn,
         shim_missing_exports: input_opts.shim_missing_exports,
+        builtins: rolldown_core::BuiltinsOptions {
+          tsconfig: input_opts.builtins.tsconfig.unwrap_or_default(),
+          ..Default::default()
+        },
       },
       plugins,
     );

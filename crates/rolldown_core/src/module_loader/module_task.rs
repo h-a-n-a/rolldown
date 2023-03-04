@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use derivative::Derivative;
 use futures::future::join_all;
 use rolldown_common::{Loader, ModuleId};
@@ -7,16 +9,19 @@ use rolldown_swc_visitors::ScanResult;
 use sugar_path::AsPath;
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
 use swc_core::ecma::ast;
+use swc_core::ecma::parser::{EsConfig, Syntax, TsConfig};
 use swc_node_comments::SwcComments;
 use tracing::instrument;
 
 use super::Msg;
 use crate::{
-  extract_loader_by_path, resolve_id, syntax_by_loader, BuildError, IsExternal, ResolvedModuleIds,
-  SharedBuildPluginDriver, SharedResolver, UnaryBuildResult, COMPILER, SWC_GLOBALS,
+  extract_loader_by_path, resolve_id, BuildError, IsExternal, ResolvedModuleIds,
+  SharedBuildInputOptions, SharedBuildPluginDriver, SharedResolver, UnaryBuildResult, COMPILER,
+  SWC_GLOBALS,
 };
 
 pub(crate) struct ModuleTask {
+  pub(crate) input_options: SharedBuildInputOptions,
   pub(crate) id: ModuleId,
   pub(crate) is_user_defined_entry: bool,
   pub(crate) tx: tokio::sync::mpsc::UnboundedSender<Msg>,
@@ -84,6 +89,12 @@ impl ModuleTask {
       .map_err(rolldown_error::anyhow::Error::from)
       .map_err(|e| e.context(format!("Read file: {}", self.id.as_ref())))?;
 
+    let loader = if self.input_options.builtins.detect_loader_by_ext {
+      extract_loader_by_path(self.id.as_path())
+    } else {
+      Loader::Js
+    };
+
     let code = self
       .plugin_driver
       .read()
@@ -91,16 +102,7 @@ impl ModuleTask {
       .transform(&self.id, code)
       .await?;
 
-    let comments = SwcComments::default();
-    let fm = COMPILER.create_source_file(self.id.as_ref().as_path().to_path_buf(), code);
-    let loader = extract_loader_by_path(self.id.as_path());
-
-    let mut ast = COMPILER
-      .parse_with_comments(fm.clone(), syntax_by_loader(&loader), Some(&comments))
-      .map_err(|e| BuildError::parse_js_failed(fm, e).context(format!("{loader:?}")))?;
-    if matches!(loader, Loader::Ts | Loader::Tsx) {
-      rolldown_swc_visitors::ts_to_js(&mut ast);
-    }
+    let (mut ast, comments) = parse_to_js_ast(&self.id, code, loader, &self.input_options)?;
 
     // No matter what, the ast should be a pure valid JavaScript in this phrase
     GLOBALS.set(&SWC_GLOBALS, || {
@@ -167,4 +169,50 @@ pub(crate) struct TaskResult {
   #[derivative(Debug = "ignore")]
   pub comments: SwcComments,
   pub is_user_defined_entry: bool,
+}
+
+/// This function should emit valid JavaScript AST(with JSX)
+fn parse_to_js_ast(
+  id: &ModuleId,
+  source: String,
+  loader: Loader,
+  input_options: &SharedBuildInputOptions,
+) -> UnaryBuildResult<(ast::Module, SwcComments)> {
+  match loader {
+    Loader::Js | Loader::Jsx | Loader::Ts | Loader::Tsx => {
+      let is_jsx_or_tsx = matches!(loader, Loader::Jsx | Loader::Tsx);
+      let is_ts_or_tsx = matches!(loader, Loader::Ts | Loader::Tsx);
+      let syntax = if is_ts_or_tsx {
+        Syntax::Typescript(TsConfig {
+          tsx: is_jsx_or_tsx,
+          decorators: true,
+          ..Default::default()
+        })
+      } else {
+        Syntax::Es(EsConfig {
+          jsx: is_jsx_or_tsx,
+          ..Default::default()
+        })
+      };
+      let comments = SwcComments::default();
+      let fm = COMPILER.create_source_file(PathBuf::from(id.as_ref().to_string()), source);
+      let mut ast = COMPILER
+        .parse_with_comments(fm.clone(), syntax, Some(&comments))
+        .map_err(|e| BuildError::parse_js_failed(fm, e).context(format!("{loader:?}")))?;
+      if is_ts_or_tsx {
+        rolldown_swc_visitors::ts_to_js(
+          &mut ast,
+          rolldown_swc_visitors::TsConfig {
+            use_define_for_class_fields: input_options
+              .builtins
+              .tsconfig
+              .use_define_for_class_fields,
+            ..Default::default()
+          },
+        );
+      }
+      Ok((ast, comments))
+    }
+    Loader::Json => unimplemented!(),
+  }
 }

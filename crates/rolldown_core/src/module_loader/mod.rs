@@ -15,12 +15,12 @@ use tracing::instrument;
 
 use crate::{norm_or_ext::NormOrExt, BuildInputOptions, Graph, NormalModule, SWC_GLOBALS};
 use crate::{
-  resolve_id, BuildError, BuildResult, ExternalModule, SharedBuildPluginDriver, SharedResolver,
-  StatementParts, UnaryBuildResult,
+  resolve_id, BuildError, BuildResult, ExternalModule, SharedBuildInputOptions,
+  SharedBuildPluginDriver, SharedResolver, StatementParts, UnaryBuildResult,
 };
 
 pub(crate) struct ModuleLoader<'a> {
-  input_options: &'a BuildInputOptions,
+  input_options: SharedBuildInputOptions,
   graph: &'a mut Graph,
   build_plugin_driver: SharedBuildPluginDriver,
   loaded_modules: HashSet<ModuleId>,
@@ -43,7 +43,7 @@ impl<'a> ModuleLoader<'a> {
     graph: &'a mut Graph,
     resolver: SharedResolver,
     plugin_driver: SharedBuildPluginDriver,
-    input_opts: &'a BuildInputOptions,
+    input_options: SharedBuildInputOptions,
   ) -> Self {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Msg>();
     Self {
@@ -56,7 +56,7 @@ impl<'a> ModuleLoader<'a> {
       errors: Default::default(),
       build_plugin_driver: plugin_driver,
       dynamic_imported_modules: Default::default(),
-      input_options: input_opts,
+      input_options,
     }
   }
 
@@ -89,17 +89,14 @@ impl<'a> ModuleLoader<'a> {
   }
 
   #[instrument(skip_all)]
-  pub(crate) async fn fetch_all_modules(
-    mut self,
-    input_opts: &BuildInputOptions,
-  ) -> BuildResult<()> {
-    if input_opts.input.is_empty() {
+  pub(crate) async fn fetch_all_modules(mut self) -> BuildResult<()> {
+    if self.input_options.input.is_empty() {
       return Err(
         BuildError::panic("You must supply options.input to rolldown".to_string()).into(),
       );
     }
 
-    let resolved_entries = self.resolve_entries(input_opts).await;
+    let resolved_entries = self.resolve_entries(&self.input_options).await;
 
     resolved_entries
       .into_iter()
@@ -168,6 +165,7 @@ impl<'a> ModuleLoader<'a> {
       resolver: self.resolver.clone(),
       plugin_driver: self.build_plugin_driver.clone(),
       is_external: self.input_options.is_external.clone(),
+      input_options: self.input_options.clone(),
     };
     tokio::spawn(task.run());
   }

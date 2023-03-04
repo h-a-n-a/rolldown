@@ -1,0 +1,15 @@
+---
+source: crates/rolldown/tests/common/mod.rs
+expression: compiled_fx.output_friendly_to_snapshot()
+input_file: crates/rolldown/tests/esbuild/ts/ts_computed_class_field_use_define_false
+---
+---------- main.js ----------
+// main.ts
+class Foo {
+    [r] = s;
+    @dec
+    [x];
+    @dec
+    [y] = z;
+}
+new Foo();

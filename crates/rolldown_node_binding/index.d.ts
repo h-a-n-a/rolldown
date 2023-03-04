@@ -16,12 +16,16 @@ export interface BuildPluginOption {
   transform?: (id: string, code: string) => Promise<string | null | undefined>
   resolveId?: (specifier: string, importer?: string) => Promise<string | null | ResolveIdResult>
 }
-export interface BuiltinNodeResolveOption {
+export interface NodeResolveOptions {
   extensions: Array<string>
 }
-export interface BuiltinsOption {
-  /** None means disable the builtin */
-  nodeResolve?: BuiltinNodeResolveOption
+export interface TsConfigOptions {
+  useDefineForClassFields: boolean
+}
+export interface BuiltinsOptions {
+  /** None means disable the behaviors */
+  nodeResolve?: NodeResolveOptions
+  tsconfig?: TsConfigOptions
 }
 export interface InputOptions {
   external: ExternalOption
@@ -30,7 +34,7 @@ export interface InputOptions {
   preserveSymlinks: boolean
   treeshake?: boolean
   cwd: string
-  builtins: BuiltinsOption
+  builtins: BuiltinsOptions
 }
 export interface OutputOptions {
   entryFileNames?: string

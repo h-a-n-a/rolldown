@@ -49,7 +49,7 @@ pub struct InputOptions {
 
   // extra
   pub cwd: String,
-  pub builtins: BuiltinsOption,
+  pub builtins: BuiltinsOptions,
 }
 
 pub fn resolve_input_options(
@@ -84,6 +84,9 @@ pub fn resolve_input_options(
           .map(|opts| rolldown::NodeResolveOptions {
             extensions: opts.extensions,
           }),
+        tsconfig: opts.builtins.tsconfig.map(|opts| rolldown::TsConfig {
+          use_define_for_class_fields: opts.use_define_for_class_fields,
+        }),
       },
       on_warn: default_warning_handler(),
       shim_missing_exports: false,

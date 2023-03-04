@@ -28,6 +28,9 @@ pub struct InputOptions {
 
   #[serde(default)]
   pub shim_missing_exports: bool,
+
+  #[serde(default)]
+  pub builtins: Builtins,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -37,5 +40,21 @@ pub struct InputItem {
   pub import: String,
 }
 
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Builtins {
+  #[serde(default)]
+  pub tsconfig: TsConfig,
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TsConfig {
+  #[serde(default)]
+  pub use_define_for_class_fields: bool,
+}
+
 impl_serde_default!(InputOptions);
 impl_serde_default!(InputItem);
+impl_serde_default!(Builtins);
+impl_serde_default!(TsConfig);

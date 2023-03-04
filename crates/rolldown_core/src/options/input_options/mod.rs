@@ -7,6 +7,8 @@ use crate::{UnaryBuildResult, WarningHandler};
 
 mod input_item;
 pub use input_item::*;
+mod builtins;
+pub use builtins::*;
 
 type PinFutureBox<T> = Pin<Box<dyn Future<Output = T> + Send>>;
 
@@ -24,6 +26,7 @@ pub struct BuildInputOptions {
   #[derivative(Debug = "ignore")]
   pub on_warn: WarningHandler,
   pub shim_missing_exports: bool,
+  pub builtins: BuiltinsOptions,
 }
 
 impl Default for BuildInputOptions {
@@ -37,6 +40,7 @@ impl Default for BuildInputOptions {
         eprintln!("{}", err);
       }),
       shim_missing_exports: false,
+      builtins: Default::default(),
     }
   }
 }

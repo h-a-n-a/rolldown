@@ -22,6 +22,7 @@ swc_core = { workspace = true, features = [
   "ecma_transforms_optimization",
   "ecma_transforms_module",
   "ecma_transforms_typescript",
+  "ecma_transforms_proposal",
   "ecma_utils",
 ] }
 tracing = { workspace = true }

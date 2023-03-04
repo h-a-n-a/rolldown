@@ -37,7 +37,7 @@ impl BundlerCore {
     tracing::debug!("{:#?}", self.input_options);
     tracing::debug!("{:#?}", output_opts);
     let mut graph = Graph::new(self.plugin_driver.clone(), self.input_options.clone());
-    graph.generate_module_graph(&self.input_options).await?;
+    graph.generate_module_graph().await?;
     let mut bundle = Bundle::new(&self.input_options, &output_opts, &mut graph);
     let assets = bundle.generate()?;
     Ok(assets)

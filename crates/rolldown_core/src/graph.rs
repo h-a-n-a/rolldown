@@ -15,8 +15,7 @@ use tracing::instrument;
 
 use crate::module_loader::ModuleLoader;
 use crate::{
-  norm_or_ext::NormOrExt, normal_module::NormalModule, options::BuildInputOptions, ModuleById,
-  UnaryBuildResult, SWC_GLOBALS,
+  norm_or_ext::NormOrExt, normal_module::NormalModule, ModuleById, UnaryBuildResult, SWC_GLOBALS,
 };
 use crate::{BuildError, BuildResult, SharedBuildInputOptions, SharedBuildPluginDriver};
 
@@ -664,22 +663,24 @@ impl Graph {
   }
 
   #[instrument(skip_all)]
-  pub(crate) async fn generate_module_graph(
-    &mut self,
-    input_opts: &BuildInputOptions,
-  ) -> BuildResult<()> {
-    let resolver = Arc::new(Resolver::with_cwd(input_opts.cwd.clone()));
+  pub(crate) async fn generate_module_graph(&mut self) -> BuildResult<()> {
+    let resolver = Arc::new(Resolver::with_cwd(self.input_options.cwd.clone()));
 
-    ModuleLoader::new(self, resolver, self.build_plugin_driver.clone(), input_opts)
-      .fetch_all_modules(input_opts)
-      .await?;
+    ModuleLoader::new(
+      self,
+      resolver,
+      self.build_plugin_driver.clone(),
+      self.input_options.clone(),
+    )
+    .fetch_all_modules()
+    .await?;
 
     self.sort_modules();
     self.link()?;
     self.patch();
     tracing::trace!("graph after link and patch {:#?}", self);
 
-    if input_opts.treeshake {
+    if self.input_options.treeshake {
       self.treeshake()?;
     } else {
       self

@@ -57,7 +57,15 @@ impl Tester {
       }),
       preserve_symlinks: false,
       builtins: rolldown::BuiltinsOptions {
-        node_resolve: Some(Default::default()),
+        tsconfig: Some(rolldown::TsConfig {
+          use_define_for_class_fields: self
+            .config
+            .input
+            .builtins
+            .tsconfig
+            .use_define_for_class_fields,
+        }),
+        ..Default::default()
       },
       shim_missing_exports: self.config.input.shim_missing_exports,
     }

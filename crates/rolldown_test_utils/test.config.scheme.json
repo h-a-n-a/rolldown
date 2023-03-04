@@ -22,6 +22,15 @@
   },
   "additionalProperties": false,
   "definitions": {
+    "Builtins": {
+      "type": "object",
+      "properties": {
+        "tsconfig": {
+          "$ref": "#/definitions/TsConfig"
+        }
+      },
+      "additionalProperties": false
+    },
     "ExpectedError": {
       "type": "object",
       "required": [
@@ -57,6 +66,9 @@
     "InputOptions": {
       "type": "object",
       "properties": {
+        "builtins": {
+          "$ref": "#/definitions/Builtins"
+        },
         "external": {
           "default": [],
           "type": "array",
@@ -91,6 +103,16 @@
         "format": {
           "default": "esm",
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TsConfig": {
+      "type": "object",
+      "properties": {
+        "useDefineForClassFields": {
+          "default": false,
+          "type": "boolean"
         }
       },
       "additionalProperties": false

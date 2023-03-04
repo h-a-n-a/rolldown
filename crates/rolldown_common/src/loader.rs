@@ -6,6 +6,7 @@ pub enum Loader {
   Jsx,
   Ts,
   Tsx,
+  Json,
 }
 
 impl FromStr for Loader {

@@ -19,9 +19,9 @@ use swc_core::{
 use tracing::instrument;
 
 use crate::{
-  file_name, norm_or_ext::NormOrExt, preset_of_used_names, syntax_by_loader, BuildError,
-  BuildInputOptions, BuildOutputOptions, ExportMode, Graph, MergedExports, ModuleById,
-  ModuleRefMutById, SplitPointIdToChunkId, UnaryBuildResult, COMPILER,
+  file_name, norm_or_ext::NormOrExt, preset_of_used_names, BuildError, BuildInputOptions,
+  BuildOutputOptions, ExportMode, Graph, MergedExports, ModuleById, ModuleRefMutById,
+  SplitPointIdToChunkId, UnaryBuildResult, COMPILER,
 };
 
 pub struct Chunk {
@@ -114,7 +114,7 @@ impl Chunk {
       let mut program = COMPILER
         .parse_with_comments(
           fm.clone(),
-          syntax_by_loader(&rolldown_common::Loader::Js),
+          swc_core::ecma::parser::Syntax::Es(Default::default()),
           Some(&comments),
         )
         .map_err(|e| BuildError::parse_js_failed(fm.clone(), e))?;
@@ -532,6 +532,7 @@ impl Chunk {
               src: src.clone(),
               span: Default::default(),
               asserts: None,
+              type_only: false,
             },
           )))
         }

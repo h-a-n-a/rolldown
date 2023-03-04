@@ -5,6 +5,6 @@ use serde::Deserialize;
 #[derive(Deserialize, Default, Derivative)]
 #[serde(rename_all = "camelCase")]
 #[derivative(Debug)]
-pub struct NodeResolveOptions {
-  pub extensions: Vec<String>,
+pub struct TsConfigOptions {
+  pub use_define_for_class_fields: bool,
 }

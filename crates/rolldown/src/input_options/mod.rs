@@ -37,9 +37,7 @@ impl Default for InputOptions {
       is_external: Arc::new(|_, _, _| future::ready(Ok(false)).boxed()),
       on_warn: default_warning_handler(),
       shim_missing_exports: false,
-      builtins: BuiltinsOptions {
-        node_resolve: Some(Default::default()),
-      },
+      builtins: Default::default(),
     }
   }
 }
