@@ -13,10 +13,12 @@ async fn main() {
       name: "threejs-10x".to_string(),
       import: project_root
         .join("../../temp/threejs10x/main.js")
+        // .join("../../temp/threejs/src/Three.js")
         .to_string_lossy()
         .to_string(),
     }],
     cwd: project_root.join("../../temp/threejs10x/"),
+    // .join("../../temp/threejs"),
     ..Default::default()
   });
   bundler

@@ -39,3 +39,8 @@ testing           = { version = "0.31.29" }
 testing_macros    = "0.2.7"
 tokio             = { version = "1.24.1" }
 tracing           = "0.1.37"
+
+[patch.crates-io]
+# Use bucket instead of global mutex for dynamic set
+# See: https://github.com/servo/string-cache/pull/268
+string_cache = { git = "https://github.com/servo/string-cache", rev = "2633751a2f98ff2b9c174b36caa80f7667bb4567" }

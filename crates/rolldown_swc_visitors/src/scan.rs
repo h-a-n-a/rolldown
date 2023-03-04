@@ -101,8 +101,10 @@ impl Scanner {
     self.result.declared_scoped_names.insert(id.name().clone());
   }
 
-  fn add_dependency(&mut self, specifier: JsWord) {
-    self.result.dependencies.get_or_insert(specifier);
+  fn add_dependency(&mut self, specifier: &JsWord) {
+    if !self.result.dependencies.contains(specifier) {
+      self.result.dependencies.insert(specifier.clone());
+    }
   }
 
   fn check_is_already_exported(&mut self, exported_name: &JsWord) {
@@ -175,7 +177,7 @@ impl Scanner {
   fn scan_import(&mut self, module_decl: &ModuleDecl) {
     if let ModuleDecl::Import(import_decl) = module_decl {
       let local_module_id = import_decl.src.value.clone();
-      self.add_dependency(local_module_id.clone());
+      self.add_dependency(&local_module_id);
       import_decl.specifiers.iter().for_each(|specifier| {
         let (imported_name, imported_as) = match specifier {
           ast::ImportSpecifier::Named(s) => {
@@ -210,7 +212,7 @@ impl Scanner {
         let dep_id = node.src.as_ref().map(|s| s.value.clone());
 
         if let Some(source) = &dep_id {
-          self.add_dependency(source.clone());
+          self.add_dependency(source);
 
           node.specifiers.iter().for_each(|specifier| {
             match specifier {
@@ -302,7 +304,7 @@ impl Scanner {
         let source = node.src.value.clone();
         self.add_re_export_all(source);
 
-        self.add_dependency(node.src.value.clone());
+        self.add_dependency(&node.src.value);
       }
       _ => {}
     }

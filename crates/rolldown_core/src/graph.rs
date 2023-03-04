@@ -90,66 +90,88 @@ impl Graph {
 
   #[tracing::instrument(skip_all)]
   fn sort_modules(&mut self) {
+    #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum Action {
       Enter,
       Exit,
     }
-    type Queue = Vec<(Action, ModuleId)>;
-    let mut queue = self
+
+    let mut stack = self
       .entries
       .iter()
-      .map(|dep| self.module_by_id.get(dep).unwrap())
-      .map(|module| (Action::Enter, module.id().clone()))
+      .map(|entry| (Action::Enter, entry))
       .rev()
-      .collect::<Vec<_>>();
+      .collect_vec();
+    let mut dynamic_entries = FxHashSet::default();
 
-    let mut entered_ids: HashSet<ModuleId> = FxHashSet::default();
+    let mut entered_ids: HashSet<&ModuleId> = FxHashSet::default();
+    entered_ids.shrink_to(self.module_by_id.len());
+
     let mut next_exec_order = 0;
-    let mut dynamic_entries = vec![];
 
-    let mut walk = |queue: &mut Queue, mut dynamic_entries: Option<&mut Queue>| {
-      while let Some((action, id)) = queue.pop() {
-        match action {
-          Action::Enter => {
-            let module = self.module_by_id.get(&id).unwrap();
-            if !entered_ids.contains(&id) {
-              entered_ids.insert(id.clone());
-              queue.push((Action::Exit, id.clone()));
+    while let Some((action, id)) = stack.pop() {
+      let module = self.module_by_id.get(&id).unwrap();
+      match action {
+        Action::Enter => {
+          if !entered_ids.contains(id) {
+            entered_ids.insert(id);
+            stack.push((Action::Exit, id));
+            stack.extend(
               module
                 .dependencies()
-                .into_iter()
+                .iter()
                 .rev()
-                // Early filter modules that are already entered
-                .filter(|id| !entered_ids.contains(id))
-                .for_each(|dep| {
-                  queue.push((Action::Enter, dep.clone()));
-                });
-              if let Some(dynamic_entries) = dynamic_entries.as_mut() {
-                module
-                  .dynamic_dependencies()
-                  .into_iter()
-                  // Early filter modules that are already entered
-                  .filter(|module| !entered_ids.contains(module))
-                  .for_each(|dep| {
-                    dynamic_entries.push((Action::Enter, dep.clone()));
-                  });
-              }
-            }
-          }
-          Action::Exit => {
-            self
-              .module_by_id
-              .get_mut(&id)
-              .unwrap()
-              .set_exec_order(next_exec_order);
-            next_exec_order += 1;
+                .map(|id| (Action::Enter, id)),
+            );
+            dynamic_entries.extend(
+              module
+                .dynamic_dependencies()
+                .into_iter()
+                .map(|id| (Action::Enter, id)),
+            )
           }
         }
+        Action::Exit => {
+          let module_p = module as *const NormOrExt as *mut NormOrExt;
+          // safety:
+          // 1. linking is a process in single thread
+          // 2. We won't touch `id` filed which is borrowed in above
+          unsafe { (*module_p).set_exec_order(next_exec_order) }
+          next_exec_order += 1;
+        }
       }
-    };
+    }
 
-    walk(&mut queue, Some(&mut dynamic_entries));
-    walk(&mut dynamic_entries, None);
+    // start again from modules imported dynamically
+    stack.extend(dynamic_entries);
+
+    while let Some((action, id)) = stack.pop() {
+      let module = self.module_by_id.get(&id).unwrap();
+      match action {
+        Action::Enter => {
+          if !entered_ids.contains(id) {
+            entered_ids.insert(id);
+            stack.push((Action::Exit, id));
+            stack.extend(
+              module
+                .dependencies()
+                .iter()
+                .rev()
+                .map(|id| (Action::Enter, id)),
+            );
+          }
+        }
+        Action::Exit => {
+          let module_p = module as *const NormOrExt as *mut NormOrExt;
+          // safety:
+          // 1. linking is a process in single thread
+          // 2. We won't touch `id` filed which is borrowed in above
+          unsafe { (*module_p).set_exec_order(next_exec_order) }
+          next_exec_order += 1;
+        }
+      }
+    }
+
     tracing::debug!(
       "sorted modules {:#?}",
       self

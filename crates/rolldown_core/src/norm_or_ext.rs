@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use rolldown_common::ModuleId;
 use rolldown_runtime_helpers::RuntimeHelpers;
 use swc_core::common::SyntaxContext;
@@ -20,17 +18,19 @@ impl NormOrExt {
     }
   }
 
-  pub fn dependencies(&self) -> Vec<&ModuleId> {
+  pub fn dependencies(&self) -> &[ModuleId] {
+    static DUMMY: [ModuleId; 0] = [];
     match self {
-      NormOrExt::Normal(module) => module.dependencies.iter().collect(),
-      NormOrExt::External(_) => Default::default(),
+      NormOrExt::Normal(module) => &module.dependencies,
+      NormOrExt::External(_) => &DUMMY,
     }
   }
 
-  pub fn dynamic_dependencies(&self) -> HashSet<&ModuleId> {
+  pub fn dynamic_dependencies(&self) -> &[ModuleId] {
+    static DUMMY: [ModuleId; 0] = [];
     match self {
-      NormOrExt::Normal(module) => module.dyn_dependencies.iter().collect(),
-      NormOrExt::External(_) => Default::default(),
+      NormOrExt::Normal(module) => &module.dyn_dependencies,
+      NormOrExt::External(_) => &DUMMY,
     }
   }
 

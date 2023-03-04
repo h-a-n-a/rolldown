@@ -2062,9 +2062,8 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "string_cache"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "213494b7a2b503146286049378ce02b482200519accc31872ee8be91fa820a08"
+version = "0.8.6"
+source = "git+https://github.com/servo/string-cache?rev=2633751a2f98ff2b9c174b36caa80f7667bb4567#2633751a2f98ff2b9c174b36caa80f7667bb4567"
 dependencies = [
  "new_debug_unreachable",
  "once_cell",
