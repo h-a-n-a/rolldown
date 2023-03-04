@@ -36,10 +36,3 @@ swc_core = { workspace = true, features = [
 swc_node_comments = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
-
-[dev_dependencies]
-criterion                    = "0.4.0"
-insta                        = { workspace = true }
-rolldown_plugin_node_resolve = { path = "../rolldown_plugin_node_resolve" }
-rolldown_test_utils          = { path = "../rolldown_test_utils" }
-testing_macros               = { workspace = true }

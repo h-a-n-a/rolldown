@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use napi_derive::*;
-use rolldown::core::InternalModuleFormat;
+use rolldown::ModuleFormat;
 use serde::Deserialize;
 
 #[napi(object)]
@@ -71,7 +71,7 @@ pub fn resolve_output_options(opts: OutputOptions) -> napi::Result<rolldown::Out
     defaults.chunk_file_names = chunk_file_names.into()
   }
   if let Some(format) = opts.format {
-    defaults.format = InternalModuleFormat::from_str(format.as_str()).map_err(|err| {
+    defaults.format = ModuleFormat::from_str(format.as_str()).map_err(|err| {
       napi::Error::new(
         napi::Status::InvalidArg,
         format!("Invalid module format {}", err),

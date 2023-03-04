@@ -5,7 +5,7 @@ use std::{
 };
 
 use futures::FutureExt;
-use rolldown::error::Error as BuildError;
+use rolldown_error::Error as BuildError;
 
 use crate::test_config::TestConfig;
 

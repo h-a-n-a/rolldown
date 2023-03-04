@@ -1,5 +1,5 @@
 use derivative::Derivative;
-use rolldown_core::{file_name::FileNameTemplate, ExportMode, InternalModuleFormat};
+pub use rolldown_core::{file_name::FileNameTemplate, ExportMode, ModuleFormat};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -7,7 +7,7 @@ pub struct OutputOptions {
   pub dir: Option<String>,
   pub entry_file_names: FileNameTemplate,
   pub chunk_file_names: FileNameTemplate,
-  pub format: InternalModuleFormat,
+  pub format: ModuleFormat,
   pub export_mode: ExportMode,
 }
 
@@ -17,7 +17,7 @@ impl Default for OutputOptions {
       entry_file_names: FileNameTemplate::from("[name].js".to_string()),
       chunk_file_names: FileNameTemplate::from("[name]-[hash].js".to_string()),
       dir: None,
-      format: InternalModuleFormat::Esm,
+      format: ModuleFormat::Esm,
       export_mode: ExportMode::Auto,
     }
   }

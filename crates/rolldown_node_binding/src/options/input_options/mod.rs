@@ -71,7 +71,7 @@ pub fn resolve_input_options(
       input: opts
         .input
         .into_iter()
-        .map(|(name, import)| rolldown::core::InputItem { name, import })
+        .map(|(name, import)| rolldown::InputItem { name, import })
         .collect(),
       cwd,
       treeshake: opts.treeshake.unwrap_or(true),

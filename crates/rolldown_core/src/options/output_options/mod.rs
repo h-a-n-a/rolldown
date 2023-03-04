@@ -8,30 +8,30 @@ pub use export_mode::*;
 use self::file_name::FileNameTemplate;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum InternalModuleFormat {
+pub enum ModuleFormat {
   Esm,
   Cjs,
   // AMD,
   // UMD,
 }
 
-impl InternalModuleFormat {
+impl ModuleFormat {
   pub fn is_es(self) -> bool {
-    self == InternalModuleFormat::Esm
+    self == ModuleFormat::Esm
   }
 
   pub fn is_cjs(self) -> bool {
-    self == InternalModuleFormat::Cjs
+    self == ModuleFormat::Cjs
   }
 }
 
-impl FromStr for InternalModuleFormat {
+impl FromStr for ModuleFormat {
   type Err = String;
 
   fn from_str(value: &str) -> Result<Self, Self::Err> {
     match value {
-      "esm" => Ok(InternalModuleFormat::Esm),
-      "cjs" => Ok(InternalModuleFormat::Cjs),
+      "esm" => Ok(ModuleFormat::Esm),
+      "cjs" => Ok(ModuleFormat::Cjs),
       _ => Err(format!("Invalid module format: {value}")),
     }
   }
@@ -42,7 +42,7 @@ impl FromStr for InternalModuleFormat {
 pub struct BuildOutputOptions {
   pub entry_file_names: FileNameTemplate,
   pub chunk_file_names: FileNameTemplate,
-  pub format: InternalModuleFormat,
+  pub format: ModuleFormat,
   pub export_mode: ExportMode,
 }
 
@@ -51,7 +51,7 @@ impl Default for BuildOutputOptions {
     Self {
       entry_file_names: FileNameTemplate::from("[name].js".to_string()),
       chunk_file_names: FileNameTemplate::from("[name]-[hash].js".to_string()),
-      format: InternalModuleFormat::Esm,
+      format: ModuleFormat::Esm,
       export_mode: ExportMode::Auto,
     }
   }

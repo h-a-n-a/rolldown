@@ -1,6 +1,7 @@
 use napi::{tokio::sync::Mutex, Env};
 use napi_derive::*;
-use rolldown::{error::Errors, Bundler as NativeBundler};
+use rolldown::Bundler as NativeBundler;
+use rolldown_error::Errors;
 use tracing::instrument;
 
 use crate::{
