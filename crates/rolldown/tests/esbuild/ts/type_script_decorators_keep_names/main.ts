@@ -1,0 +1,2 @@
+@decoratorMustComeAfterName
+class Foo {}
