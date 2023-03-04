@@ -42,7 +42,7 @@ pub struct InputOptions {
   // /** @deprecated Use the "preserveModules" output option instead. */
   // preserveModules?: boolean;
   pub preserve_symlinks: bool,
-  // shimMissingExports?: boolean;
+  pub shim_missing_exports: bool,
   // strictDeprecations?: boolean;
   pub treeshake: Option<bool>,
   // watch?: WatcherOptions | false;
@@ -89,7 +89,7 @@ pub fn resolve_input_options(
         }),
       },
       on_warn: default_warning_handler(),
-      shim_missing_exports: false,
+      shim_missing_exports: opts.shim_missing_exports,
     },
     plugins,
   ))

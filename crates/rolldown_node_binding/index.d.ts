@@ -32,6 +32,7 @@ export interface InputOptions {
   input: Record<string, string>
   plugins: Array<BuildPluginOption>
   preserveSymlinks: boolean
+  shimMissingExports: boolean
   treeshake?: boolean
   cwd: string
   builtins: BuiltinsOptions

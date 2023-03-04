@@ -83,7 +83,6 @@ export interface InputOptions extends RollupInputOptions {
   context?: never
   makeAbsoluteExternalsRelative?: never
   moduleContext?: never
-  shimMissingExports?: never
 
   // --- Rewritten
 
@@ -167,6 +166,7 @@ export async function normalizeInputOptions(
     plugins,
     cwd,
     preserveSymlinks,
+    shimMissingExports,
     ...rest
   } = input_opts
 
@@ -181,6 +181,7 @@ export async function normalizeInputOptions(
     external: normalizeExternal(external),
     plugins: await normalizePlugins(plugins),
     cwd: cwd ?? process.cwd(),
+    shimMissingExports: shimMissingExports ?? false,
     builtins: {
       nodeResolve: {
         extensions: ['.js', '.ts', '.tsx', 'jsx'],
