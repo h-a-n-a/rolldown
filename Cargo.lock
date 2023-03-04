@@ -1633,6 +1633,7 @@ dependencies = [
  "derivative",
  "futures",
  "insta",
+ "mimalloc-rust",
  "rolldown_core",
  "rolldown_error",
  "rolldown_plugin",

@@ -23,6 +23,12 @@ rolldown_plugin_node_resolve = { path = "../rolldown_plugin_node_resolve" }
 rolldown_test_utils          = { path = "../rolldown_test_utils" }
 testing_macros               = { workspace = true }
 
+[target.'cfg(not(target_os = "linux"))'.dev_dependencies]
+mimalloc-rust = "0.2"
+
+[target.'cfg(all(target_os = "linux", not(all(target_env = "musl", target_arch = "aarch64"))))'.dev_dependencies]
+mimalloc-rust = { version = "0.2", features = ["local-dynamic-tls"] }
+
 [[bench]]
 harness = false
 name    = "threejs"
