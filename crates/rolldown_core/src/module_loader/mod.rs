@@ -35,7 +35,7 @@ pub(crate) struct ModuleLoader<'a> {
 #[derive(Debug)]
 pub(crate) enum Msg {
   Scanned(TaskResult),
-  Error(BuildError),
+  Error(Errors),
 }
 
 impl<'a> ModuleLoader<'a> {
@@ -118,9 +118,9 @@ impl<'a> ModuleLoader<'a> {
           self.remaining_tasks -= 1;
           self.handle_msg_scanned(res);
         }
-        Msg::Error(err) => {
+        Msg::Error(errs) => {
           self.remaining_tasks -= 1;
-          self.errors.push(err);
+          self.errors.extend(errs.into_vec());
         }
       }
       tracing::trace!("remaining: {}", self.remaining_tasks);

@@ -3,19 +3,22 @@ use std::path::PathBuf;
 use derivative::Derivative;
 use futures::future::join_all;
 use rolldown_common::{Loader, ModuleId};
+use rolldown_error::Errors;
 use rolldown_plugin::ResolveArgs;
 use rolldown_resolver::Resolver;
 use rolldown_swc_visitors::ScanResult;
+use rustc_hash::FxHashMap;
 use sugar_path::AsPath;
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
 use swc_core::ecma::ast;
+use swc_core::ecma::atoms::JsWord;
 use swc_core::ecma::parser::{EsConfig, Syntax, TsConfig};
 use swc_node_comments::SwcComments;
 use tracing::instrument;
 
 use super::Msg;
 use crate::{
-  extract_loader_by_path, resolve_id, BuildError, IsExternal, ResolvedModuleIds,
+  extract_loader_by_path, resolve_id, BuildError, BuildResult, IsExternal, ResolvedModuleIds,
   SharedBuildInputOptions, SharedBuildPluginDriver, SharedResolver, UnaryBuildResult, COMPILER,
   SWC_GLOBALS,
 };
@@ -82,11 +85,61 @@ impl ModuleTask {
     }
   }
 
-  async fn run_inner(self) -> UnaryBuildResult<TaskResult> {
+  async fn resolve_dependencies(
+    &self,
+    result: &ScanResult,
+  ) -> BuildResult<FxHashMap<JsWord, ModuleId>> {
+    let dependencies = result
+      .dependencies
+      .iter()
+      .chain(result.dyn_dependencies.iter());
+
+    let jobs = dependencies.cloned().map(|specifier| {
+      let resolver = self.resolver.clone();
+      let plugin_driver = self.plugin_driver.clone();
+      let importer = self.id.clone();
+      let is_external = self.is_external.clone();
+
+      tokio::spawn(async move {
+        Self::resolve_id(
+          &resolver,
+          &importer,
+          &specifier,
+          &plugin_driver,
+          &is_external,
+        )
+        .await
+        .map(|id| (specifier.clone(), id))
+      })
+    });
+
+    let resolved_ids = join_all(jobs).await;
+
+    let mut errors = vec![];
+
+    let ret: FxHashMap<JsWord, ModuleId> = resolved_ids
+      .into_iter()
+      .filter_map(|handle| match handle.unwrap() {
+        Ok(id) => Some(id),
+        Err(e) => {
+          errors.push(e);
+          None
+        }
+      })
+      .collect();
+
+    if errors.is_empty() {
+      Ok(ret)
+    } else {
+      Err(Errors::from_vec(errors))
+    }
+  }
+
+  async fn run_inner(self) -> BuildResult<TaskResult> {
     // load hook
     let code = tokio::fs::read_to_string(self.id.as_ref())
       .await
-      .map_err(rolldown_error::anyhow::Error::from)
+      .map_err(|e| BuildError::io_error(e))
       .map_err(|e| e.context(format!("Read file: {}", self.id.as_ref())))?;
 
     let loader = if self.input_options.builtins.detect_loader_by_ext {
@@ -116,33 +169,7 @@ impl ModuleTask {
       self.id.clone(),
     );
 
-    let resolved_ids = join_all(
-      result
-        .dependencies
-        .iter()
-        .chain(result.dyn_dependencies.iter())
-        // .cloned()
-        .map(|specifier| {
-          let resolver = self.resolver.clone();
-          let plugin_driver = self.plugin_driver.clone();
-          let importer = self.id.clone();
-          let is_external = self.is_external.clone();
-          async move {
-            Self::resolve_id(
-              &resolver,
-              &importer,
-              specifier,
-              &plugin_driver,
-              &is_external,
-            )
-            .await
-            .map(|id| (specifier.clone(), id))
-          }
-        }),
-    )
-    .await;
-
-    let resolved_ids = resolved_ids.into_iter().try_collect()?;
+    let resolved_ids = self.resolve_dependencies(&result).await?;
 
     Ok(TaskResult {
       module_id: self.id,
