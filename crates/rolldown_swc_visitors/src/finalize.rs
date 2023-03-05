@@ -67,7 +67,6 @@ struct Finalizer<'me> {
   scope_id_to_final_name: HashMap<Id, JsWord>,
   top_level_names: HashSet<&'me JsWord>,
   used_scoped_names: HashSet<JsWord>,
-  // fix test case 'consistent-renaming-f'
 }
 
 impl<'a> Finalizer<'a> {
