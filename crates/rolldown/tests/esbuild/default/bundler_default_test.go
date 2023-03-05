@@ -690,24 +690,6 @@ star.js: WARNING: Import "y" will always be undefined because the file "foo.js" 
 // 	})
 // }
 
-func TestDotImport(t *testing.T) {
-	default_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				import {x} from '.'
-				console.log(x)
-			`,
-			"/index.js": `
-				exports.x = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
 
 func TestRequireWithTemplate(t *testing.T) {
 	default_suite.expectBundled(t, bundled{
@@ -4819,26 +4801,6 @@ func TestOutbase(t *testing.T) {
 	})
 }
 
-func TestAvoidTDZ(t *testing.T) {
-	default_suite.expectBundled(t, bundled{
-		files: map[string]string{
-			"/entry.js": `
-				class Foo {
-					static foo = new Foo
-				}
-				let foo = Foo.foo
-				console.log(foo)
-				export class Bar {}
-				export let bar = 123
-			`,
-		},
-		entryPaths: []string{"/entry.js"},
-		options: config.Options{
-			Mode:          config.ModeBundle,
-			AbsOutputFile: "/out.js",
-		},
-	})
-}
 
 func TestAvoidTDZNoBundle(t *testing.T) {
 	default_suite.expectBundled(t, bundled{
