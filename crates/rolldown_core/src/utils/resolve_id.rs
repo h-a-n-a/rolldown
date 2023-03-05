@@ -7,13 +7,19 @@ use crate::{SharedBuildPluginDriver, UnaryBuildResult};
 
 pub(crate) async fn resolve_id(
   resolver: &Resolver,
-  args: ResolveArgs<'_>,
+  specifier: &str,
+  importer: Option<&ModuleId>,
+  _preserve_symlinks: bool,
   plugin_driver: &SharedBuildPluginDriver,
 ) -> UnaryBuildResult<Option<ModuleId>> {
-  let importer = args.importer.map(|id| id.as_ref());
-  let specifier = args.specifier;
-
-  let plugin_result = plugin_driver.read().await.resolve(args).await?;
+  let plugin_result = plugin_driver
+    .read()
+    .await
+    .resolve(ResolveArgs {
+      importer,
+      specifier,
+    })
+    .await?;
 
   if plugin_result.is_some() {
     return Ok(
@@ -21,6 +27,7 @@ pub(crate) async fn resolve_id(
     );
   }
 
+  let importer = importer.map(|id| id.as_ref());
   // external modules (non-entry modules that start with neither '.' or '/')
   // are skipped at this stage.
   if importer.is_some() && !specifier.as_path().is_absolute() && !specifier.starts_with('.') {

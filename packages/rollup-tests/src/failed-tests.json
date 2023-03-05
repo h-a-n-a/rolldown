@@ -361,5 +361,6 @@
   "rollup@function@warning-low-resolution-location: handles when a low resolution sourcemap is used to report an error",
   "rollup@function@warnings-to-string: provides a string conversion for warnings",
   "rollup@function@warns-for-invalid-options: warns for invalid options",
-  "rollup@function@external-resolved: passes both unresolved and resolved ids to the external option"
+  "rollup@function@external-resolved: passes both unresolved and resolved ids to the external option",
+  "rollup@function@custom-external-module-options: supports adding custom options to external modules"
 ]

@@ -3,7 +3,6 @@ use std::collections::HashSet;
 use futures::future::join_all;
 use rolldown_common::{ExportedSpecifier, ModuleId};
 use rolldown_error::Errors;
-use rolldown_plugin::ResolveArgs;
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::common::{Mark, SyntaxContext, GLOBALS};
 
@@ -16,7 +15,7 @@ use tracing::instrument;
 use crate::{norm_or_ext::NormOrExt, BuildInputOptions, Graph, NormalModule, SWC_GLOBALS};
 use crate::{
   resolve_id, BuildError, BuildResult, ExternalModule, SharedBuildInputOptions,
-  SharedBuildPluginDriver, SharedResolver, StatementParts, UnaryBuildResult,
+  SharedBuildPluginDriver, SharedResolver, StatementParts,
 };
 
 pub(crate) struct ModuleLoader<'a> {
@@ -60,32 +59,53 @@ impl<'a> ModuleLoader<'a> {
     }
   }
 
-  #[instrument(skip_all)]
-  async fn resolve_entries(
-    &self,
-    input_opts: &BuildInputOptions,
-  ) -> Vec<UnaryBuildResult<ModuleId>> {
-    join_all(input_opts.input.iter().cloned().map(|input_item| async {
-      let id = resolve_id(
-        &self.resolver,
-        ResolveArgs {
-          importer: None,
-          specifier: &input_item.import,
-        },
-        &self.build_plugin_driver,
-      )
-      .await?;
+  // #[instrument(skip_all)]
+  async fn resolve_entries(&self, input_opts: &BuildInputOptions) -> BuildResult<Vec<ModuleId>> {
+    let futs = input_opts.input.iter().cloned().map(|input_item| {
+      let build_plugin_driver = self.build_plugin_driver.clone();
+      let resolver = self.resolver.clone();
+      tokio::spawn(async move {
+        let resolve_id = resolve_id(
+          &resolver,
+          &input_item.import,
+          None,
+          false,
+          &build_plugin_driver,
+        )
+        .await?;
 
-      let Some(id) = id else {
-          return Err(BuildError::unresolved_entry(input_item.import))
-        };
+        let Some(resolve_id) = resolve_id else {
+            return Err(BuildError::unresolved_entry(input_item.import))
+          };
 
-      if id.is_external() {
-        return Err(BuildError::entry_cannot_be_external(id.as_ref()));
-      }
-      UnaryBuildResult::Ok(id)
-    }))
-    .await
+        if resolve_id.is_external() {
+          return Err(BuildError::entry_cannot_be_external(resolve_id.as_ref()));
+        }
+
+        Ok(resolve_id)
+      })
+    });
+
+    let resolved_ids = join_all(futs).await;
+
+    let mut errors = vec![];
+
+    let ret = resolved_ids
+      .into_iter()
+      .filter_map(|handle| match handle.unwrap() {
+        Ok(id) => Some(id),
+        Err(e) => {
+          errors.push(e);
+          None
+        }
+      })
+      .collect();
+
+    if errors.is_empty() {
+      Ok(ret)
+    } else {
+      Err(Errors::from_vec(errors))
+    }
   }
 
   #[instrument(skip_all)]
@@ -96,20 +116,13 @@ impl<'a> ModuleLoader<'a> {
       );
     }
 
-    let resolved_entries = self.resolve_entries(&self.input_options).await;
+    let resolved_entries = self.resolve_entries(&self.input_options).await?;
 
-    resolved_entries
-      .into_iter()
-      .try_for_each(|entry| -> UnaryBuildResult<()> {
-        let id = entry?;
-        if id.is_external() {
-          return Err(BuildError::entry_cannot_be_external(id.as_ref()));
-        }
-        self.loaded_modules.insert(id.clone());
-        self.graph.entries.push(id.clone());
-        self.spawn_new_module_task(id, true);
-        Ok(())
-      })?;
+    resolved_entries.into_iter().for_each(|entry_id| {
+      self.loaded_modules.insert(entry_id.clone());
+      self.graph.entries.push(entry_id.clone());
+      self.spawn_new_module_task(entry_id, true);
+    });
 
     while self.remaining_tasks > 0 {
       let msg = self.rx.recv().await.unwrap();

@@ -4,7 +4,6 @@ use derivative::Derivative;
 use futures::future::join_all;
 use rolldown_common::{Loader, ModuleId};
 use rolldown_error::Errors;
-use rolldown_plugin::ResolveArgs;
 use rolldown_resolver::Resolver;
 use rolldown_swc_visitors::ScanResult;
 use rustc_hash::FxHashMap;
@@ -38,6 +37,8 @@ pub(crate) struct ModuleTask {
 }
 
 impl ModuleTask {
+  // I(hyf0) have no interest in implementing original resolve logic of rollup currently.
+  // It's complicated and I doubt the usage of it.
   pub(crate) async fn resolve_id(
     resolver: &Resolver,
     importer: &ModuleId,
@@ -45,29 +46,24 @@ impl ModuleTask {
     plugin_driver: &SharedBuildPluginDriver,
     is_external: &IsExternal,
   ) -> UnaryBuildResult<ModuleId> {
-    let inner_ret = {
-      let is_external = is_external(specifier, Some(importer.id()), false).await?;
-      if is_external {
-        None
-      } else {
-        resolve_id(
-          resolver,
-          ResolveArgs {
-            importer: Some(importer),
-            specifier,
-          },
-          plugin_driver,
-        )
-        .await?
-      }
-    };
+    let is_marked_as_external = is_external(specifier, Some(importer.id()), false).await?;
 
-    // getNormalizedResolvedIdWithoutDefaults
-    if let Some(id) = inner_ret {
-      let external = id.is_external() || is_external(id.id(), Some(importer.id()), true).await?;
-      Ok(ModuleId::new(id.id().clone(), external))
+    if is_marked_as_external {
+      return Ok(ModuleId::new(specifier, true));
+    }
+
+    let resolved_id = resolve_id(resolver, specifier, Some(importer), false, plugin_driver).await?;
+
+    if let Some(resolved) = resolved_id {
+      let is_resolved_marked_as_external =
+        is_external(resolved.id(), Some(importer.id()), true).await?;
+
+      Ok(ModuleId::new(
+        resolved.id().clone(),
+        is_resolved_marked_as_external,
+      ))
     } else {
-      // TODO: Align with rollup
+      // TODO: emit warnings like https://rollupjs.org/guide/en#warning-treating-module-as-external-dependency
       Ok(ModuleId::new(specifier, true))
     }
   }

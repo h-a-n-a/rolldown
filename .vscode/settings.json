@@ -44,6 +44,7 @@
     "elems",
     "esbuild",
     "Finalizer",
+    "futs",
     "hashbrown",
     "hashlink",
     "importee",
