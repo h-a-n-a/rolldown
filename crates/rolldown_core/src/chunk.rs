@@ -134,7 +134,7 @@ impl Chunk {
   }
 
   /// Deconflicting is to rename identifiers to avoid conflicts.
-  ///
+  #[instrument(skip_all)]
   pub(crate) fn deconflict(&mut self, ctx: &mut FinalizeBundleContext) -> FxHashMap<Id, JsWord> {
     let mut ordered_modules = {
       let mut modules = ctx.modules.values_mut().collect::<Vec<_>>();
@@ -284,15 +284,13 @@ impl Chunk {
         declared_scoped_names: &Default::default(),
         unresolved_ctxt: ctx.unresolved_ctxt,
         top_level_ctxt_set: &top_level_ctxt_set,
+        top_level_id_to_final_name: &id_to_name,
+        split_point_id_to_chunk_id: ctx.split_point_id_to_chunk_id,
       };
 
       self
         .before_module_items
-        .visit_mut_with(&mut rolldown_swc_visitors::finalizer(
-          &id_to_name,
-          ctx.split_point_id_to_chunk_id,
-          finalize_ctx,
-        ));
+        .visit_mut_with(&mut rolldown_swc_visitors::finalizer(finalize_ctx));
       let finalize_ctx = FinalizeContext {
         chunk_filename_by_id: ctx.chunk_filename_by_id,
         // Since there's no dynamic import expressions to rewrite, we can use empty set.
@@ -301,14 +299,12 @@ impl Chunk {
         declared_scoped_names: &Default::default(),
         unresolved_ctxt: ctx.unresolved_ctxt,
         top_level_ctxt_set: &top_level_ctxt_set,
+        top_level_id_to_final_name: &id_to_name,
+        split_point_id_to_chunk_id: ctx.split_point_id_to_chunk_id,
       };
       self
         .after_module_items
-        .visit_mut_with(&mut rolldown_swc_visitors::finalizer(
-          &id_to_name,
-          ctx.split_point_id_to_chunk_id,
-          finalize_ctx,
-        ));
+        .visit_mut_with(&mut rolldown_swc_visitors::finalizer(finalize_ctx));
     }
 
     ordered_modules
@@ -321,13 +317,12 @@ impl Chunk {
           declared_scoped_names: &declared_scoped_names,
           unresolved_ctxt: ctx.unresolved_ctxt,
           top_level_ctxt_set: &top_level_ctxt_set,
+          top_level_id_to_final_name: &id_to_name,
+          split_point_id_to_chunk_id: ctx.split_point_id_to_chunk_id,
         };
 
-        m.ast.visit_mut_with(&mut rolldown_swc_visitors::finalizer(
-          &id_to_name,
-          ctx.split_point_id_to_chunk_id,
-          finalize_ctx,
-        ));
+        m.ast
+          .visit_mut_with(&mut rolldown_swc_visitors::finalizer(finalize_ctx));
       });
     Ok(())
   }

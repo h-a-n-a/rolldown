@@ -2,11 +2,20 @@ use std::path::PathBuf;
 
 use rolldown::{Bundler, InputItem, InputOptions, OutputOptions};
 use rolldown_tracing::enable_tracing_on_demand;
+use sugar_path::SugarPathBuf;
 
 #[tokio::main]
 async fn main() {
   let _guard = enable_tracing_on_demand();
-  let project_root = PathBuf::from(&std::env::var("CARGO_MANIFEST_DIR").unwrap());
+  let project_root = std::env::var_os("CARGO_MANIFEST_DIR")
+    .map(|s| PathBuf::from(s))
+    .unwrap_or_else(|| {
+      let project_root = std::env::current_dir()
+        .unwrap()
+        .join("./crates/rolldown")
+        .into_normalize();
+      project_root
+    });
 
   let mut bundler = Bundler::new(InputOptions {
     input: vec![InputItem {

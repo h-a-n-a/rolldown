@@ -52,46 +52,36 @@ pub struct FinalizeContext<'me> {
   pub chunk_filename_by_id: &'me HashMap<ChunkId, String>,
   // All top_level_ctxt of modules belong to this chunk
   pub top_level_ctxt_set: &'me HashSet<SyntaxContext>,
+  pub top_level_id_to_final_name: &'me HashMap<Id, JsWord>,
+  pub split_point_id_to_chunk_id: &'me HashMap<ModuleId, ChunkId>,
 }
 
 #[instrument(skip_all)]
-pub fn finalizer<'a>(
-  rename_map: &'a HashMap<Id, JsWord>,
-  split_point_id_to_chunk_id: &'a HashMap<ModuleId, ChunkId>,
-  ctx: FinalizeContext<'a>,
-) -> impl VisitMut + 'a {
-  Finalizer::new(rename_map, split_point_id_to_chunk_id, ctx)
+pub fn finalizer<'a>(ctx: FinalizeContext<'a>) -> impl VisitMut + 'a {
+  Finalizer::new(ctx)
 }
 
 #[derive(Debug)]
-struct Finalizer<'a> {
-  pub ctx: FinalizeContext<'a>,
+struct Finalizer<'me> {
+  pub ctx: FinalizeContext<'me>,
+  scope_id_to_final_name: HashMap<Id, JsWord>,
+  top_level_names: HashSet<&'me JsWord>,
   used_scoped_names: HashSet<JsWord>,
-  renamed_scoped_ids: HashMap<Id, JsWord>,
-  renamed_top_level_ids: &'a HashMap<Id, JsWord>,
-  top_level_names: HashSet<JsWord>,
   // fix test case 'consistent-renaming-f'
-  split_point_id_to_chunk_id: &'a HashMap<ModuleId, ChunkId>,
 }
 
 impl<'a> Finalizer<'a> {
-  pub fn new(
-    rename_map: &'a HashMap<Id, JsWord>,
-    split_point_id_to_chunk_id: &'a HashMap<ModuleId, ChunkId>,
-    ctx: FinalizeContext<'a>,
-  ) -> Self {
+  pub fn new(ctx: FinalizeContext<'a>) -> Self {
     Self {
-      renamed_top_level_ids: rename_map,
-      top_level_names: rename_map.values().cloned().collect(),
-      renamed_scoped_ids: Default::default(),
-      split_point_id_to_chunk_id,
-      ctx,
+      top_level_names: ctx.top_level_id_to_final_name.values().collect(),
+      scope_id_to_final_name: Default::default(),
       used_scoped_names: Default::default(),
+      ctx,
     }
   }
   fn rename_top_level_ident(&mut self, ident: &mut Ident) -> Option<()> {
     debug_assert!(self.ident_type(ident).is_top_level());
-    let name = self.renamed_top_level_ids.get(&ident.to_id())?;
+    let name = self.ctx.top_level_id_to_final_name.get(&ident.to_id())?;
     // Renamed ident should be dummy.
     *ident = quote_ident!(name.clone());
     Some(())
@@ -99,7 +89,7 @@ impl<'a> Finalizer<'a> {
 
   fn rename_scoped_ident(&mut self, ident: &mut Ident) -> Option<()> {
     debug_assert!(self.ident_type(ident).is_scoped());
-    let name = self.renamed_scoped_ids.get(&ident.to_id())?;
+    let name = self.scope_id_to_final_name.get(&ident.to_id())?;
     // Renamed ident should be dummy.
     *ident = quote_ident!(name.clone());
     Some(())
@@ -122,7 +112,8 @@ impl<'a> Finalizer<'a> {
     match self.ident_type(ident) {
       // If the final name is different from the original name, we should rename it
       IdentType::TopLevel => self
-        .renamed_top_level_ids
+        .ctx
+        .top_level_id_to_final_name
         .get(&id)
         .map_or(false, |final_name| final_name != &id.0),
 
@@ -140,7 +131,7 @@ impl<'a> Finalizer<'a> {
 
     let id = ident.to_id();
 
-    if self.top_level_names.contains(&id.0) && !self.renamed_scoped_ids.contains_key(&id) {
+    if self.top_level_names.contains(&id.0) && !self.scope_id_to_final_name.contains_key(&id) {
       let mut count = 1;
       let mut new_name: JsWord = format!("{}${}", &id.0, count).into();
       while self.ctx.declared_scoped_names.contains(&new_name)
@@ -151,7 +142,7 @@ impl<'a> Finalizer<'a> {
         new_name = format!("{}${}", &id.0, count).into();
       }
       self.used_scoped_names.insert(new_name.clone());
-      self.renamed_scoped_ids.insert(id, new_name);
+      self.scope_id_to_final_name.insert(id, new_name);
     }
   }
 
@@ -166,7 +157,7 @@ impl<'a> Finalizer<'a> {
       {
         *raw = None;
         let module_id = self.resolve_module_id(local_module_id)?;
-        let chunk_id = self.split_point_id_to_chunk_id.get(module_id)?;
+        let chunk_id = self.ctx.split_point_id_to_chunk_id.get(module_id)?;
         let filename = self.ctx.chunk_filename_by_id.get(chunk_id)?;
         *local_module_id = format!("./{}", filename.clone()).into();
       };
