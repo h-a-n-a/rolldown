@@ -17,3 +17,5 @@ crates/rolldown_core/tests/esbuild/**/*.js  linguist-detectable=false
 crates/rolldown_core/tests/fixtures/**/*.js linguist-detectable=false
 crates/rolldown_core/tests/rollup/**/*.js   linguist-detectable=false
 packages/rollup-tests/test/**/*.js          linguist-detectable=false
+
+/**/*.go   linguist-detectable=false
