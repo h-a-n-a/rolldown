@@ -1,0 +1,6 @@
+{
+  "expectedError": {
+    "code": "MISSING_EXPORT",
+    "message": "\"nope\" is not exported by \"bar.js\", imported by \"foo.js\"."
+  }
+}

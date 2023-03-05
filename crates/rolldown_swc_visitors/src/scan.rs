@@ -5,7 +5,7 @@ use hashlink::LinkedHashSet;
 use rolldown_common::{ExportedSpecifier, ImportedSpecifier, Symbol};
 use rolldown_common::{ModuleId, ReExportedSpecifier};
 use rolldown_swc_utils::{ExportNamedSpecifierExt, ImportNamedSpecifierExt, ModuleExportNameExt};
-use rustc_hash::{FxHashMap as HashMap, FxHashMap, FxHashSet as HashSet, FxHashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashMap, FxHashSet as HashSet};
 use swc_atoms::JsWord;
 use swc_common::SyntaxContext;
 use swc_core::{
@@ -51,7 +51,7 @@ pub struct ScanResult {
   pub declared_scoped_names: HashSet<JsWord>,
   pub visited_global_names: HashSet<JsWord>,
   pub statement_parts: Vec<StatementPart>,
-  pub imports: FxHashMap<JsWord, FxHashSet<ImportedSpecifier>>,
+  pub imports: FxHashMap<JsWord, Vec<ImportedSpecifier>>,
   pub suggested_names: FxHashMap<JsWord, JsWord>,
 }
 
@@ -166,12 +166,13 @@ impl Scanner {
       imported,
     };
 
-    self
+    let imports_set = self
       .result
       .imports
       .entry(local_module_id)
-      .or_insert_with(Default::default)
-      .insert(specifier);
+      .or_insert_with(Default::default);
+
+    imports_set.push(specifier);
   }
 
   fn scan_import(&mut self, module_decl: &ModuleDecl) {
@@ -497,21 +498,6 @@ impl Scanner {
     }
   }
 
-  fn remove_unused_imported_specifier(&mut self) {
-    let referenced = self
-      .result
-      .statement_parts
-      .iter()
-      .flat_map(|part| part.referenced.iter())
-      .collect::<FxHashSet<_>>();
-
-    self
-      .result
-      .imports
-      .values_mut()
-      .for_each(|specs| specs.retain(|spec| referenced.contains(&spec.imported_as)));
-  }
-
   fn scan_ident(&mut self, ident: &Ident) {
     debug_assert!(
       ident.span.ctxt != SyntaxContext::empty(),
@@ -550,7 +536,6 @@ impl VisitMut for Scanner {
     node.visit_mut_children_with(self);
 
     self.add_imported_namespaces_to_imports();
-    self.remove_unused_imported_specifier();
   }
 
   fn visit_mut_module_item(&mut self, node: &mut ModuleItem) {

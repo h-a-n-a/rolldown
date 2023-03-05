@@ -305,14 +305,14 @@ impl Graph {
                       &spec.imported
                     });
 
-                  importer
-                    .imports
-                    .entry(importee.id.clone())
-                    .or_default()
-                    .insert(ImportedSpecifier {
+                  importer.add_to_linked_imports(
+                    &importee.id,
+                    ImportedSpecifier {
                       imported_as: symbol_in_importer.clone(),
                       imported: spec.imported.clone(),
-                    });
+                    },
+                  );
+
                   importer.add_to_linked_exports(
                     spec.exported_as.clone(),
                     ExportedSpecifier {

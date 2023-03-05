@@ -41,22 +41,21 @@ pub struct NormalModule {
   #[derivative(Debug = "ignore")]
   pub(crate) ast: ast::Module,
   pub(crate) top_level_ctxt: SyntaxContext,
-  pub(crate) imports: HashMap<ModuleId, HashSet<ImportedSpecifier>>,
-  pub(crate) linked_imports: HashMap<ModuleId, HashSet<ImportedSpecifier>>,
-  /// These symbols are created by `create_top_level_symbol` and are not declared in any statement.
-  pub(crate) extra_top_level_symbols: HashSet<Symbol>,
+  pub(crate) imports: HashMap<ModuleId, Vec<ImportedSpecifier>>,
   // local_exports only contains local export like export const a = 1;
   // It does not contain info about re-exports.
   pub(crate) local_exports: HashMap<JsWord, ExportedSpecifier>,
   pub(crate) re_exported_ids: HashMap<ModuleId, Vec<ReExportedSpecifier>>,
   pub(crate) re_export_all: LinkedHashSet<ModuleId>,
+  pub(crate) linked_imports: HashMap<ModuleId, HashSet<ImportedSpecifier>>,
+  pub(crate) linked_exports: MergedExports,
+  /// These symbols are created by `create_top_level_symbol` and are not declared in any statement.
   pub(crate) declared_scoped_names: HashSet<JsWord>,
+  pub(crate) extra_top_level_symbols: HashSet<Symbol>,
 
   pub(crate) resolved_module_ids: ResolvedModuleIds,
   pub(crate) is_user_defined_entry: bool,
   pub(crate) suggested_names: HashMap<JsWord, JsWord>,
-
-  pub(crate) linked_exports: MergedExports,
 
   pub(crate) facade_id_for_namespace: ExportedSpecifier,
   pub(crate) is_facade_namespace_id_referenced: bool,
@@ -181,10 +180,13 @@ impl NormalModule {
 
   pub(crate) fn add_to_linked_exports(&mut self, name: JsWord, spec: ExportedSpecifier) {
     debug_assert!(&name != "*");
-    debug_assert!(self
-      .linked_exports
-      .get(&name)
-      .map_or(true, |founded| founded == &spec));
+    debug_assert!(
+      self
+        .linked_exports
+        .get(&name)
+        .map_or(true, |founded| founded == &spec),
+      "name: {name}, spec: {spec:?}"
+    );
 
     self.linked_exports.insert(name, spec);
   }
