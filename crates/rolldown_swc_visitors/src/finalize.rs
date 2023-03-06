@@ -54,6 +54,7 @@ pub struct FinalizeContext<'me> {
   pub top_level_ctxt_set: &'me HashSet<SyntaxContext>,
   pub top_level_id_to_final_name: &'me HashMap<Id, JsWord>,
   pub split_point_id_to_chunk_id: &'me HashMap<ModuleId, ChunkId>,
+  pub top_level_names: &'me HashSet<&'me JsWord>,
 }
 
 #[instrument(skip_all)]
@@ -65,14 +66,13 @@ pub fn finalizer<'a>(ctx: FinalizeContext<'a>) -> impl VisitMut + 'a {
 struct Finalizer<'me> {
   pub ctx: FinalizeContext<'me>,
   scope_id_to_final_name: HashMap<Id, JsWord>,
-  top_level_names: HashSet<&'me JsWord>,
+
   used_scoped_names: HashSet<JsWord>,
 }
 
 impl<'a> Finalizer<'a> {
   pub fn new(ctx: FinalizeContext<'a>) -> Self {
     Self {
-      top_level_names: ctx.top_level_id_to_final_name.values().collect(),
       scope_id_to_final_name: Default::default(),
       used_scoped_names: Default::default(),
       ctx,
@@ -119,7 +119,7 @@ impl<'a> Finalizer<'a> {
       IdentType::Scoped => {
         // If a scoped ident is conflict with top level name, the scoped ident will be renamed.
         // So, we don't need to check the final name of scoped ident whether is different from the original name.
-        self.top_level_names.contains(&id.0)
+        self.ctx.top_level_names.contains(&id.0)
       }
       _ => false,
     }
@@ -130,12 +130,12 @@ impl<'a> Finalizer<'a> {
 
     let id = ident.to_id();
 
-    if self.top_level_names.contains(&id.0) && !self.scope_id_to_final_name.contains_key(&id) {
+    if self.ctx.top_level_names.contains(&id.0) && !self.scope_id_to_final_name.contains_key(&id) {
       let mut count = 1;
       let mut new_name: JsWord = format!("{}${}", &id.0, count).into();
       while self.ctx.declared_scoped_names.contains(&new_name)
         || self.used_scoped_names.contains(&new_name)
-        || self.top_level_names.contains(&new_name)
+        || self.ctx.top_level_names.contains(&new_name)
       {
         count += 1;
         new_name = format!("{}${}", &id.0, count).into();

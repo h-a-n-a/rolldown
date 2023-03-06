@@ -274,6 +274,8 @@ impl Chunk {
       modules
     };
 
+    let top_level_names = &id_to_name.values().collect();
+
     {
       // Finalize module items in chunk
       let finalize_ctx = FinalizeContext {
@@ -286,6 +288,7 @@ impl Chunk {
         top_level_ctxt_set: &top_level_ctxt_set,
         top_level_id_to_final_name: &id_to_name,
         split_point_id_to_chunk_id: ctx.split_point_id_to_chunk_id,
+        top_level_names,
       };
 
       self
@@ -301,6 +304,7 @@ impl Chunk {
         top_level_ctxt_set: &top_level_ctxt_set,
         top_level_id_to_final_name: &id_to_name,
         split_point_id_to_chunk_id: ctx.split_point_id_to_chunk_id,
+        top_level_names,
       };
       self
         .after_module_items
@@ -319,6 +323,7 @@ impl Chunk {
           top_level_ctxt_set: &top_level_ctxt_set,
           top_level_id_to_final_name: &id_to_name,
           split_point_id_to_chunk_id: ctx.split_point_id_to_chunk_id,
+          top_level_names,
         };
 
         m.ast
