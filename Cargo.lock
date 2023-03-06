@@ -1658,7 +1658,6 @@ version = "0.0.1"
 dependencies = [
  "ena",
  "hashlink",
- "rolldown_error",
  "rustc-hash",
  "scoped-tls",
  "swc_core",
@@ -1710,6 +1709,7 @@ version = "0.0.1"
 dependencies = [
  "ansi_term",
  "anyhow",
+ "rolldown_common",
  "scoped-tls",
  "sugar_path",
  "swc_core",

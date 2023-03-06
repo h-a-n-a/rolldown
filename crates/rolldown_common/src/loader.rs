@@ -10,7 +10,7 @@ pub enum Loader {
 }
 
 impl FromStr for Loader {
-  type Err = rolldown_error::Error;
+  type Err = String;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     match s {
@@ -18,10 +18,7 @@ impl FromStr for Loader {
       "jsx" => Ok(Self::Jsx),
       "ts" => Ok(Self::Ts),
       "tsx" => Ok(Self::Tsx),
-      _ => Err(rolldown_error::Error::panic(format!(
-        "Unknown loader value \"{}\"",
-        s
-      ))),
+      _ => Err(format!("Unknown loader value \"{}\"", s)),
     }
   }
 }

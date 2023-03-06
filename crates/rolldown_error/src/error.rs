@@ -4,13 +4,14 @@ use std::{
   sync::Arc,
 };
 
+use rolldown_common::StaticStr;
 use swc_core::common::SourceFile;
 
 use crate::ErrorKind;
 
 #[derive(Debug)]
 pub struct Error {
-  contexts: Vec<String>,
+  contexts: Vec<StaticStr>,
   pub kind: ErrorKind,
 }
 
@@ -42,8 +43,8 @@ impl Error {
     }
   }
 
-  pub fn context(mut self, context: String) -> Self {
-    self.contexts.push(context);
+  pub fn context(mut self, context: impl Into<StaticStr>) -> Self {
+    self.contexts.push(context.into());
     self
   }
 
@@ -55,7 +56,7 @@ impl Error {
   }
 
   pub fn ambiguous_external_namespaces(
-    binding: String,
+    binding: impl Into<StaticStr>,
     reexporting_module: PathBuf,
     used_module: PathBuf,
     sources: Vec<PathBuf>,
@@ -63,7 +64,7 @@ impl Error {
     Self::with_kind(ErrorKind::AmbiguousExternalNamespaces {
       reexporting_module,
       used_module,
-      binding,
+      binding: binding.into(),
       sources,
     })
   }
@@ -75,7 +76,7 @@ impl Error {
   }
 
   pub fn missing_export(
-    missing_export: &str,
+    missing_export: impl Into<StaticStr>,
     importer: impl AsRef<Path>,
     importee: impl AsRef<Path>,
   ) -> Self {
@@ -84,7 +85,7 @@ impl Error {
     Self::with_kind(ErrorKind::MissingExport {
       importer,
       importee,
-      missing_export: missing_export.to_string(),
+      missing_export: missing_export.into(),
     })
   }
 
@@ -97,31 +98,34 @@ impl Error {
     ))
   }
 
-  pub fn invalid_export_option_value(value: String) -> Self {
-    Self::with_kind(ErrorKind::InvalidExportOptionValue(value))
+  pub fn invalid_export_option_value(value: impl Into<StaticStr>) -> Self {
+    Self::with_kind(ErrorKind::InvalidExportOptionValue(value.into()))
   }
 
   pub fn incompatible_export_option_value(
     option_value: &'static str,
-    exported_keys: Vec<String>,
+    exported_keys: Vec<impl Into<StaticStr>>,
     entry_module: impl AsRef<Path>,
   ) -> Self {
     let entry_module = entry_module.as_ref().to_path_buf();
     Self::with_kind(ErrorKind::IncompatibleExportOptionValue {
       option_value,
-      exported_keys,
+      exported_keys: exported_keys.into_iter().map(|i| i.into()).collect(),
       entry_module,
     })
   }
 
-  pub fn shimmed_export(binding: String, exporter: PathBuf) -> Self {
-    Self::with_kind(ErrorKind::ShimmedExport { binding, exporter })
+  pub fn shimmed_export(binding: impl Into<StaticStr>, exporter: PathBuf) -> Self {
+    Self::with_kind(ErrorKind::ShimmedExport {
+      binding: binding.into(),
+      exporter,
+    })
   }
 
-  pub fn circular_reexport(export_name: String, exporter: PathBuf) -> Self {
+  pub fn circular_reexport(export_name: impl Into<StaticStr>, exporter: PathBuf) -> Self {
     Self::with_kind(ErrorKind::CircularReexport {
       exporter,
-      export_name,
+      export_name: export_name.into(),
     })
   }
 
@@ -147,8 +151,8 @@ impl Error {
     Self::with_kind(ErrorKind::Napi { status, reason })
   }
 
-  pub fn panic(msg: String) -> Self {
-    anyhow::format_err!(msg).into()
+  pub fn panic(msg: impl Into<StaticStr>) -> Self {
+    anyhow::format_err!(msg.into()).into()
   }
 }
 

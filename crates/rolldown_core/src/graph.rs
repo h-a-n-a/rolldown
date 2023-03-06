@@ -280,7 +280,7 @@ impl Graph {
                     importer.add_to_linked_exports(spec.exported_as, original_spec.clone());
                   } else {
                     return Err(BuildError::missing_export(
-                      &spec.imported,
+                      spec.imported.to_string(),
                       importer_id.as_ref(),
                       importee_id.as_ref(),
                     ));
@@ -532,7 +532,7 @@ impl Graph {
                   importee.add_to_linked_imports(&exported_spec.owner, imported_specifier);
                 } else {
                   return Err(BuildError::missing_export(
-                    &imported_spec.imported,
+                    imported_spec.imported.to_string(),
                     importer_id.as_ref(),
                     importee_id.as_ref(),
                   ));
@@ -637,7 +637,7 @@ impl Graph {
                       .union(&imported_spec.imported_as, &symbol_in_importee);
                   } else {
                     return Err(BuildError::missing_export(
-                      &imported_spec.imported,
+                      imported_spec.imported.to_string(),
                       importer_id.as_ref(),
                       importee_id.as_ref(),
                     ));

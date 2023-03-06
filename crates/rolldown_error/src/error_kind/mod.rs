@@ -4,6 +4,7 @@ use std::{
   sync::Arc,
 };
 
+use rolldown_common::StaticStr;
 use swc_core::common::SourceFile;
 
 use crate::utils::{format_quoted_strings, PathExt};
@@ -23,28 +24,28 @@ pub enum ErrorKind {
   MissingExport {
     importer: PathBuf,
     importee: PathBuf,
-    missing_export: String,
+    missing_export: StaticStr,
   },
   AmbiguousExternalNamespaces {
     reexporting_module: PathBuf,
     used_module: PathBuf,
-    binding: String,
+    binding: StaticStr,
     sources: Vec<PathBuf>,
   },
   CircularDependency(Vec<PathBuf>),
-  InvalidExportOptionValue(String),
+  InvalidExportOptionValue(StaticStr),
   IncompatibleExportOptionValue {
     option_value: &'static str,
-    exported_keys: Vec<String>,
+    exported_keys: Vec<StaticStr>,
     entry_module: PathBuf,
   },
   ShimmedExport {
-    binding: String,
+    binding: StaticStr,
     exporter: PathBuf,
   },
   CircularReexport {
     exporter: PathBuf,
-    export_name: String,
+    export_name: StaticStr,
   },
 
   // --- Rolldown specific

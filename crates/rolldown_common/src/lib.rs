@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt::Display;
 
 use swc_core::ecma::atoms as swc_atoms;
@@ -99,3 +100,5 @@ pub struct ExportedSpecifier {
   // id of the module which exports the local id.
   pub owner: ModuleId,
 }
+
+pub type StaticStr = Cow<'static, str>;

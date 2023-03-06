@@ -198,7 +198,7 @@ impl<'m> TreeshakeNormalModule<'m> {
           "top_level_id: {:?} is not found in {:?}",
           top_level_symbol, self.module.id
         ))
-        .context("Treeshake".to_string()),
+        .context("Treeshake"),
       );
       Default::default()
     }
