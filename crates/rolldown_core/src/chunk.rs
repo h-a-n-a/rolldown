@@ -105,7 +105,7 @@ impl Chunk {
       .collect::<Vec<_>>()
       .join("\n");
 
-    let mut code = before_code + &runtime_code + &code + &after_code;
+    let mut code = before_code + runtime_code.as_ref() + code.as_ref() + after_code.as_ref();
 
     if output_options.format.is_cjs() {
       // Workaround for cjs output
