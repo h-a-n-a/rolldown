@@ -684,6 +684,7 @@ impl StmtExt for ast::Stmt {
       Stmt::Decl(stmt) => match stmt {
         ast::Decl::Class(decl) => class_has_side_effect(ctx, &decl.class),
         ast::Decl::Fn(_) => false,
+        // TODO: I think `var foo` itself has side-effects
         ast::Decl::Var(decl) => decl.decls.iter().any(|decl| {
           decl
             .init

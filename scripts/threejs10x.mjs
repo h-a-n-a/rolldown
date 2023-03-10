@@ -1,5 +1,7 @@
 import 'zx/globals'
 
+import './clone_threejs.mjs'
+
 for (const i in Array(10).fill(null)) {
   fs.ensureDir('./temp/threejs10x')
   await $`cp -r ./temp/threejs/src ./temp/threejs10x/copy${i}`

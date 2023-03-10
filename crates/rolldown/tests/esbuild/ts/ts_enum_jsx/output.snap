@@ -22,7 +22,9 @@ var x;
     var y;
     ((y = x$1.y || (x$1.y = {})).Foo || (y.Foo = {}))["Div"] = 'div';
 })(x || (x = {}));
-console.log(<x$2.y.Foo.Div/>);
+(function(x$2) {
+    x$2.y || (x$2.y = {}), console.log(<x$2.y.Foo.Div/>);
+})(x || (x = {}));
 ---------- nested-fragment.js ----------
 // nested-fragment.tsx
 var x;

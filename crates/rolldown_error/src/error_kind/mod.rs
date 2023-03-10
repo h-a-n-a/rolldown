@@ -78,13 +78,13 @@ impl Display for ErrorKind {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
       // Aligned with rollup
-      ErrorKind::UnresolvedEntry { unresolved_id } => write!(f, "Could not resolve entry module \"{}\"", unresolved_id.relative_if_possiable().display()),
-      ErrorKind::ExternalEntry { id } => write!(f, "Entry module \"{}\" cannot be external.", id.relative_if_possiable().display()),
+      ErrorKind::UnresolvedEntry { unresolved_id } => write!(f, "Could not resolve entry module \"{}\"", unresolved_id.may_display_relative()),
+      ErrorKind::ExternalEntry { id } => write!(f, "Entry module \"{}\" cannot be external.", id.may_display_relative()),
       ErrorKind::MissingExport { missing_export, importee, importer } => write!(
         f,
         r#""{missing_export}" is not exported by "{}", imported by "{}"."#,
-        importee.relative_if_possiable().display(),
-        importer.relative_if_possiable().display(),
+        importee.may_display_relative(),
+        importer.may_display_relative(),
       ),
       ErrorKind::AmbiguousExternalNamespaces {
         binding,
@@ -94,19 +94,19 @@ impl Display for ErrorKind {
       } => write!(
         f,
         "Ambiguous external namespace resolution: \"{}\" re-exports \"{binding}\" from one of the external modules {}, guessing \"{}\".",
-        reexporting_module.relative_if_possiable().display(),
-        format_quoted_strings(&sources.iter().map(|p| p.relative_if_possiable().display().to_string()).collect::<Vec<_>>()),
-        used_module.relative_if_possiable().display(),
+        reexporting_module.may_display_relative(),
+        format_quoted_strings(&sources.iter().map(|p| p.may_display_relative().to_string()).collect::<Vec<_>>()),
+        used_module.may_display_relative(),
       ),
-      ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.iter().map(|p| p.relative_if_possiable().display().to_string()).collect::<Vec<_>>().join(" -> ")),
+      ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.iter().map(|p| p.may_display_relative()).collect::<Vec<_>>().join(" -> ")),
       ErrorKind::InvalidExportOptionValue(value) =>  write!(f, r#""output.exports" must be "default", "named", "none", "auto", or left unspecified (defaults to "auto"), received "{value}"."#),
       ErrorKind::IncompatibleExportOptionValue { option_value, exported_keys, entry_module } => {
         let mut exported_keys = exported_keys.iter().collect::<Vec<_>>();
         exported_keys.sort();
-        write!(f, r#""{option_value}" was specified for "output.exports", but entry module "{}" has the following exports: {}"#, entry_module.relative_if_possiable().display(), format_quoted_strings(&exported_keys))
+        write!(f, r#""{option_value}" was specified for "output.exports", but entry module "{}" has the following exports: {}"#, entry_module.may_display_relative(), format_quoted_strings(&exported_keys))
       }
-      ErrorKind::ShimmedExport { binding, exporter } => write!(f, r#"Missing export "{binding}" has been shimmed in module "{}"."#, exporter.relative_if_possiable().display()),
-      ErrorKind::CircularReexport { export_name, exporter } => write!(f, r#""{export_name}" cannot be exported from "{}" as it is a reexport that references itself."#, exporter.relative_if_possiable().display()),
+      ErrorKind::ShimmedExport { binding, exporter } => write!(f, r#"Missing export "{binding}" has been shimmed in module "{}"."#, exporter.may_display_relative()),
+      ErrorKind::CircularReexport { export_name, exporter } => write!(f, r#""{export_name}" cannot be exported from "{}" as it is a reexport that references itself."#, exporter.may_display_relative()),
       // Rolldown specific
       ErrorKind::Panic { source } => source.fmt(f),
       ErrorKind::Napi { status, reason } => write!(f, "Napi error: {} {}", status, reason),

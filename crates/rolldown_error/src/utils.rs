@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+  borrow::Cow,
+  path::{Path, PathBuf},
+};
 
 use sugar_path::SugarPath;
 
@@ -31,15 +34,16 @@ pub fn format_quoted_strings(list: &[impl AsRef<str>]) -> String {
 }
 
 pub trait PathExt {
-  fn relative_if_possiable(&self) -> PathBuf;
+  fn may_display_relative(&self) -> Cow<str>;
 }
 
 impl PathExt for Path {
-  fn relative_if_possiable(&self) -> PathBuf {
-    if CWD.is_set() && self.is_absolute() {
+  fn may_display_relative(&self) -> Cow<str> {
+    let path = if CWD.is_set() && self.is_absolute() {
       CWD.with(|cwd| self.relative(cwd))
     } else {
-      self.to_path_buf()
-    }
+      return self.to_string_lossy();
+    };
+    Cow::Owned(path.display().to_string())
   }
 }
