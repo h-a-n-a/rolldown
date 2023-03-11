@@ -95,7 +95,7 @@ impl Display for ErrorKind {
         f,
         "Ambiguous external namespace resolution: \"{}\" re-exports \"{binding}\" from one of the external modules {}, guessing \"{}\".",
         reexporting_module.may_display_relative(),
-        format_quoted_strings(&sources.iter().map(|p| p.may_display_relative().to_string()).collect::<Vec<_>>()),
+        format_quoted_strings(&sources.iter().map(|p| p.may_display_relative()).collect::<Vec<_>>()),
         used_module.may_display_relative(),
       ),
       ErrorKind::CircularDependency(path) => write!(f, "Circular dependency: {}", path.iter().map(|p| p.may_display_relative()).collect::<Vec<_>>().join(" -> ")),
@@ -119,6 +119,7 @@ impl Display for ErrorKind {
 }
 
 impl ErrorKind {
+  /// Shorten the file paths in messages by make them relative to CWD.  
   pub fn to_readable_string(&self, cwd: impl AsRef<Path>) -> String {
     let cwd = cwd.as_ref().to_path_buf();
     CWD.set(&cwd, || self.to_string())
